@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { uiZh } from "@/config/ui-zh";
 import { requireSessionUserId } from "@/core/auth/session";
 import { resolveActiveWorkspace } from "@/core/workspace/active-workspace";
 import { CreateCompanyForm } from "@/features/company/components/create-company-form";
@@ -20,12 +21,11 @@ export default async function NewCompanyPage() {
           href="/dashboard/companies"
           className="text-xs text-white/40 hover:text-white/70"
         >
-          ← Companies
+          {uiZh.backToList(uiZh.companies)}
         </Link>
-        <h1 className="mt-3 text-xl text-white">Create company</h1>
+        <h1 className="mt-3 text-xl text-white">{uiZh.createCompany}</h1>
         <p className="mt-2 text-sm text-white/45">
-          Add a company to{" "}
-          <span className="text-white/70">{workspace.name}</span>.
+          {uiZh.addCompanyTo(workspace.name)}
         </p>
       </div>
 

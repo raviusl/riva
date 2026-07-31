@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { uiZh } from "@/config/ui-zh";
 import { InvitationsTable } from "@/features/auth/components/invitations-table";
 import { InviteUserDialog } from "@/features/auth/components/invite-user-dialog";
 import { UsersTable } from "@/features/auth/components/users-table";
@@ -25,18 +26,16 @@ export function UserManagementView({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-white">
-            User Management
+            {uiZh.userManagementTitle}
           </h1>
-          <p className="mt-1 text-sm text-white/45">
-            Invitation-only access. Only Super Admins can invite users.
-          </p>
+          <p className="mt-1 text-sm text-white/45">{uiZh.userManagementDesc}</p>
         </div>
         <Button
           type="button"
           className="bg-white text-black hover:bg-white/90"
           onClick={() => setInviteOpen(true)}
         >
-          Invite User
+          {uiZh.inviteUser}
         </Button>
       </div>
 

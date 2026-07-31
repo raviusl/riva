@@ -1,11 +1,2 @@
-/**
- * Task status, priority, and type foundation surface.
- */
-export type {
-  TaskPriority,
-  TaskPriorityId,
-  TaskStatus,
-  TaskStatusId,
-  TaskType,
-  TaskTypeId,
-} from "@/types/task";
+export type { TaskPriority, TaskStatus } from "@/core/task/types";
+export { TASK_PRIORITIES, TASK_STATUSES } from "@/core/task/constants";

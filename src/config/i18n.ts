@@ -100,7 +100,7 @@ export const copy = {
   send: { zh: "发送", en: "Send" },
   cancel: { zh: "取消", en: "Cancel" },
   save: { zh: "保存", en: "Save" },
-  commandCenter: { zh: "RIVA 指挥中心", en: "RIVA Command Center" },
+  commandCenter: { zh: "RIVA Workspace", en: "RIVA Workspace" },
 } as const;
 
 export function getGreeting(date = new Date()) {

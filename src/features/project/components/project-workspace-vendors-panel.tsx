@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { ModuleEmptyState } from "@/components/layout/module-empty-state";
-import { Button } from "@/components/ui/button";
+import { WorkspaceEntityLink } from "@/components/layout/workspace-entity-link";
+import { buttonVariants } from "@/components/ui/button";
 import type { Project, Vendor } from "@/core/types";
 import { vendorCategoryLabel } from "@/features/vendor/lib/vendor-context";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { cn } from "@/lib/utils";
+import { uiZh } from "@/config/ui-zh";
 
 type ProjectWorkspaceVendorsPanelProps = {
   project: Project;
@@ -25,13 +28,11 @@ export function ProjectWorkspaceVendorsPanel({
   canWriteVendor,
   canReadVendor,
 }: ProjectWorkspaceVendorsPanelProps) {
-  const router = useRouter();
-
   if (!canReadVendor) {
     return (
       <ModuleEmptyState
-        title="Vendors unavailable"
-        description="You do not have permission to view vendors for this project."
+        title={uiZh.vendorsUnavailable}
+        description={uiZh.vendorsUnavailableDesc}
       />
     );
   }
@@ -61,14 +62,14 @@ export function ProjectWorkspaceVendorsPanel({
 
       {visibleVendors.length === 0 ? (
         <ModuleEmptyState
-          title="No vendors linked"
-          description="Assign vendors to this project for delivery coordination."
+          title={uiZh.noVendorsLinked}
+          description={uiZh.noVendorsLinkedDesc}
           actionHref={
             canWriteVendor && project.status !== "archived"
               ? `/dashboard/vendors/new?projectId=${project.id}`
               : undefined
           }
-          actionLabel={canWriteVendor ? "Add vendor" : undefined}
+          actionLabel={canWriteVendor ? uiZh.addVendor : undefined}
         />
       ) : (
         <ul className="space-y-3">
@@ -79,27 +80,39 @@ export function ProjectWorkspaceVendorsPanel({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-white">
+                  <WorkspaceEntityLink
+                    kind="vendor"
+                    id={vendor.id}
+                    className="truncate text-sm font-medium"
+                  >
                     {vendor.name}
-                  </p>
+                  </WorkspaceEntityLink>
                   <p className="mt-1 truncate text-xs text-white/45">
                     {vendorCategoryLabel(vendor.category)} ·{" "}
                     {statusLabel(vendor.status)}
                     {vendor.email ? ` · ${vendor.email}` : ""}
                   </p>
                 </div>
-                {canWriteVendor && vendor.status !== "archived" ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() =>
-                      router.push(`/dashboard/vendors/${vendor.id}/edit`)
-                    }
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={buildWorkspaceOverviewHref("vendor", vendor.id)}
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                    )}
                   >
-                    Edit
-                  </Button>
-                ) : null}
+                    Open
+                  </Link>
+                  {canWriteVendor && vendor.status !== "archived" ? (
+                    <Link
+                      href={`/dashboard/vendors/${vendor.id}/edit`}
+                      className={cn(
+                        buttonVariants({ variant: "outline", size: "sm" }),
+                      )}
+                    >
+                      Edit
+                    </Link>
+                  ) : null}
+                </div>
               </div>
             </li>
           ))}

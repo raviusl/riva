@@ -63,7 +63,7 @@ export function UpdatePasswordForm() {
               toast.success(
                 `${authCopy.passwordUpdated.zh} / ${authCopy.passwordUpdated.en}`,
               );
-              router.replace("/dashboard");
+              router.replace("/dashboard/enter");
             } catch (error) {
               const message =
                 error instanceof Error

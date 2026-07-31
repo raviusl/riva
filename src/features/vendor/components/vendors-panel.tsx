@@ -2,7 +2,9 @@ import Link from "next/link";
 
 import type { Vendor } from "@/core/types";
 import { ModuleEmptyState } from "@/components/layout/module-empty-state";
+import { uiZh } from "@/config/ui-zh";
 import { vendorCategoryLabel } from "@/features/vendor/lib/vendor-context";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 
 type VendorsPanelProps = {
   vendors: Vendor[];
@@ -11,7 +13,16 @@ type VendorsPanelProps = {
 };
 
 function statusLabel(status: Vendor["status"]) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  switch (status) {
+    case "active":
+      return uiZh.active;
+    case "inactive":
+      return uiZh.inactive;
+    case "archived":
+      return uiZh.archived;
+    default:
+      return status;
+  }
 }
 
 export function VendorsPanel({
@@ -26,7 +37,7 @@ export function VendorsPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-medium text-white">
-            Vendors ({visible.length})
+            {uiZh.vendorsCount(visible.length)}
           </h2>
           <p className="mt-1 text-xs text-white/45">{companyName}</p>
         </div>
@@ -35,7 +46,7 @@ export function VendorsPanel({
             href="/dashboard/vendors/new"
             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/[0.05]"
           >
-            New
+            {uiZh.newLabel}
           </Link>
         ) : null}
       </div>
@@ -43,10 +54,10 @@ export function VendorsPanel({
       {visible.length === 0 ? (
         <div className="mt-4">
           <ModuleEmptyState
-            title="No vendors yet"
-            description="Add photographers, venues, caterers, and other vendors for this company."
+            title={uiZh.noVendorsYet}
+            description={uiZh.addVendorsForCompany}
             actionHref={canWrite ? "/dashboard/vendors/new" : undefined}
-            actionLabel={canWrite ? "Create vendor" : undefined}
+            actionLabel={canWrite ? uiZh.createVendor : undefined}
           />
         </div>
       ) : (
@@ -65,14 +76,10 @@ export function VendorsPanel({
                   </p>
                 </div>
                 <Link
-                  href={
-                    canWrite
-                      ? `/dashboard/vendors/${vendor.id}/edit`
-                      : "/dashboard/vendors"
-                  }
+                  href={buildWorkspaceOverviewHref("vendor", vendor.id)}
                   className="shrink-0 text-xs text-white/45 hover:text-white/70"
                 >
-                  {canWrite ? "Edit" : "View"}
+                  {uiZh.open}
                 </Link>
               </div>
             </li>
@@ -86,7 +93,7 @@ export function VendorsPanel({
             href="/dashboard/vendors"
             className="text-xs text-white/45 hover:text-white/70"
           >
-            Manage vendors →
+            {uiZh.manageVendorsLink}
           </Link>
         </div>
       ) : null}

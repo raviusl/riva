@@ -1,6 +1,8 @@
 import "server-only";
 
 import { getCompanyById } from "@/core/company/company";
+import { updateClient } from "@/core/client/client";
+import { getClientById } from "@/core/client/client";
 import { CoreError } from "@/core/errors";
 import {
   createProjectSchema,
@@ -22,7 +24,11 @@ import {
 
 export type { CreateProjectInput, UpdateProjectInput, ProjectIdInput };
 
-const EDITABLE_STATUSES: ProjectStatus[] = ["draft", "active"];
+const EDITABLE_STATUSES: ProjectStatus[] = [
+  "planning",
+  "active",
+  "completed",
+];
 
 function assertEditable(project: Project): void {
   if (!EDITABLE_STATUSES.includes(project.status)) {
@@ -54,15 +60,49 @@ export async function createProject(
   await assertCompanyInWorkspace(values.workspaceId, values.companyId);
 
   try {
-    return await insertProject({
+    const project = await insertProject({
       workspace_id: values.workspaceId,
       company_id: values.companyId,
       name: values.name.trim(),
+      description: values.description?.trim() || null,
       project_type: values.projectType ?? null,
-      status: values.status ?? "draft",
+      status: values.status ?? "planning",
       owner_id: values.ownerId ?? null,
+      start_date: values.startDate || null,
+      end_date: values.endDate || null,
     });
+
+    if (values.clientId) {
+      const client = await getClientById(
+        values.clientId,
+        values.workspaceId,
+        values.companyId,
+      );
+      const actorId = values.ownerId;
+      await updateClient(
+        {
+          workspaceId: values.workspaceId,
+          companyId: values.companyId,
+          clientId: client.id,
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          projectId: project.id,
+          ownerId: client.owner_id,
+          clientType: client.client_type,
+          status: client.status,
+          followUpAt: client.follow_up_at,
+          notes: client.notes,
+        },
+        actorId ? { actorId } : undefined,
+      );
+    }
+
+    return project;
   } catch (error) {
+    if (error instanceof CoreError) {
+      throw error;
+    }
     console.error("createProject failed", error);
     throw new CoreError("PROJECT_CREATE_FAILED", "Failed to create project.");
   }
@@ -134,9 +174,16 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
   try {
     return await updateProjectById(project.id, {
       name: values.name.trim(),
+      description:
+        values.description !== undefined
+          ? values.description?.trim() || null
+          : project.description,
       project_type: values.projectType ?? null,
       status: values.status ?? project.status,
       owner_id: values.ownerId !== undefined ? values.ownerId : project.owner_id,
+      start_date:
+        values.startDate !== undefined ? values.startDate : project.start_date,
+      end_date: values.endDate !== undefined ? values.endDate : project.end_date,
     });
   } catch (error) {
     console.error("updateProject failed", error);
@@ -187,7 +234,7 @@ export async function restoreProject(input: ProjectIdInput): Promise<Project> {
   }
 
   try {
-    return await updateProjectById(project.id, { status: "draft" });
+    return await updateProjectById(project.id, { status: "planning" });
   } catch (error) {
     console.error("restoreProject failed", error);
     throw new CoreError(

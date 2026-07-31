@@ -9,6 +9,7 @@ export function mapClientRow(data: Record<string, unknown>): Client {
     workspace_id: data.workspace_id as string,
     company_id: data.company_id as string,
     project_id: (data.project_id as string | null | undefined) ?? null,
+    owner_id: (data.owner_id as string | null | undefined) ?? null,
     name: data.name as string,
     email: (data.email as string | null | undefined) ?? null,
     phone: (data.phone as string | null | undefined) ?? null,
@@ -25,6 +26,7 @@ export type InsertClientRow = {
   workspace_id: string;
   company_id: string;
   project_id?: string | null;
+  owner_id?: string | null;
   name: string;
   email?: string | null;
   phone?: string | null;
@@ -36,6 +38,7 @@ export type InsertClientRow = {
 
 export type UpdateClientRow = {
   project_id?: string | null;
+  owner_id?: string | null;
   name?: string;
   email?: string | null;
   phone?: string | null;

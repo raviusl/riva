@@ -1,9 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
-import { resolveContextStep } from "@/core/auth/context";
 import { requireSessionUserId } from "@/core/auth/session";
 import { switchActiveCompany } from "@/core/company/active-company";
 import { toCoreUserMessage } from "@/core/errors";
@@ -16,27 +14,19 @@ export type ContextActionResult<T = undefined> =
 
 function revalidateContextPaths() {
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/welcome");
+  revalidatePath("/dashboard/business");
+  revalidatePath("/dashboard/division");
   revalidatePath("/dashboard/select-workspace");
   revalidatePath("/dashboard/select-company");
 }
 
-/** Post-login entry: User → Workspace → Company → Dashboard */
-export async function enterDashboardAction(): Promise<void> {
-  const userId = await requireSessionUserId();
-  const step = await resolveContextStep(userId);
-
-  if (step.step === "workspace") {
-    redirect(
-      step.workspaces.length === 0
-        ? "/dashboard/workspaces/new"
-        : "/dashboard/select-workspace",
-    );
-  }
-  if (step.step === "company") {
-    redirect("/dashboard/select-company");
-  }
-
-  redirect("/dashboard");
+/** Post-login entry: OS Welcome flow (Project 056). */
+export async function enterDashboardAction(
+  nextPath = "/dashboard",
+): Promise<void> {
+  const { enterOsAction } = await import("@/core/actions/os-actions");
+  await enterOsAction(nextPath);
 }
 
 export async function switchCompanyAction(

@@ -22,9 +22,12 @@ export type VendorActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-function revalidateVendorPaths() {
+function revalidateVendorPaths(vendorId?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/vendors");
+  if (vendorId) {
+    revalidatePath(`/dashboard/vendors/${vendorId}`);
+  }
 }
 
 async function requireVendorWrite(
@@ -46,8 +49,8 @@ export async function createVendorAction(
   try {
     const userId = await requireSessionUserId();
     await requireVendorWrite(userId, input.workspaceId, input.companyId);
-    const vendor = await createVendor(input);
-    revalidateVendorPaths();
+    const vendor = await createVendor(input, { actorId: userId });
+    revalidateVendorPaths(vendor.id);
     return { ok: true, data: { vendorId: vendor.id } };
   } catch (error) {
     return {
@@ -63,8 +66,8 @@ export async function updateVendorAction(
   try {
     const userId = await requireSessionUserId();
     await requireVendorWrite(userId, input.workspaceId, input.companyId);
-    const vendor = await updateVendor(input);
-    revalidateVendorPaths();
+    const vendor = await updateVendor(input, { actorId: userId });
+    revalidateVendorPaths(vendor.id);
     return { ok: true, data: { vendorId: vendor.id } };
   } catch (error) {
     return {
@@ -80,8 +83,8 @@ export async function archiveVendorAction(
   try {
     const userId = await requireSessionUserId();
     await requireVendorWrite(userId, input.workspaceId, input.companyId);
-    const vendor = await archiveVendor(input);
-    revalidateVendorPaths();
+    const vendor = await archiveVendor(input, { actorId: userId });
+    revalidateVendorPaths(vendor.id);
     return { ok: true, data: { vendorId: vendor.id } };
   } catch (error) {
     return {
@@ -97,8 +100,8 @@ export async function restoreVendorAction(
   try {
     const userId = await requireSessionUserId();
     await requireVendorWrite(userId, input.workspaceId, input.companyId);
-    const vendor = await restoreVendor(input);
-    revalidateVendorPaths();
+    const vendor = await restoreVendor(input, { actorId: userId });
+    revalidateVendorPaths(vendor.id);
     return { ok: true, data: { vendorId: vendor.id } };
   } catch (error) {
     return {
@@ -114,8 +117,8 @@ export async function deactivateVendorAction(
   try {
     const userId = await requireSessionUserId();
     await requireVendorWrite(userId, input.workspaceId, input.companyId);
-    const vendor = await deactivateVendor(input);
-    revalidateVendorPaths();
+    const vendor = await deactivateVendor(input, { actorId: userId });
+    revalidateVendorPaths(vendor.id);
     return { ok: true, data: { vendorId: vendor.id } };
   } catch (error) {
     return {

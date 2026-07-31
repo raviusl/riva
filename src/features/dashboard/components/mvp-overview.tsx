@@ -12,6 +12,10 @@ type MvpOverviewProps = {
   stats: OverviewStat[];
 };
 
+/**
+ * @deprecated Legacy CRM dashboard overview — do not use on Workspace home.
+ * Daily Workspace lives in `command-center-home.tsx`.
+ */
 export function MvpOverview({
   workspaceName,
   companyName,
@@ -20,7 +24,7 @@ export function MvpOverview({
   return (
     <section className="space-y-4">
       <div>
-        <h1 className="text-xl text-white sm:text-2xl">RIVA Command Center</h1>
+        <h1 className="text-xl text-white sm:text-2xl">RIVA Workspace</h1>
         <p className="mt-2 text-sm text-white/45">
           <span className="text-white/70">{workspaceName}</span>
           <span className="mx-2 text-white/20">·</span>

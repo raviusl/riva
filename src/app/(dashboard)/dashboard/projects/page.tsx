@@ -1,59 +1,53 @@
-import Link from "next/link";
-
-import { ModuleEmptyState } from "@/components/layout/module-empty-state";
 import { requireDashboardContext } from "@/core/auth/context";
+import { listClientsByCompany } from "@/core/client/client";
 import { listProjectsByCompany } from "@/core/project/project";
-import { ProjectListItem } from "@/features/project/components/project-list-item";
+import { ProjectList } from "@/components/projects/project-list";
+import { uiZh } from "@/config/ui-zh";
+import {
+  listClientOwnerOptions,
+  ownerLabelFromOptions,
+} from "@/features/client/lib/client-owners";
 
 export default async function ProjectsPage() {
   const context = await requireDashboardContext();
-  const projects = await listProjectsByCompany(
-    context.workspace.id,
-    context.company.id,
-  );
-  const canWrite = context.permissions.has("project.write");
+
+  if (!context.permissions.has("project.read")) {
+    return (
+      <div className="mx-auto w-full max-w-3xl rounded-2xl border border-white/[0.08] px-5 py-8 text-sm text-white/55">
+        {uiZh.noPermissionProjects}
+      </div>
+    );
+  }
+
+  const [projects, clients, owners] = await Promise.all([
+    listProjectsByCompany(context.workspace.id, context.company.id),
+    context.permissions.has("client.read")
+      ? listClientsByCompany(context.workspace.id, context.company.id)
+      : Promise.resolve([]),
+    listClientOwnerOptions(context.workspace.id, context.company.id),
+  ]);
+
+  const clientsByProject = new Map<string, string>();
+  for (const client of clients) {
+    if (client.project_id && !clientsByProject.has(client.project_id)) {
+      clientsByProject.set(client.project_id, client.name);
+    }
+  }
+
+  const rows = projects.map((project) => ({
+    project,
+    clientName: clientsByProject.get(project.id) ?? null,
+    ownerName: ownerLabelFromOptions(project.owner_id, owners),
+  }));
 
   return (
-    <div className="mx-auto w-full max-w-3xl space-y-8">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl text-white">Projects</h1>
-          <p className="mt-2 text-sm text-white/45">
-            Projects in{" "}
-            <span className="text-white/70">{context.company.name}</span>
-          </p>
-        </div>
-        {canWrite ? (
-          <Link
-            href="/dashboard/projects/new"
-            className="inline-flex w-fit rounded-lg bg-white px-3 py-2 text-sm font-medium text-black hover:bg-white/90"
-          >
-            Create
-          </Link>
-        ) : null}
-      </div>
-
-      {projects.length === 0 ? (
-        <ModuleEmptyState
-          title="No projects yet"
-          description="Create your first project to organize work for this company."
-          actionHref={canWrite ? "/dashboard/projects/new" : undefined}
-          actionLabel={canWrite ? "Create project" : undefined}
-        />
-      ) : (
-        <ul className="space-y-3">
-          {projects.map((project) => (
-            <li key={project.id}>
-              <ProjectListItem
-                workspaceId={context.workspace.id}
-                companyId={context.company.id}
-                project={project}
-                canWrite={canWrite}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <ProjectList
+      workspaceId={context.workspace.id}
+      companyId={context.company.id}
+      businessName={context.company.name}
+      rows={rows}
+      clients={clients}
+      canWrite={context.permissions.has("project.write")}
+    />
   );
 }

@@ -10,12 +10,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uiZh } from "@/config/ui-zh";
 import { createWorkspaceAction } from "@/core/actions/workspace-actions";
 import { slugify } from "@/core/lib/slug";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
 
 const formSchema = z.object({
-  name: z.string().min(1, "Workspace name is required").max(120),
+  name: z.string().min(1, uiZh.workspaceNameRequired).max(120),
   slug: z.string().max(64).optional(),
   timezone: z.string().min(1).max(64),
   locale: z.string().min(2).max(16),
@@ -65,18 +66,18 @@ export function CreateWorkspaceForm() {
             toast.error(result.error);
             return;
           }
-          toast.success("Workspace created");
+          toast.success(uiZh.workspaceCreated);
           router.push("/dashboard/settings/workspace");
           router.refresh();
         });
       })}
     >
       <div className="space-y-2">
-        <Label htmlFor="workspace-name">Name</Label>
+        <Label htmlFor="workspace-name">{uiZh.name}</Label>
         <Input
           id="workspace-name"
           className={authFieldClassName}
-          placeholder="Acme Events"
+          placeholder={uiZh.placeholderWorkspaceName}
           disabled={pending}
           {...form.register("name", {
             onChange: (event) => {
@@ -95,17 +96,15 @@ export function CreateWorkspaceForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="workspace-slug">Slug</Label>
+        <Label htmlFor="workspace-slug">{uiZh.slug}</Label>
         <Input
           id="workspace-slug"
           className={authFieldClassName}
-          placeholder="acme-events"
+          placeholder={uiZh.placeholderWorkspaceSlug}
           disabled={pending}
           {...form.register("slug")}
         />
-        <p className="text-xs text-white/35">
-          Unique URL identifier. Must be unique across all workspaces.
-        </p>
+        <p className="text-xs text-white/35">{uiZh.slugUniqueHint}</p>
         {form.formState.errors.slug ? (
           <p className="text-xs text-red-400">
             {form.formState.errors.slug.message}
@@ -115,7 +114,7 @@ export function CreateWorkspaceForm() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="workspace-timezone">Timezone</Label>
+          <Label htmlFor="workspace-timezone">{uiZh.timezone}</Label>
           <Input
             id="workspace-timezone"
             className={authFieldClassName}
@@ -124,7 +123,7 @@ export function CreateWorkspaceForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="workspace-locale">Locale</Label>
+          <Label htmlFor="workspace-locale">{uiZh.locale}</Label>
           <Input
             id="workspace-locale"
             className={authFieldClassName}
@@ -133,7 +132,7 @@ export function CreateWorkspaceForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="workspace-currency">Currency</Label>
+          <Label htmlFor="workspace-currency">{uiZh.currency}</Label>
           <Input
             id="workspace-currency"
             className={authFieldClassName}
@@ -143,12 +142,12 @@ export function CreateWorkspaceForm() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="workspace-country">Country (ISO)</Label>
+          <Label htmlFor="workspace-country">{uiZh.countryIso}</Label>
           <Input
             id="workspace-country"
             className={authFieldClassName}
             maxLength={2}
-            placeholder="US"
+            placeholder={uiZh.placeholderCountry}
             disabled={pending}
             {...form.register("country")}
           />
@@ -160,7 +159,7 @@ export function CreateWorkspaceForm() {
         disabled={pending}
         className="bg-white text-black hover:bg-white/90"
       >
-        {pending ? "Creating…" : "Create workspace"}
+        {pending ? uiZh.creating : uiZh.createWorkspace}
       </Button>
     </form>
   );

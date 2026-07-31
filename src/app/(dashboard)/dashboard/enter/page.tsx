@@ -1,10 +1,14 @@
-import { redirect } from "next/navigation";
-
-import { enterDashboardAction } from "@/core/actions/context-actions";
+import { enterOsAction } from "@/core/actions/os-actions";
 import { requireSessionUserId } from "@/core/auth/session";
+import { safeAuthNextPath } from "@/features/auth/lib/auth-ui";
 
-export default async function EnterDashboardPage() {
+type PageProps = {
+  searchParams: Promise<{ next?: string }>;
+};
+
+export default async function EnterDashboardPage({ searchParams }: PageProps) {
   await requireSessionUserId();
-  await enterDashboardAction();
-  redirect("/dashboard");
+  const params = await searchParams;
+  const nextPath = safeAuthNextPath(params.next, "/dashboard");
+  await enterOsAction(nextPath);
 }

@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uiZh } from "@/config/ui-zh";
 import {
   archiveCompanyAction,
   reactivateCompanyAction,
@@ -17,13 +18,32 @@ import {
   suspendCompanyAction,
   updateCompanySettingsAction,
 } from "@/core/actions/company-actions";
-import { COMPANY_TYPES, type Company } from "@/core/types";
+import {
+  COMPANY_TYPES,
+  type Company,
+  type CompanyType,
+} from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
+
+const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
+  agency: uiZh.companyTypeAgency,
+  brand: uiZh.companyTypeBrand,
+  venue: uiZh.companyTypeVenue,
+  corporate: uiZh.companyTypeCorporate,
+  wedding: uiZh.companyTypeWedding,
+  other: uiZh.companyTypeOther,
+};
+
+const COMPANY_STATUS_LABELS: Record<Company["status"], string> = {
+  active: uiZh.active,
+  suspended: uiZh.suspended,
+  archived: uiZh.archived,
+};
 
 const formSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
-  name: z.string().min(1, "Company name is required").max(160),
+  name: z.string().min(1, uiZh.companyNameRequired).max(160),
   type: z.enum(COMPANY_TYPES).optional().nullable(),
   logoUrl: z.string().optional(),
   timezone: z.string().optional(),
@@ -87,7 +107,7 @@ export function CompanySettingsForm({
               toast.error(result.error);
               return;
             }
-            toast.success("Company updated");
+            toast.success(uiZh.companyUpdated);
             router.refresh();
           });
         })}
@@ -96,7 +116,7 @@ export function CompanySettingsForm({
         <input type="hidden" {...form.register("companyId")} />
 
         <div className="space-y-2">
-          <Label htmlFor="company-settings-name">Name</Label>
+          <Label htmlFor="company-settings-name">{uiZh.name}</Label>
           <Input
             id="company-settings-name"
             className={authFieldClassName}
@@ -106,7 +126,7 @@ export function CompanySettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="company-settings-slug">Slug</Label>
+          <Label htmlFor="company-settings-slug">{uiZh.slug}</Label>
           <Input
             id="company-settings-slug"
             className={authFieldClassName}
@@ -117,7 +137,7 @@ export function CompanySettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="company-settings-type">Type</Label>
+          <Label htmlFor="company-settings-type">{uiZh.type}</Label>
           <select
             id="company-settings-type"
             className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white disabled:opacity-50"
@@ -126,18 +146,18 @@ export function CompanySettingsForm({
           >
             {COMPANY_TYPES.map((type) => (
               <option key={type} value={type} className="bg-[#121214]">
-                {type.charAt(0).toUpperCase() + type.slice(1)}
+                {COMPANY_TYPE_LABELS[type]}
               </option>
             ))}
           </select>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="company-settings-logo">Logo URL</Label>
+          <Label htmlFor="company-settings-logo">{uiZh.logoUrl}</Label>
           <Input
             id="company-settings-logo"
             className={authFieldClassName}
-            placeholder="https://…"
+            placeholder={uiZh.httpsPlaceholder}
             disabled={!editable || pending}
             {...form.register("logoUrl")}
           />
@@ -145,7 +165,7 @@ export function CompanySettingsForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="company-settings-timezone">Timezone</Label>
+            <Label htmlFor="company-settings-timezone">{uiZh.timezone}</Label>
             <Input
               id="company-settings-timezone"
               className={authFieldClassName}
@@ -154,7 +174,7 @@ export function CompanySettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="company-settings-locale">Locale</Label>
+            <Label htmlFor="company-settings-locale">{uiZh.locale}</Label>
             <Input
               id="company-settings-locale"
               className={authFieldClassName}
@@ -163,7 +183,7 @@ export function CompanySettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="company-settings-currency">Currency</Label>
+            <Label htmlFor="company-settings-currency">{uiZh.currency}</Label>
             <Input
               id="company-settings-currency"
               className={authFieldClassName}
@@ -173,7 +193,7 @@ export function CompanySettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="company-settings-country">Country (ISO)</Label>
+            <Label htmlFor="company-settings-country">{uiZh.countryIso}</Label>
             <Input
               id="company-settings-country"
               className={authFieldClassName}
@@ -190,20 +210,21 @@ export function CompanySettingsForm({
             disabled={!editable || pending}
             className="bg-white text-black hover:bg-white/90"
           >
-            {pending ? "Saving…" : "Save changes"}
+            {pending ? uiZh.saving : uiZh.saveChanges}
           </Button>
         ) : (
           <p className="text-xs text-white/45">
-            You do not have permission to edit this company.
+            {uiZh.noPermissionEditCompany}
           </p>
         )}
       </form>
 
       {canWrite ? (
         <div className="space-y-3 border-t border-white/[0.08] pt-6">
-          <p className="text-sm text-white/70">Status</p>
+          <p className="text-sm text-white/70">{uiZh.status}</p>
           <p className="text-xs text-white/40">
-            Current: {company.status}. Soft-archive only — no permanent delete.
+            {uiZh.currentStatus(COMPANY_STATUS_LABELS[company.status])}
+            {uiZh.companyStatusHint}
           </p>
           <div className="flex flex-wrap gap-2">
             {company.status === "active" ? (
@@ -221,12 +242,12 @@ export function CompanySettingsForm({
                       toast.error(result.error);
                       return;
                     }
-                    toast.success("Company suspended");
+                    toast.success(uiZh.companySuspended);
                     router.refresh();
                   });
                 }}
               >
-                Suspend
+                {uiZh.suspend}
               </Button>
             ) : null}
             {company.status === "suspended" ? (
@@ -245,12 +266,12 @@ export function CompanySettingsForm({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Company reactivated");
+                      toast.success(uiZh.companyReactivated);
                       router.refresh();
                     });
                   }}
                 >
-                  Reactivate
+                  {uiZh.reactivate}
                 </Button>
                 <Button
                   type="button"
@@ -266,12 +287,12 @@ export function CompanySettingsForm({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Company archived");
+                      toast.success(uiZh.companyArchived);
                       router.refresh();
                     });
                   }}
                 >
-                  Archive
+                  {uiZh.archive}
                 </Button>
               </>
             ) : null}
@@ -290,12 +311,12 @@ export function CompanySettingsForm({
                       toast.error(result.error);
                       return;
                     }
-                    toast.success("Company restored");
+                    toast.success(uiZh.companyRestored);
                     router.refresh();
                   });
                 }}
               >
-                Restore
+                {uiZh.restore}
               </Button>
             ) : null}
           </div>

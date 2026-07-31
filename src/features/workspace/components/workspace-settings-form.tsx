@@ -10,6 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uiZh } from "@/config/ui-zh";
 import {
   archiveWorkspaceAction,
   restoreWorkspaceAction,
@@ -19,9 +20,16 @@ import {
 import type { Workspace } from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
 
+const WORKSPACE_STATUS_LABELS: Record<Workspace["status"], string> = {
+  pending: uiZh.pending,
+  active: uiZh.active,
+  suspended: uiZh.suspended,
+  archived: uiZh.archived,
+};
+
 const formSchema = z.object({
   workspaceId: z.string().uuid(),
-  name: z.string().min(1, "Workspace name is required").max(120),
+  name: z.string().min(1, uiZh.workspaceNameRequired).max(120),
   timezone: z.string().min(1).max(64),
   locale: z.string().min(2).max(16),
   currency: z.string().length(3),
@@ -79,7 +87,7 @@ export function WorkspaceSettingsForm({
               toast.error(result.error);
               return;
             }
-            toast.success("Workspace updated");
+            toast.success(uiZh.workspaceUpdated);
             router.refresh();
           });
         })}
@@ -87,7 +95,7 @@ export function WorkspaceSettingsForm({
         <input type="hidden" {...form.register("workspaceId")} />
 
         <div className="space-y-2">
-          <Label htmlFor="settings-name">Name</Label>
+          <Label htmlFor="settings-name">{uiZh.name}</Label>
           <Input
             id="settings-name"
             className={authFieldClassName}
@@ -102,7 +110,7 @@ export function WorkspaceSettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="settings-slug">Slug</Label>
+          <Label htmlFor="settings-slug">{uiZh.slug}</Label>
           <Input
             id="settings-slug"
             className={authFieldClassName}
@@ -110,28 +118,24 @@ export function WorkspaceSettingsForm({
             disabled
             readOnly
           />
-          <p className="text-xs text-white/35">
-            Slug is immutable after creation (routing and future custom domain).
-          </p>
+          <p className="text-xs text-white/35">{uiZh.slugImmutable}</p>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="settings-logo">Logo URL</Label>
+          <Label htmlFor="settings-logo">{uiZh.logoUrl}</Label>
           <Input
             id="settings-logo"
             className={authFieldClassName}
-            placeholder="https://…"
+            placeholder={uiZh.httpsPlaceholder}
             disabled={!editable || pending}
             {...form.register("logoUrl")}
           />
-          <p className="text-xs text-white/35">
-            HTTPS URL for now. File upload lands with storage architecture.
-          </p>
+          <p className="text-xs text-white/35">{uiZh.logoUrlHint}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="settings-timezone">Timezone</Label>
+            <Label htmlFor="settings-timezone">{uiZh.timezone}</Label>
             <Input
               id="settings-timezone"
               className={authFieldClassName}
@@ -140,7 +144,7 @@ export function WorkspaceSettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-locale">Locale</Label>
+            <Label htmlFor="settings-locale">{uiZh.locale}</Label>
             <Input
               id="settings-locale"
               className={authFieldClassName}
@@ -149,7 +153,7 @@ export function WorkspaceSettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-currency">Currency</Label>
+            <Label htmlFor="settings-currency">{uiZh.currency}</Label>
             <Input
               id="settings-currency"
               className={authFieldClassName}
@@ -159,12 +163,12 @@ export function WorkspaceSettingsForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="settings-country">Country (ISO)</Label>
+            <Label htmlFor="settings-country">{uiZh.countryIso}</Label>
             <Input
               id="settings-country"
               className={authFieldClassName}
               maxLength={2}
-              placeholder="US"
+              placeholder={uiZh.placeholderCountry}
               disabled={!editable || pending}
               {...form.register("country")}
             />
@@ -172,12 +176,12 @@ export function WorkspaceSettingsForm({
         </div>
 
         <div className="rounded-xl border border-dashed border-white/10 px-4 py-3">
-          <p className="text-sm text-white/70">Custom domain</p>
+          <p className="text-sm text-white/70">{uiZh.customDomain}</p>
           <p className="mt-1 text-xs text-white/40">
-            Schema ready (`custom_domain`). Provisioning is deferred.
+            {uiZh.customDomainHint}{" "}
             {workspace.custom_domain
-              ? ` Current: ${workspace.custom_domain}`
-              : " Not configured."}
+              ? uiZh.currentDomain(workspace.custom_domain)
+              : uiZh.notConfigured}
           </p>
         </div>
 
@@ -187,21 +191,19 @@ export function WorkspaceSettingsForm({
             disabled={pending}
             className="bg-white text-black hover:bg-white/90"
           >
-            {pending ? "Saving…" : "Save settings"}
+            {pending ? uiZh.saving : uiZh.saveSettings}
           </Button>
         ) : null}
       </form>
 
       {canWrite ? (
         <div className="space-y-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5">
-          <p className="text-sm font-medium text-white">Workspace status</p>
+          <p className="text-sm font-medium text-white">
+            {uiZh.workspaceStatus}
+          </p>
           <p className="text-xs text-white/45">
-            Current:{" "}
-            <span className="text-white/80">
-              {workspace.status.charAt(0).toUpperCase() +
-                workspace.status.slice(1)}
-            </span>
-            . Workspaces are never permanently deleted.
+            {uiZh.currentStatus(WORKSPACE_STATUS_LABELS[workspace.status])}
+            {uiZh.workspacesNeverDeleted}
           </p>
           <div className="flex flex-wrap gap-2">
             {archived ? (
@@ -219,12 +221,12 @@ export function WorkspaceSettingsForm({
                       toast.error(result.error);
                       return;
                     }
-                    toast.success("Workspace restored");
+                    toast.success(uiZh.workspaceRestored);
                     router.refresh();
                   });
                 }}
               >
-                Restore workspace
+                {uiZh.restoreWorkspace}
               </Button>
             ) : (
               <>
@@ -243,12 +245,12 @@ export function WorkspaceSettingsForm({
                           toast.error(result.error);
                           return;
                         }
-                        toast.success("Workspace suspended");
+                        toast.success(uiZh.workspaceSuspended);
                         router.refresh();
                       });
                     }}
                   >
-                    Suspend
+                    {uiZh.suspend}
                   </Button>
                 ) : null}
                 <Button
@@ -264,12 +266,12 @@ export function WorkspaceSettingsForm({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Workspace archived");
+                      toast.success(uiZh.workspaceArchived);
                       router.refresh();
                     });
                   }}
                 >
-                  Archive workspace
+                  {uiZh.archiveWorkspace}
                 </Button>
               </>
             )}

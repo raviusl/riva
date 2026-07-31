@@ -1,14 +1,13 @@
 import { AppEmptyState } from "@/components/layout/app-empty-state";
-import { Bilingual } from "@/components/ui/bilingual";
 import { Badge } from "@/components/ui/badge";
-import { copy } from "@/config/i18n";
+import { uiZh } from "@/config/ui-zh";
 import type { TaskPriority, Tables } from "@/types/database";
 
-const priorityLabel: Record<TaskPriority, { zh: string; en: string }> = {
-  low: { zh: "低", en: "Low" },
-  medium: { zh: "中", en: "Medium" },
-  high: { zh: "高", en: "High" },
-  urgent: { zh: "紧急", en: "Urgent" },
+const priorityLabel: Record<TaskPriority, string> = {
+  low: uiZh.priorityLow,
+  medium: uiZh.priorityMedium,
+  high: uiZh.priorityHigh,
+  urgent: uiZh.priorityUrgent,
 };
 
 type TaskRow = Tables<"tasks"> & {
@@ -20,8 +19,8 @@ type TaskCardProps = {
 };
 
 function formatDue(dueAt: string | null) {
-  if (!dueAt) return "—";
-  return new Intl.DateTimeFormat("zh-HK", {
+  if (!dueAt) return uiZh.emDash;
+  return new Intl.DateTimeFormat("zh-CN", {
     hour: "2-digit",
     minute: "2-digit",
   }).format(new Date(dueAt));
@@ -30,11 +29,7 @@ function formatDue(dueAt: string | null) {
 export function TaskCard({ tasks }: TaskCardProps) {
   return (
     <section className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-      <Bilingual
-        text={copy.todaysTasks}
-        zhClassName="text-sm text-white/85"
-        enClassName="text-white/35"
-      />
+      <h2 className="text-sm text-white/85">{uiZh.todaysTasks}</h2>
 
       {tasks.length === 0 ? (
         <div className="mt-4">
@@ -43,16 +38,10 @@ export function TaskCard({ tasks }: TaskCardProps) {
       ) : (
         <div className="mt-4 overflow-hidden rounded-xl border border-white/[0.05]">
           <div className="grid grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr] gap-2 border-b border-white/[0.05] bg-white/[0.03] px-3 py-2 text-[11px] text-white/40">
-            <span>任务 · Task</span>
-            <span>
-              {copy.priority.zh} · {copy.priority.en}
-            </span>
-            <span>
-              {copy.dueTime.zh} · {copy.dueTime.en}
-            </span>
-            <span>
-              {copy.owner.zh} · {copy.owner.en}
-            </span>
+            <span>{uiZh.taskSingular}</span>
+            <span>{uiZh.priority}</span>
+            <span>{uiZh.dueTime}</span>
+            <span>{uiZh.owner}</span>
           </div>
           <ul className="divide-y divide-white/[0.05]">
             {tasks.map((task) => {
@@ -60,7 +49,7 @@ export function TaskCard({ tasks }: TaskCardProps) {
               const ownerName =
                 task.owner?.display_name ||
                 task.owner?.full_name ||
-                "—";
+                uiZh.emDash;
               return (
                 <li
                   key={task.id}
@@ -73,7 +62,7 @@ export function TaskCard({ tasks }: TaskCardProps) {
                     variant="secondary"
                     className="w-fit border-white/10 bg-white/[0.06] text-[11px] text-white/75"
                   >
-                    {priority.zh} · {priority.en}
+                    {priority}
                   </Badge>
                   <span className="tabular-nums text-white/60">
                     {formatDue(task.due_at)}

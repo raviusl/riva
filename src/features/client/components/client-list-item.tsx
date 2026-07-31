@@ -12,6 +12,8 @@ import {
   restoreClientAction,
 } from "@/core/actions/client-actions";
 import type { Client } from "@/core/types";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 type ClientListItemProps = {
   workspaceId: string;
@@ -19,16 +21,17 @@ type ClientListItemProps = {
   client: Client;
   canWrite: boolean;
   projectName?: string | null;
+  ownerName?: string | null;
 };
 
 function typeLabel(type: Client["client_type"]) {
-  if (!type) return "Unspecified";
-  if (type === "corporate") return "Corporate Client";
+  if (!type) return uiZh.unspecified;
+  if (type === "corporate") return uiZh.corporateClient;
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 function statusLabel(status: Client["status"]) {
-  if (status === "follow_up") return "Follow-up";
+  if (status === "follow_up") return uiZh.followUp;
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
@@ -38,120 +41,139 @@ export function ClientListItem({
   client,
   canWrite,
   projectName,
+  ownerName = null,
 }: ClientListItemProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const workspaceHref = buildWorkspaceOverviewHref("client", client.id);
 
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-4 sm:px-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-white">{client.name}</p>
+          <Link
+            href={workspaceHref}
+            className="truncate text-sm font-medium text-white hover:text-white/80"
+          >
+            {client.name}
+          </Link>
           <p className="mt-1 truncate text-xs text-white/45">
             {typeLabel(client.client_type)} · {statusLabel(client.status)}
+            {ownerName ? ` · ${ownerName}` : ""}
             {client.email ? ` · ${client.email}` : ""}
             {client.phone ? ` · ${client.phone}` : ""}
           </p>
           {client.project_id && projectName ? (
             <Link
-              href={`/dashboard/projects/${client.project_id}`}
+              href={buildWorkspaceOverviewHref("project", client.project_id)}
               className="mt-1 inline-block truncate text-xs text-white/40 hover:text-white/70"
             >
               Project · {projectName}
             </Link>
           ) : null}
         </div>
-        {canWrite ? (
-          <div className="flex flex-wrap gap-2">
-            {client.status !== "archived" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() =>
-                  router.push(`/dashboard/clients/${client.id}/edit`)
-                }
-              >
-                Edit
-              </Button>
-            ) : null}
-            {client.status === "active" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() => {
-                  startTransition(async () => {
-                    const result = await markClientFollowUpAction({
-                      workspaceId,
-                      companyId,
-                      clientId: client.id,
+        <div className="flex flex-wrap gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            disabled={pending}
+            onClick={() => router.push(workspaceHref)}
+          >
+            Open
+          </Button>
+          {canWrite ? (
+            <>
+              {client.status !== "archived" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() =>
+                    router.push(`/dashboard/clients/${client.id}/edit`)
+                  }
+                >
+                  Edit
+                </Button>
+              ) : null}
+              {client.status === "active" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => {
+                    startTransition(async () => {
+                      const result = await markClientFollowUpAction({
+                        workspaceId,
+                        companyId,
+                        clientId: client.id,
+                      });
+                      if (!result.ok) {
+                        toast.error(result.error);
+                        return;
+                      }
+                      toast.success(uiZh.markedForFollowUp);
+                      router.refresh();
                     });
-                    if (!result.ok) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    toast.success("Marked for follow-up");
-                    router.refresh();
-                  });
-                }}
-              >
-                Follow-up
-              </Button>
-            ) : null}
-            {client.status !== "archived" ? (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() => {
-                  startTransition(async () => {
-                    const result = await archiveClientAction({
-                      workspaceId,
-                      companyId,
-                      clientId: client.id,
+                  }}
+                >
+                  {uiZh.followUp}
+                </Button>
+              ) : null}
+              {client.status !== "archived" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => {
+                    startTransition(async () => {
+                      const result = await archiveClientAction({
+                        workspaceId,
+                        companyId,
+                        clientId: client.id,
+                      });
+                      if (!result.ok) {
+                        toast.error(result.error);
+                        return;
+                      }
+                      toast.success(uiZh.clientArchivedToast);
+                      router.refresh();
                     });
-                    if (!result.ok) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    toast.success("Client archived");
-                    router.refresh();
-                  });
-                }}
-              >
-                Archive
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={pending}
-                onClick={() => {
-                  startTransition(async () => {
-                    const result = await restoreClientAction({
-                      workspaceId,
-                      companyId,
-                      clientId: client.id,
+                  }}
+                >
+                  Archive
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={pending}
+                  onClick={() => {
+                    startTransition(async () => {
+                      const result = await restoreClientAction({
+                        workspaceId,
+                        companyId,
+                        clientId: client.id,
+                      });
+                      if (!result.ok) {
+                        toast.error(result.error);
+                        return;
+                      }
+                      toast.success(uiZh.clientRestoredToast);
+                      router.refresh();
                     });
-                    if (!result.ok) {
-                      toast.error(result.error);
-                      return;
-                    }
-                    toast.success("Client restored");
-                    router.refresh();
-                  });
-                }}
-              >
-                Restore
-              </Button>
-            )}
-          </div>
-        ) : null}
+                  }}
+                >
+                  Restore
+                </Button>
+              )}
+            </>
+          ) : null}
+        </div>
       </div>
     </div>
   );

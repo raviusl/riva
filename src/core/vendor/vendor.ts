@@ -1,6 +1,10 @@
 import "server-only";
 
 import { getCompanyById } from "@/core/company/company";
+import {
+  assertCompanyBoundary,
+  requireCompany,
+} from "@/core/company-isolation";
 import { CoreError } from "@/core/errors";
 import { getProjectById } from "@/core/project/project";
 import {
@@ -13,6 +17,7 @@ import {
 } from "@/core/schemas";
 import type { Vendor, VendorStatus } from "@/core/types";
 import { getWorkspaceById } from "@/core/workspace/workspace";
+import { recordVendorAudit } from "@/core/vendor/audit";
 import {
   findVendorById,
   findVendorsByCompany,
@@ -37,14 +42,16 @@ function assertEditable(vendor: Vendor): void {
 async function assertCompanyInWorkspace(
   workspaceId: string,
   companyId: string,
-): Promise<void> {
-  const company = await getCompanyById(companyId, workspaceId);
+): Promise<string> {
+  const scopedCompanyId = requireCompany(companyId);
+  const company = await getCompanyById(scopedCompanyId, workspaceId);
   if (company.workspace_id !== workspaceId) {
     throw new CoreError(
       "COMPANY_WORKSPACE_MISMATCH",
       "Company does not belong to this workspace.",
     );
   }
+  return scopedCompanyId;
 }
 
 async function assertProjectInCompany(
@@ -61,31 +68,66 @@ async function assertProjectInCompany(
   }
 }
 
-export async function createVendor(input: CreateVendorInput): Promise<Vendor> {
+function assertVendorCompanyScope(vendor: Vendor, companyId: string): void {
+  assertCompanyBoundary(companyId, vendor.company_id);
+}
+
+function emptyToNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+export type VendorMutationContext = {
+  actorId: string;
+};
+
+export async function createVendor(
+  input: CreateVendorInput,
+  context?: VendorMutationContext,
+): Promise<Vendor> {
   const values = createVendorSchema.parse(input);
   await getWorkspaceById(values.workspaceId);
-  await assertCompanyInWorkspace(values.workspaceId, values.companyId);
+  const companyId = await assertCompanyInWorkspace(
+    values.workspaceId,
+    values.companyId,
+  );
 
   if (values.projectId) {
     await assertProjectInCompany(
       values.workspaceId,
-      values.companyId,
+      companyId,
       values.projectId,
     );
   }
 
   try {
-    return await insertVendor({
+    const vendor = await insertVendor({
       workspace_id: values.workspaceId,
-      company_id: values.companyId,
+      company_id: companyId,
       project_id: values.projectId ?? null,
+      owner_id: values.ownerId ?? null,
       name: values.name.trim(),
+      company_name: emptyToNull(values.companyName),
+      contact_person: emptyToNull(values.contactPerson),
       email: values.email?.trim().toLowerCase() || null,
-      phone: values.phone?.trim() || null,
+      phone: emptyToNull(values.phone),
+      website: emptyToNull(values.website),
+      address: emptyToNull(values.address),
       category: values.category ?? null,
       status: values.status ?? "active",
-      notes: values.notes?.trim() || null,
+      notes: emptyToNull(values.notes),
     });
+
+    if (context?.actorId) {
+      recordVendorAudit({
+        action: "create",
+        actorId: context.actorId,
+        before: null,
+        after: vendor,
+      });
+    }
+
+    return vendor;
   } catch (error) {
     console.error("createVendor failed", error);
     throw new CoreError("VENDOR_CREATE_FAILED", "Failed to create vendor.");
@@ -95,11 +137,15 @@ export async function createVendor(input: CreateVendorInput): Promise<Vendor> {
 export async function getVendorById(
   vendorId: string,
   workspaceId?: string,
+  companyId?: string,
 ): Promise<Vendor> {
   try {
     const vendor = await findVendorById(vendorId, workspaceId);
     if (!vendor) {
       throw new CoreError("VENDOR_NOT_FOUND", "Vendor not found.");
+    }
+    if (companyId) {
+      assertVendorCompanyScope(vendor, companyId);
     }
     return vendor;
   } catch (error) {
@@ -116,10 +162,13 @@ export async function listVendorsByCompany(
   companyId: string,
 ): Promise<Vendor[]> {
   await getWorkspaceById(workspaceId);
-  await assertCompanyInWorkspace(workspaceId, companyId);
+  const scopedCompanyId = await assertCompanyInWorkspace(
+    workspaceId,
+    companyId,
+  );
 
   try {
-    return await findVendorsByCompany(workspaceId, companyId);
+    return await findVendorsByCompany(workspaceId, scopedCompanyId);
   } catch (error) {
     console.error("listVendorsByCompany failed", error);
     throw new CoreError("VENDOR_LIST_FAILED", "Failed to list vendors.");
@@ -132,94 +181,134 @@ export async function listVendorsByProject(
   projectId: string,
 ): Promise<Vendor[]> {
   await getWorkspaceById(workspaceId);
-  await assertCompanyInWorkspace(workspaceId, companyId);
-  await assertProjectInCompany(workspaceId, companyId, projectId);
+  const scopedCompanyId = await assertCompanyInWorkspace(
+    workspaceId,
+    companyId,
+  );
+  await assertProjectInCompany(workspaceId, scopedCompanyId, projectId);
 
   try {
-    return await findVendorsByProject(workspaceId, companyId, projectId);
+    return await findVendorsByProject(workspaceId, scopedCompanyId, projectId);
   } catch (error) {
     console.error("listVendorsByProject failed", error);
     throw new CoreError("VENDOR_LIST_FAILED", "Failed to list vendors.");
   }
 }
 
-export async function updateVendor(input: UpdateVendorInput): Promise<Vendor> {
+export async function updateVendor(
+  input: UpdateVendorInput,
+  context?: VendorMutationContext,
+): Promise<Vendor> {
   const values = updateVendorSchema.parse(input);
-  const vendor = await getVendorById(values.vendorId, values.workspaceId);
+  const companyId = requireCompany(values.companyId);
+  const before = await getVendorById(
+    values.vendorId,
+    values.workspaceId,
+    companyId,
+  );
 
-  if (
-    vendor.company_id !== values.companyId ||
-    vendor.workspace_id !== values.workspaceId
-  ) {
-    throw new CoreError(
-      "VENDOR_SCOPE_MISMATCH",
-      "Vendor does not belong to this company.",
-    );
-  }
-
-  assertEditable(vendor);
+  assertEditable(before);
 
   if (values.projectId) {
     await assertProjectInCompany(
       values.workspaceId,
-      values.companyId,
+      companyId,
       values.projectId,
     );
   }
 
   try {
-    return await updateVendorById(vendor.id, {
+    const vendor = await updateVendorById(before.id, {
       name: values.name.trim(),
+      company_name:
+        values.companyName !== undefined
+          ? emptyToNull(values.companyName)
+          : before.company_name,
+      contact_person:
+        values.contactPerson !== undefined
+          ? emptyToNull(values.contactPerson)
+          : before.contact_person,
       email: values.email?.trim().toLowerCase() || null,
-      phone: values.phone?.trim() || null,
+      phone: emptyToNull(values.phone),
+      website:
+        values.website !== undefined
+          ? emptyToNull(values.website)
+          : before.website,
+      address:
+        values.address !== undefined
+          ? emptyToNull(values.address)
+          : before.address,
       category: values.category ?? null,
       project_id:
-        values.projectId !== undefined ? values.projectId : vendor.project_id,
-      status: values.status ?? vendor.status,
+        values.projectId !== undefined ? values.projectId : before.project_id,
+      owner_id: values.ownerId !== undefined ? values.ownerId : before.owner_id,
+      status: values.status ?? before.status,
       notes:
-        values.notes !== undefined
-          ? values.notes?.trim() || null
-          : vendor.notes,
+        values.notes !== undefined ? emptyToNull(values.notes) : before.notes,
     });
+
+    if (context?.actorId) {
+      recordVendorAudit({
+        action: "update",
+        actorId: context.actorId,
+        before,
+        after: vendor,
+      });
+    }
+
+    return vendor;
   } catch (error) {
     console.error("updateVendor failed", error);
     throw new CoreError("VENDOR_UPDATE_FAILED", "Failed to update vendor.");
   }
 }
 
-export async function archiveVendor(input: VendorIdInput): Promise<Vendor> {
+export async function archiveVendor(
+  input: VendorIdInput,
+  context?: VendorMutationContext,
+): Promise<Vendor> {
   const values = vendorIdSchema.parse(input);
-  const vendor = await getVendorById(values.vendorId, values.workspaceId);
+  const companyId = requireCompany(values.companyId);
+  const before = await getVendorById(
+    values.vendorId,
+    values.workspaceId,
+    companyId,
+  );
 
-  if (vendor.company_id !== values.companyId) {
-    throw new CoreError(
-      "VENDOR_SCOPE_MISMATCH",
-      "Vendor does not belong to this company.",
-    );
-  }
-  if (vendor.status === "archived") {
-    return vendor;
+  if (before.status === "archived") {
+    return before;
   }
 
   try {
-    return await updateVendorById(vendor.id, { status: "archived" });
+    const vendor = await updateVendorById(before.id, { status: "archived" });
+    if (context?.actorId) {
+      recordVendorAudit({
+        action: "archive",
+        actorId: context.actorId,
+        before,
+        after: vendor,
+      });
+    }
+    return vendor;
   } catch (error) {
     console.error("archiveVendor failed", error);
     throw new CoreError("VENDOR_ARCHIVE_FAILED", "Failed to archive vendor.");
   }
 }
 
-export async function restoreVendor(input: VendorIdInput): Promise<Vendor> {
+export async function restoreVendor(
+  input: VendorIdInput,
+  context?: VendorMutationContext,
+): Promise<Vendor> {
   const values = vendorIdSchema.parse(input);
-  const vendor = await getVendorById(values.vendorId, values.workspaceId);
+  const companyId = requireCompany(values.companyId);
+  const before = await getVendorById(
+    values.vendorId,
+    values.workspaceId,
+    companyId,
+  );
 
-  if (vendor.company_id !== values.companyId) {
-    throw new CoreError(
-      "VENDOR_SCOPE_MISMATCH",
-      "Vendor does not belong to this company.",
-    );
-  }
-  if (vendor.status !== "archived") {
+  if (before.status !== "archived") {
     throw new CoreError(
       "VENDOR_NOT_ARCHIVED",
       "Only archived vendors can be restored.",
@@ -227,35 +316,56 @@ export async function restoreVendor(input: VendorIdInput): Promise<Vendor> {
   }
 
   try {
-    return await updateVendorById(vendor.id, { status: "active" });
+    const vendor = await updateVendorById(before.id, { status: "active" });
+    if (context?.actorId) {
+      recordVendorAudit({
+        action: "restore",
+        actorId: context.actorId,
+        before,
+        after: vendor,
+      });
+    }
+    return vendor;
   } catch (error) {
     console.error("restoreVendor failed", error);
     throw new CoreError("VENDOR_RESTORE_FAILED", "Failed to restore vendor.");
   }
 }
 
-export async function deactivateVendor(input: VendorIdInput): Promise<Vendor> {
+export async function deactivateVendor(
+  input: VendorIdInput,
+  context?: VendorMutationContext,
+): Promise<Vendor> {
   const values = vendorIdSchema.parse(input);
-  const vendor = await getVendorById(values.vendorId, values.workspaceId);
+  const companyId = requireCompany(values.companyId);
+  const before = await getVendorById(
+    values.vendorId,
+    values.workspaceId,
+    companyId,
+  );
 
-  if (vendor.company_id !== values.companyId) {
-    throw new CoreError(
-      "VENDOR_SCOPE_MISMATCH",
-      "Vendor does not belong to this company.",
-    );
-  }
-  if (vendor.status === "archived") {
+  if (before.status === "archived") {
     throw new CoreError(
       "VENDOR_NOT_EDITABLE",
       "Archived vendors cannot be deactivated. Restore first.",
     );
   }
-  if (vendor.status === "inactive") {
-    return vendor;
+  if (before.status === "inactive") {
+    return before;
   }
 
   try {
-    return await updateVendorById(vendor.id, { status: "inactive" });
+    const vendor = await updateVendorById(before.id, { status: "inactive" });
+    if (context?.actorId) {
+      recordVendorAudit({
+        action: "update",
+        actorId: context.actorId,
+        before,
+        after: vendor,
+        metadata: { reason: "deactivate" },
+      });
+    }
+    return vendor;
   } catch (error) {
     console.error("deactivateVendor failed", error);
     throw new CoreError(

@@ -7,6 +7,7 @@ import {
   CORE_ROLES,
   MEMBERSHIP_ROLES,
   MEMBERSHIP_STATUSES,
+  PROJECT_STATUSES,
   PROJECT_TYPES,
   VENDOR_CATEGORIES,
   VENDOR_STATUSES,
@@ -140,9 +141,21 @@ export const createProjectSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   name: z.string().min(1).max(160),
+  description: z.string().max(4000).optional().nullable(),
   projectType: z.enum(PROJECT_TYPES).nullable().optional(),
-  status: z.enum(["draft", "active", "archived"]).optional(),
+  status: z.enum(PROJECT_STATUSES).optional(),
   ownerId: z.string().uuid().nullable().optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be YYYY-MM-DD")
+    .optional()
+    .nullable(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be YYYY-MM-DD")
+    .optional()
+    .nullable(),
+  clientId: z.string().uuid().optional().nullable(),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
@@ -152,9 +165,20 @@ export const updateProjectSchema = z.object({
   companyId: z.string().uuid(),
   projectId: z.string().uuid(),
   name: z.string().min(1).max(160),
+  description: z.string().max(4000).optional().nullable(),
   projectType: z.enum(PROJECT_TYPES).nullable().optional(),
-  status: z.enum(["draft", "active", "archived"]).optional(),
+  status: z.enum(PROJECT_STATUSES).optional(),
   ownerId: z.string().uuid().nullable().optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be YYYY-MM-DD")
+    .optional()
+    .nullable(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be YYYY-MM-DD")
+    .optional()
+    .nullable(),
 });
 
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
@@ -171,6 +195,7 @@ export const createClientSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
+  ownerId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(160),
   email: z.string().email().optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
@@ -191,6 +216,7 @@ export const updateClientSchema = z.object({
   companyId: z.string().uuid(),
   clientId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
+  ownerId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(160),
   email: z.string().email().optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
@@ -218,9 +244,14 @@ export const createVendorSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
+  ownerId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(160),
+  companyName: z.string().max(160).optional().nullable(),
+  contactPerson: z.string().max(160).optional().nullable(),
   email: z.string().email().optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
+  website: z.string().max(300).optional().nullable(),
+  address: z.string().max(500).optional().nullable(),
   category: z.enum(VENDOR_CATEGORIES).nullable().optional(),
   status: z.enum(VENDOR_STATUSES).optional(),
   notes: z.string().max(4000).optional().nullable(),
@@ -233,9 +264,14 @@ export const updateVendorSchema = z.object({
   companyId: z.string().uuid(),
   vendorId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
+  ownerId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(160),
+  companyName: z.string().max(160).optional().nullable(),
+  contactPerson: z.string().max(160).optional().nullable(),
   email: z.string().email().optional().nullable(),
   phone: z.string().max(40).optional().nullable(),
+  website: z.string().max(300).optional().nullable(),
+  address: z.string().max(500).optional().nullable(),
   category: z.enum(VENDOR_CATEGORIES).nullable().optional(),
   status: z.enum(VENDOR_STATUSES).optional(),
   notes: z.string().max(4000).optional().nullable(),

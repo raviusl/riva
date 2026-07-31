@@ -35,7 +35,12 @@ export type MembershipStatus = (typeof MEMBERSHIP_STATUSES)[number];
 export const PERSON_STATUSES = MEMBERSHIP_STATUSES;
 export type PersonStatus = MembershipStatus;
 
-export const PROJECT_STATUSES = ["draft", "active", "archived"] as const;
+export const PROJECT_STATUSES = [
+  "planning",
+  "active",
+  "completed",
+  "archived",
+] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
 
 export const PROJECT_TYPES = [
@@ -210,9 +215,12 @@ export type Project = {
   workspace_id: string;
   company_id: string;
   name: string;
+  description: string | null;
   project_type: ProjectType | null;
   status: ProjectStatus;
   owner_id: string | null;
+  start_date: string | null;
+  end_date: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -223,6 +231,7 @@ export type Client = {
   workspace_id: string;
   company_id: string;
   project_id: string | null;
+  owner_id: string | null;
   name: string;
   email: string | null;
   phone: string | null;
@@ -240,15 +249,32 @@ export type Vendor = {
   workspace_id: string;
   company_id: string;
   project_id: string | null;
+  owner_id: string | null;
   name: string;
+  company_name: string | null;
+  contact_person: string | null;
   email: string | null;
   phone: string | null;
+  website: string | null;
+  address: string | null;
   category: VendorCategory | null;
   status: VendorStatus;
   notes: string | null;
   created_at: string;
   updated_at: string;
 };
+
+export {
+  MEETING_STATUSES,
+  MEETING_TYPES,
+  type MeetingStatus,
+  type MeetingType,
+} from "@/core/meeting/constants";
+
+export type {
+  Meeting,
+  MeetingParticipant,
+} from "@/core/meeting/types";
 
 export type CoreInvitation = {
   id: string;

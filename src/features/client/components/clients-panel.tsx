@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import type { Client } from "@/core/types";
 import { ModuleEmptyState } from "@/components/layout/module-empty-state";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 type ClientsPanelProps = {
   clients: Client[];
@@ -10,13 +12,13 @@ type ClientsPanelProps = {
 };
 
 function typeLabel(type: Client["client_type"]) {
-  if (!type) return "Unspecified";
-  if (type === "corporate") return "Corporate Client";
+  if (!type) return uiZh.unspecified;
+  if (type === "corporate") return uiZh.corporateClient;
   return type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 function statusLabel(status: Client["status"]) {
-  if (status === "follow_up") return "Follow-up";
+  if (status === "follow_up") return uiZh.followUp;
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
@@ -49,10 +51,10 @@ export function ClientsPanel({
       {visible.length === 0 ? (
         <div className="mt-4">
           <ModuleEmptyState
-            title="No clients yet"
-            description="Add Bride, Groom, Corporate, or Individual clients for this company."
+            title={uiZh.noClientsYetTitle}
+            description={uiZh.addClientsForCompany}
             actionHref={canWrite ? "/dashboard/clients/new" : undefined}
-            actionLabel={canWrite ? "Create client" : undefined}
+            actionLabel={canWrite ? uiZh.createClient : undefined}
           />
         </div>
       ) : (
@@ -70,14 +72,10 @@ export function ClientsPanel({
                   </p>
                 </div>
                 <Link
-                  href={
-                    canWrite
-                      ? `/dashboard/clients/${client.id}/edit`
-                      : "/dashboard/clients"
-                  }
+                  href={buildWorkspaceOverviewHref("client", client.id)}
                   className="shrink-0 text-xs text-white/45 hover:text-white/70"
                 >
-                  {canWrite ? "Edit" : "View"}
+                  {uiZh.open}
                 </Link>
               </div>
             </li>
@@ -91,7 +89,7 @@ export function ClientsPanel({
             href="/dashboard/clients"
             className="text-xs text-white/45 hover:text-white/70"
           >
-            Manage clients →
+            {uiZh.manageClientsLink}
           </Link>
         </div>
       ) : null}

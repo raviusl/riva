@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
+import { uiZh } from "@/config/ui-zh";
 import { switchCompanyAction } from "@/core/actions/context-actions";
-import type { Company } from "@/core/types";
+import type { Company, CompanyType } from "@/core/types";
 import { cn } from "@/lib/utils";
 
 type CompanyListItemProps = {
@@ -14,8 +15,27 @@ type CompanyListItemProps = {
   active: boolean;
 };
 
+const COMPANY_STATUS_LABELS: Record<Company["status"], string> = {
+  active: uiZh.active,
+  suspended: uiZh.suspended,
+  archived: uiZh.archived,
+};
+
+const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
+  agency: uiZh.companyTypeAgency,
+  brand: uiZh.companyTypeBrand,
+  venue: uiZh.companyTypeVenue,
+  corporate: uiZh.companyTypeCorporate,
+  wedding: uiZh.companyTypeWedding,
+  other: uiZh.companyTypeOther,
+};
+
 function statusLabel(status: Company["status"]) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
+  return COMPANY_STATUS_LABELS[status];
+}
+
+function typeLabel(type: CompanyType) {
+  return COMPANY_TYPE_LABELS[type];
 }
 
 export function CompanyListItem({
@@ -48,7 +68,7 @@ export function CompanyListItem({
             toast.error(result.error);
             return;
           }
-          toast.success(`Switched to ${company.name}`);
+          toast.success(uiZh.switchedTo(company.name));
           router.refresh();
         });
       }}
@@ -57,11 +77,12 @@ export function CompanyListItem({
         <p className="truncate text-sm font-medium text-white">{company.name}</p>
         <p className="mt-1 truncate text-xs text-white/45">
           {company.slug}
-          {company.type ? ` · ${company.type}` : ""} · {statusLabel(company.status)}
+          {company.type ? ` · ${typeLabel(company.type)}` : ""} ·{" "}
+          {statusLabel(company.status)}
         </p>
       </div>
       {active ? (
-        <span className="shrink-0 text-xs text-white/50">Active</span>
+        <span className="shrink-0 text-xs text-white/50">{uiZh.active}</span>
       ) : null}
     </button>
   );

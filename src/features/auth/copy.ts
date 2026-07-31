@@ -7,8 +7,8 @@ import type { BilingualText } from "@/config/i18n";
 export const authCopy = {
   signIn: { zh: "登录", en: "Sign In" },
   signInSubtitle: {
-    zh: "登录以进入 RIVA 指挥中心",
-    en: "Sign in to open the RIVA Command Center",
+    zh: "登录以进入 RIVA Workspace",
+    en: "Sign in to open your RIVA Workspace",
   },
   forgotPassword: { zh: "忘记密码", en: "Forgot Password" },
   forgotPasswordSubtitle: {

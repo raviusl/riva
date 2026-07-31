@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { uiZh } from "@/config/ui-zh";
 import { cn } from "@/lib/utils";
 
 export type WorkspaceTabItem = {
@@ -31,7 +32,7 @@ export function WorkspaceTabNav({
   return (
     <div className={cn("-mx-1 overflow-x-auto px-1 pb-1", className)}>
       <nav
-        aria-label="Workspace sections"
+        aria-label={uiZh.workspaceSections}
         className="flex h-auto min-w-full w-max justify-start gap-0 border-b border-white/[0.08]"
       >
         {tabs.map((tab) => {

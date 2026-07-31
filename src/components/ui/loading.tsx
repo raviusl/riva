@@ -2,6 +2,7 @@ import type { ComponentProps } from "react";
 import { Loader2Icon } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
 
+import { uiZh } from "@/config/ui-zh";
 import { cn } from "@/lib/utils";
 
 const loadingVariants = cva(
@@ -29,7 +30,7 @@ type LoadingProps = ComponentProps<"div"> &
 function Loading({
   className,
   size,
-  label = "Loading",
+  label = uiZh.loading,
   fullPage = false,
   ...props
 }: LoadingProps) {

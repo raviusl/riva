@@ -143,10 +143,141 @@
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
-    @apply font-sans;
+    @apply bg-transparent font-sans;
+  }
+  body {
+    /* Transparent so fixed RivaBackground (z-0) is visible; canvas comes from the brand layer. */
+    @apply bg-transparent text-foreground;
+  }
+}
+
+/* =========================================================
+   Project 064 / 068 / 068.1 — RIVA OS Brand Experience
+   ========================================================= */
+
+:root {
+  --riva-canvas: #191919;
+  --riva-canvas-warm: #1c1b1a;
+  --riva-surface: rgba(255, 255, 255, 0.028);
+  --riva-surface-strong: rgba(255, 255, 255, 0.04);
+  --riva-border: rgba(255, 255, 255, 0.07);
+  --riva-border-strong: rgba(255, 255, 255, 0.11);
+  --riva-shadow-soft: 0 12px 40px rgba(0, 0, 0, 0.18);
+  --riva-shadow-card: 0 8px 28px rgba(0, 0, 0, 0.14);
+  --riva-radius-md: 0.875rem;
+  --riva-radius-lg: 1.25rem;
+  --riva-radius-xl: 1.5rem;
+  --riva-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --riva-motion: 200ms;
+  --riva-motion-fast: 160ms;
+  --riva-motion-slow: 280ms;
+  /* Ink texture — readable silhouette behind glass (Project 068) */
+  --riva-ink-opacity: 0.72;
+  --riva-ink-blur: 10px;
+}
+
+.riva-glass {
+  background: rgba(25, 25, 25, 0.22);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.riva-surface {
+  border: 1px solid var(--riva-border);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: var(--riva-shadow-soft);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.riva-surface-soft {
+  border: 1px solid var(--riva-border);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: var(--riva-shadow-card);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.riva-card {
+  border: 1px solid var(--riva-border);
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: var(--riva-shadow-card);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition:
+    border-color var(--riva-motion) var(--riva-ease),
+    background-color var(--riva-motion) var(--riva-ease),
+    transform var(--riva-motion) var(--riva-ease);
+}
+
+.riva-card:hover {
+  border-color: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.riva-page {
+  animation: riva-page-enter var(--riva-motion) var(--riva-ease) both;
+}
+
+@keyframes riva-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Design Language — quiet tables in OS chrome */
+.dark [data-slot="table"] {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.dark [data-slot="table-row"] {
+  border-color: rgba(255, 255, 255, 0.05);
+  transition: background-color var(--riva-motion) var(--riva-ease);
+}
+
+.dark [data-slot="table-head"] {
+  height: 2.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 500;
+}
+
+.dark [data-slot="table-cell"] {
+  padding-top: 0.95rem;
+  padding-bottom: 0.95rem;
+}
+
+/* Project 057 — OS entry transitions */
+@keyframes os-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.os-enter {
+  animation: os-enter var(--riva-motion) var(--riva-ease) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .os-enter,
+  .riva-page,
+  .riva-card {
+    animation: none;
+    transition: none;
+  }
+
+  .riva-card:hover {
+    transform: none;
   }
 }

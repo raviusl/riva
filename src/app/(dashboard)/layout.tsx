@@ -1,18 +1,15 @@
-import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 
 import { resolveSessionContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
 import { listCompaniesForUserInWorkspace } from "@/core/company/active-company";
 import { listProjectsByCompany } from "@/core/project/project";
 import { listVendorsByCompany } from "@/core/vendor/vendor";
-import {
-  listWorkspacesForUser,
-  resolveActiveWorkspace,
-} from "@/core/workspace/active-workspace";
+import { resolveActiveWorkspace } from "@/core/workspace/active-workspace";
+import { WorkspaceAppShell } from "@/components/layout/workspace-app-shell";
 import { ClientContextProvider } from "@/features/client/components/client-context-provider";
 import { toClientContextValue } from "@/features/client/lib/client-context";
 import { CompanyContextProvider } from "@/features/company/components/company-context-provider";
-import { CompanySwitcher } from "@/features/company/components/company-switcher";
 import {
   serializeSessionContext,
   toCompanyContextValue,
@@ -21,11 +18,28 @@ import { ProjectContextProvider } from "@/features/project/components/project-co
 import { toProjectContextValue } from "@/features/project/lib/project-context";
 import { VendorContextProvider } from "@/features/vendor/components/vendor-context-provider";
 import { toVendorContextValue } from "@/features/vendor/lib/vendor-context";
-import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-switcher";
+import { AuthLoadingGate } from "@/features/auth/components/auth-loading-gate";
 import { getSessionUser } from "@/features/auth/lib/get-session-user";
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { MobileNav } from "@/components/layout/mobile-nav";
-import { SignOutButton } from "@/features/auth/components/sign-out-button";
+import { redirectToLogin } from "@/lib/auth/redirects";
+import { isOsEntryPath } from "@/lib/os/entry-paths";
+import { createClient } from "@/lib/supabase/server";
+
+async function resolveUserLabel(email: string | undefined) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return email?.split("@")[0] || "User";
+  return (
+    (typeof user.user_metadata?.display_name === "string" &&
+      user.user_metadata.display_name) ||
+    (typeof user.user_metadata?.full_name === "string" &&
+      user.user_metadata.full_name) ||
+    user.email?.split("@")[0] ||
+    email?.split("@")[0] ||
+    "User"
+  );
+}
 
 export default async function DashboardLayout({
   children,
@@ -34,54 +48,61 @@ export default async function DashboardLayout({
 }) {
   const user = await getSessionUser();
   if (!user) {
-    redirect("/login");
+    const headerStore = await headers();
+    const pathname = headerStore.get("x-pathname") ?? "/dashboard";
+    redirectToLogin({ next: pathname, reason: "unauthenticated" });
   }
 
-  const workspaces = await listWorkspacesForUser(user.id);
+  const headerStore = await headers();
+  const pathname = headerStore.get("x-pathname") ?? "/dashboard";
   const activeWorkspace = await resolveActiveWorkspace(user.id);
   const sessionContext = await resolveSessionContext(user.id);
+  const showAppChrome = !isOsEntryPath(pathname) && sessionContext != null;
+
+  if (!showAppChrome) {
+    return <AuthLoadingGate>{children}</AuthLoadingGate>;
+  }
+
   const companies = activeWorkspace
     ? await listCompaniesForUserInWorkspace(user.id, activeWorkspace.id)
     : [];
 
-  const [projects, clients, vendors] =
-    sessionContext != null
-      ? await Promise.all([
-          listProjectsByCompany(
-            sessionContext.workspace.id,
-            sessionContext.company.id,
-          ),
-          listClientsByCompany(
-            sessionContext.workspace.id,
-            sessionContext.company.id,
-          ),
-          listVendorsByCompany(
-            sessionContext.workspace.id,
-            sessionContext.company.id,
-          ),
-        ])
-      : [[], [], []];
+  const [projects, clients, vendors, userLabel] = await Promise.all([
+    listProjectsByCompany(
+      sessionContext.workspace.id,
+      sessionContext.company.id,
+    ),
+    listClientsByCompany(
+      sessionContext.workspace.id,
+      sessionContext.company.id,
+    ),
+    listVendorsByCompany(
+      sessionContext.workspace.id,
+      sessionContext.company.id,
+    ),
+    resolveUserLabel(user.email),
+  ]);
 
   const companyContextValue = toCompanyContextValue({
-    context: sessionContext ? serializeSessionContext(sessionContext) : null,
+    context: serializeSessionContext(sessionContext),
     companies,
   });
 
   const projectContextValue = toProjectContextValue({
-    workspaceId: sessionContext?.workspace.id ?? null,
-    companyId: sessionContext?.company.id ?? null,
+    workspaceId: sessionContext.workspace.id,
+    companyId: sessionContext.company.id,
     projects,
   });
 
   const clientContextValue = toClientContextValue({
-    workspaceId: sessionContext?.workspace.id ?? null,
-    companyId: sessionContext?.company.id ?? null,
+    workspaceId: sessionContext.workspace.id,
+    companyId: sessionContext.company.id,
     clients,
   });
 
   const vendorContextValue = toVendorContextValue({
-    workspaceId: sessionContext?.workspace.id ?? null,
-    companyId: sessionContext?.company.id ?? null,
+    workspaceId: sessionContext.workspace.id,
+    companyId: sessionContext.company.id,
     vendors,
   });
 
@@ -90,39 +111,16 @@ export default async function DashboardLayout({
       <ProjectContextProvider value={projectContextValue}>
         <ClientContextProvider value={clientContextValue}>
           <VendorContextProvider value={vendorContextValue}>
-            <div className="flex min-h-svh bg-[#070708] text-white">
-              <div className="hidden lg:block">
-                <AppSidebar />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex min-h-[68px] items-center justify-between gap-2 border-b border-white/[0.06] px-3 sm:gap-3 sm:px-6">
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <MobileNav />
-                    <div className="flex min-w-0 max-w-[220px] flex-1 flex-col gap-1 sm:flex-none">
-                      <span className="px-1 text-[10px] font-medium tracking-[0.08em] text-white/40">
-                        Workspace
-                      </span>
-                      <WorkspaceSwitcher
-                        workspaces={workspaces}
-                        activeWorkspace={activeWorkspace}
-                      />
-                    </div>
-                    {activeWorkspace ? (
-                      <div className="flex min-w-0 max-w-[200px] flex-1 flex-col gap-1 sm:flex-none">
-                        <span className="px-1 text-[10px] font-medium tracking-[0.08em] text-white/40">
-                          Company
-                        </span>
-                        <CompanySwitcher />
-                      </div>
-                    ) : null}
-                  </div>
-                  <SignOutButton />
-                </div>
-                <main className="flex-1 overflow-y-auto px-3 py-5 sm:px-6 sm:py-6">
-                  {children}
-                </main>
-              </div>
-            </div>
+            <WorkspaceAppShell
+              businessName={sessionContext.company.name}
+              workspaceName={sessionContext.workspace.name}
+              userLabel={userLabel}
+              userEmail={user.email ?? null}
+              workspaceId={sessionContext.workspace.id}
+              companyId={sessionContext.company.id}
+            >
+              {children}
+            </WorkspaceAppShell>
           </VendorContextProvider>
         </ClientContextProvider>
       </ProjectContextProvider>

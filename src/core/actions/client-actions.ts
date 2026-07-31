@@ -22,10 +22,13 @@ export type ClientActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-function revalidateClientPaths() {
+function revalidateClientPaths(clientId?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/clients");
   revalidatePath("/dashboard/crm");
+  if (clientId) {
+    revalidatePath(`/dashboard/clients/${clientId}`);
+  }
 }
 
 async function requireClientWrite(
@@ -47,8 +50,8 @@ export async function createClientAction(
   try {
     const userId = await requireSessionUserId();
     await requireClientWrite(userId, input.workspaceId, input.companyId);
-    const client = await createClient(input);
-    revalidateClientPaths();
+    const client = await createClient(input, { actorId: userId });
+    revalidateClientPaths(client.id);
     return { ok: true, data: { clientId: client.id } };
   } catch (error) {
     return {
@@ -64,8 +67,8 @@ export async function updateClientAction(
   try {
     const userId = await requireSessionUserId();
     await requireClientWrite(userId, input.workspaceId, input.companyId);
-    const client = await updateClient(input);
-    revalidateClientPaths();
+    const client = await updateClient(input, { actorId: userId });
+    revalidateClientPaths(client.id);
     return { ok: true, data: { clientId: client.id } };
   } catch (error) {
     return {
@@ -81,8 +84,8 @@ export async function archiveClientAction(
   try {
     const userId = await requireSessionUserId();
     await requireClientWrite(userId, input.workspaceId, input.companyId);
-    const client = await archiveClient(input);
-    revalidateClientPaths();
+    const client = await archiveClient(input, { actorId: userId });
+    revalidateClientPaths(client.id);
     return { ok: true, data: { clientId: client.id } };
   } catch (error) {
     return {
@@ -98,8 +101,8 @@ export async function restoreClientAction(
   try {
     const userId = await requireSessionUserId();
     await requireClientWrite(userId, input.workspaceId, input.companyId);
-    const client = await restoreClient(input);
-    revalidateClientPaths();
+    const client = await restoreClient(input, { actorId: userId });
+    revalidateClientPaths(client.id);
     return { ok: true, data: { clientId: client.id } };
   } catch (error) {
     return {
@@ -115,8 +118,8 @@ export async function markClientFollowUpAction(
   try {
     const userId = await requireSessionUserId();
     await requireClientWrite(userId, input.workspaceId, input.companyId);
-    const client = await markClientFollowUp(input);
-    revalidateClientPaths();
+    const client = await markClientFollowUp(input, { actorId: userId });
+    revalidateClientPaths(client.id);
     return { ok: true, data: { clientId: client.id } };
   } catch (error) {
     return {

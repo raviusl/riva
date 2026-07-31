@@ -15,6 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { uiZh } from "@/config/ui-zh";
 import {
   resendInvitationAction,
   revokeInvitationAction,
@@ -28,10 +29,10 @@ const statusPresentation: Record<
   InvitationStatus,
   { tone: "warning" | "success" | "default" | "danger"; label: string }
 > = {
-  pending: { tone: "warning", label: "Pending" },
-  accepted: { tone: "success", label: "Accepted" },
-  expired: { tone: "default", label: "Expired" },
-  revoked: { tone: "danger", label: "Cancelled" },
+  pending: { tone: "warning", label: uiZh.inviteStatusPending },
+  accepted: { tone: "success", label: uiZh.inviteStatusAccepted },
+  expired: { tone: "default", label: uiZh.inviteStatusExpired },
+  revoked: { tone: "danger", label: uiZh.inviteStatusRevoked },
 };
 
 export function InvitationsTable({
@@ -46,29 +47,31 @@ export function InvitationsTable({
     <section className="space-y-3">
       <div>
         <h2 className="text-sm font-medium tracking-wide text-white/80">
-          Invitations
+          {uiZh.invitationsSection}
         </h2>
         <p className="mt-1 text-xs text-white/40">
-          Track pending, accepted, and expired invitations.
+          {uiZh.invitationsSectionDesc}
         </p>
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02]">
         {invitations.length === 0 ? (
           <div className="px-6 py-10 text-center text-sm text-white/45">
-            No invitations yet.
+            {uiZh.noInvitationsYet}
           </div>
         ) : (
           <Table>
             <TableHeader>
               <TableRow className="border-white/[0.06] hover:bg-transparent">
-                <TableHead className="text-white/40">Name</TableHead>
-                <TableHead className="text-white/40">Email</TableHead>
-                <TableHead className="text-white/40">Company</TableHead>
-                <TableHead className="text-white/40">Role</TableHead>
-                <TableHead className="text-white/40">Status</TableHead>
-                <TableHead className="text-white/40">Expires</TableHead>
-                <TableHead className="text-right text-white/40">Actions</TableHead>
+                <TableHead className="text-white/40">{uiZh.name}</TableHead>
+                <TableHead className="text-white/40">{uiZh.email}</TableHead>
+                <TableHead className="text-white/40">{uiZh.company}</TableHead>
+                <TableHead className="text-white/40">{uiZh.role}</TableHead>
+                <TableHead className="text-white/40">{uiZh.status}</TableHead>
+                <TableHead className="text-white/40">{uiZh.expires}</TableHead>
+                <TableHead className="text-right text-white/40">
+                  {uiZh.actions}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -89,7 +92,7 @@ export function InvitationsTable({
                         variant="outline"
                         className="border-white/15 text-white/80"
                       >
-                        {INVITE_ROLE_LABELS[row.role as InviteRole]?.en ??
+                        {INVITE_ROLE_LABELS[row.role as InviteRole]?.zh ??
                           row.role}
                       </Badge>
                     </TableCell>
@@ -122,7 +125,7 @@ export function InvitationsTable({
                               });
                             }}
                           >
-                            Resend
+                            {uiZh.resend}
                           </Button>
                         ) : null}
                         {row.status === "pending" ? (
@@ -141,16 +144,19 @@ export function InvitationsTable({
                                   toast.error(result.error);
                                   return;
                                 }
-                                toast.success("Invitation cancelled");
+                                toast.success(uiZh.invitationCancelled);
                                 router.refresh();
                               });
                             }}
                           >
-                            Cancel
+                            {uiZh.cancel}
                           </Button>
                         ) : null}
-                        {row.status === "accepted" || row.status === "revoked" ? (
-                          <span className="px-2 text-xs text-white/30">—</span>
+                        {row.status === "accepted" ||
+                        row.status === "revoked" ? (
+                          <span className="px-2 text-xs text-white/30">
+                            {uiZh.emDash}
+                          </span>
                         ) : null}
                       </div>
                     </TableCell>

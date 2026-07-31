@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import type { Project } from "@/core/types";
 import { ModuleEmptyState } from "@/components/layout/module-empty-state";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 type ProjectsPanelProps = {
   projects: Project[];
@@ -52,10 +54,10 @@ export function ProjectsPanel({
       {activeProjects.length === 0 ? (
         <div className="mt-4">
           <ModuleEmptyState
-            title="No projects yet"
-            description="Create a project to organize clients and vendors for this company."
+            title={uiZh.noProjectsYetTitle}
+            description={uiZh.createProjectOrganize}
             actionHref={canWrite ? "/dashboard/projects/new" : undefined}
-            actionLabel={canWrite ? "Create project" : undefined}
+            actionLabel={canWrite ? uiZh.createProject : undefined}
           />
         </div>
       ) : (
@@ -76,7 +78,7 @@ export function ProjectsPanel({
                   </p>
                 </div>
                 <Link
-                  href={`/dashboard/projects/${project.id}`}
+                  href={buildWorkspaceOverviewHref("project", project.id)}
                   className="shrink-0 text-xs text-white/45 hover:text-white/70"
                 >
                   Open

@@ -4,12 +4,20 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
 
+import { uiZh } from "@/config/ui-zh";
 import { switchWorkspaceAction } from "@/core/actions/workspace-actions";
 import type { Workspace } from "@/core/types";
 
 type WorkspaceListItemProps = {
   workspace: Workspace;
   active: boolean;
+};
+
+const WORKSPACE_STATUS_LABELS: Record<Workspace["status"], string> = {
+  pending: uiZh.pending,
+  active: uiZh.active,
+  suspended: uiZh.suspended,
+  archived: uiZh.archived,
 };
 
 export function WorkspaceListItem({
@@ -46,7 +54,7 @@ export function WorkspaceListItem({
             {workspace.name}
             {active ? (
               <span className="ml-2 text-[11px] font-normal text-white/40">
-                active
+                {uiZh.active}
               </span>
             ) : null}
           </p>
@@ -56,8 +64,8 @@ export function WorkspaceListItem({
             {` · ${workspace.timezone}`}
           </p>
         </div>
-        <span className="shrink-0 rounded-md border border-white/10 px-2 py-0.5 text-[11px] uppercase tracking-wide text-white/55">
-          {workspace.status}
+        <span className="shrink-0 rounded-md border border-white/10 px-2 py-0.5 text-[11px] tracking-wide text-white/55">
+          {WORKSPACE_STATUS_LABELS[workspace.status]}
         </span>
       </div>
     </button>

@@ -22,9 +22,12 @@ export type ProjectActionResult<T = undefined> =
   | { ok: true; data: T }
   | { ok: false; error: string };
 
-function revalidateProjectPaths() {
+function revalidateProjectPaths(projectId?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/projects");
+  if (projectId) {
+    revalidatePath(`/dashboard/projects/${projectId}`);
+  }
 }
 
 async function requireProjectWrite(
@@ -50,7 +53,7 @@ export async function createProjectAction(
       ...input,
       ownerId: input.ownerId ?? userId,
     });
-    revalidateProjectPaths();
+    revalidateProjectPaths(project.id);
     return { ok: true, data: { projectId: project.id } };
   } catch (error) {
     return {
@@ -67,7 +70,7 @@ export async function updateProjectAction(
     const userId = await requireSessionUserId();
     await requireProjectWrite(userId, input.workspaceId, input.companyId);
     const project = await updateProject(input);
-    revalidateProjectPaths();
+    revalidateProjectPaths(project.id);
     return { ok: true, data: { projectId: project.id } };
   } catch (error) {
     return {

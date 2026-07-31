@@ -1,6 +1,5 @@
 import { AppEmptyState } from "@/components/layout/app-empty-state";
-import { Bilingual } from "@/components/ui/bilingual";
-import { copy } from "@/config/i18n";
+import { uiZh } from "@/config/ui-zh";
 
 type RevenueCardsProps = {
   monthlyRevenue: number;
@@ -12,7 +11,7 @@ type RevenueCardsProps = {
 
 function formatMoney(amount: number, currency: string) {
   try {
-    return new Intl.NumberFormat("zh-HK", {
+    return new Intl.NumberFormat("zh-CN", {
       style: "currency",
       currency,
       maximumFractionDigits: 0,
@@ -22,21 +21,10 @@ function formatMoney(amount: number, currency: string) {
   }
 }
 
-function MetricCard({
-  label,
-  value,
-}: {
-  label: { zh: string; en: string };
-  value: string;
-}) {
+function MetricCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-gradient-to-b from-white/[0.05] to-transparent p-5">
-      <Bilingual
-        text={label}
-        compact
-        zhClassName="text-white/70"
-        enClassName="text-white/35"
-      />
+      <p className="text-sm text-white/70">{label}</p>
       <p className="mt-3 text-2xl font-semibold tracking-tight text-white tabular-nums">
         {value}
       </p>
@@ -54,7 +42,7 @@ export function RevenueCards({
   if (!hasRecords) {
     return (
       <section className="space-y-3">
-        <Bilingual text={copy.monthlyRevenue} zhClassName="text-sm text-white/80" />
+        <h2 className="text-sm text-white/80">{uiZh.monthlyRevenue}</h2>
         <AppEmptyState />
       </section>
     );
@@ -63,15 +51,15 @@ export function RevenueCards({
   return (
     <section className="grid gap-3 md:grid-cols-3">
       <MetricCard
-        label={copy.monthlyRevenue}
+        label={uiZh.monthlyRevenue}
         value={formatMoney(monthlyRevenue, currency)}
       />
       <MetricCard
-        label={copy.monthlyProfit}
+        label={uiZh.monthlyProfit}
         value={formatMoney(monthlyProfit, currency)}
       />
       <MetricCard
-        label={copy.outstandingPayments}
+        label={uiZh.outstandingPaymentsDash}
         value={formatMoney(outstandingPayments, currency)}
       />
     </section>

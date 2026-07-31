@@ -9,9 +9,14 @@ export function mapVendorRow(data: Record<string, unknown>): Vendor {
     workspace_id: data.workspace_id as string,
     company_id: data.company_id as string,
     project_id: (data.project_id as string | null | undefined) ?? null,
+    owner_id: (data.owner_id as string | null | undefined) ?? null,
     name: data.name as string,
+    company_name: (data.company_name as string | null | undefined) ?? null,
+    contact_person: (data.contact_person as string | null | undefined) ?? null,
     email: (data.email as string | null | undefined) ?? null,
     phone: (data.phone as string | null | undefined) ?? null,
+    website: (data.website as string | null | undefined) ?? null,
+    address: (data.address as string | null | undefined) ?? null,
     category: (data.category as VendorCategory | null | undefined) ?? null,
     status: data.status as VendorStatus,
     notes: (data.notes as string | null | undefined) ?? null,
@@ -24,9 +29,14 @@ export type InsertVendorRow = {
   workspace_id: string;
   company_id: string;
   project_id?: string | null;
+  owner_id?: string | null;
   name: string;
+  company_name?: string | null;
+  contact_person?: string | null;
   email?: string | null;
   phone?: string | null;
+  website?: string | null;
+  address?: string | null;
   category?: VendorCategory | null;
   status: VendorStatus;
   notes?: string | null;
@@ -34,9 +44,14 @@ export type InsertVendorRow = {
 
 export type UpdateVendorRow = {
   project_id?: string | null;
+  owner_id?: string | null;
   name?: string;
+  company_name?: string | null;
+  contact_person?: string | null;
   email?: string | null;
   phone?: string | null;
+  website?: string | null;
+  address?: string | null;
   category?: VendorCategory | null;
   status?: VendorStatus;
   notes?: string | null;

@@ -11,18 +11,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateClientAction } from "@/core/actions/client-actions";
-import { CLIENT_TYPES, type Client, type Project } from "@/core/types";
+import {
+  CLIENT_STATUSES,
+  CLIENT_TYPES,
+  type Client,
+  type Project,
+} from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
+import type { ClientOwnerOption } from "@/features/client/components/create-client-form";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 const formSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   clientId: z.string().uuid(),
   projectId: z.string().uuid().optional().or(z.literal("")),
-  name: z.string().min(1, "Client name is required").max(160),
+  ownerId: z.string().uuid().optional().or(z.literal("")),
+  name: z.string().min(1, uiZh.clientNameRequired).max(160),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().max(40).optional(),
   clientType: z.enum(CLIENT_TYPES),
+  status: z.enum(CLIENT_STATUSES),
+  followUpAt: z.string().optional(),
+  notes: z.string().max(4000).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -30,9 +42,14 @@ type FormValues = z.infer<typeof formSchema>;
 type EditClientFormProps = {
   client: Client;
   projects: Project[];
+  owners: ClientOwnerOption[];
 };
 
-export function EditClientForm({ client, projects }: EditClientFormProps) {
+export function EditClientForm({
+  client,
+  projects,
+  owners,
+}: EditClientFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
@@ -42,10 +59,14 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
       companyId: client.company_id,
       clientId: client.id,
       projectId: client.project_id ?? "",
+      ownerId: client.owner_id ?? "",
       name: client.name,
       email: client.email ?? "",
       phone: client.phone ?? "",
       clientType: client.client_type ?? "individual",
+      status: client.status === "archived" ? "active" : client.status,
+      followUpAt: client.follow_up_at ?? "",
+      notes: client.notes ?? "",
     },
   });
 
@@ -59,22 +80,21 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
             companyId: values.companyId,
             clientId: values.clientId,
             projectId: values.projectId || null,
+            ownerId: values.ownerId || null,
             name: values.name,
             email: values.email || null,
             phone: values.phone || null,
             clientType: values.clientType,
-            status: client.status === "archived" ? "active" : client.status,
+            status: values.status,
+            followUpAt: values.followUpAt || null,
+            notes: values.notes || null,
           });
           if (!result.ok) {
             toast.error(result.error);
             return;
           }
-          toast.success("Client updated");
-          router.push(
-            values.projectId
-              ? `/dashboard/projects/${values.projectId}`
-              : "/dashboard/clients",
-          );
+          toast.success(uiZh.clientUpdated);
+          router.push(buildWorkspaceOverviewHref("client", values.clientId));
           router.refresh();
         });
       })}
@@ -84,7 +104,7 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
       <input type="hidden" {...form.register("clientId")} />
 
       <div className="space-y-2">
-        <Label htmlFor="edit-client-name">Name</Label>
+        <Label htmlFor="edit-client-name">{uiZh.name}</Label>
         <Input
           id="edit-client-name"
           className={authFieldClassName}
@@ -98,27 +118,51 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
         ) : null}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="edit-client-type">Type</Label>
-        <select
-          id="edit-client-type"
-          className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
-          disabled={pending}
-          {...form.register("clientType")}
-        >
-          {CLIENT_TYPES.map((type) => (
-            <option key={type} value={type} className="bg-[#121214]">
-              {type === "corporate"
-                ? "Corporate Client"
-                : type.charAt(0).toUpperCase() + type.slice(1)}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="edit-client-type">{uiZh.type}</Label>
+          <select
+            id="edit-client-type"
+            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            disabled={pending}
+            {...form.register("clientType")}
+          >
+            {CLIENT_TYPES.map((type) => (
+              <option key={type} value={type} className="bg-[#121214]">
+                {type === "corporate"
+                  ? uiZh.corporateClient
+                  : type === "bride"
+                    ? uiZh.clientTypeBride
+                    : type === "groom"
+                      ? uiZh.clientTypeGroom
+                      : type === "individual"
+                        ? uiZh.clientTypeIndividual
+                        : type}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="edit-client-status">{uiZh.status}</Label>
+          <select
+            id="edit-client-status"
+            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            disabled={pending}
+            {...form.register("status")}
+          >
+            <option value="active" className="bg-[#121214]">
+              Active
             </option>
-          ))}
-        </select>
+            <option value="follow_up" className="bg-[#121214]">
+              Follow-up
+            </option>
+          </select>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="edit-client-email">Email</Label>
+          <Label htmlFor="edit-client-email">{uiZh.email}</Label>
           <Input
             id="edit-client-email"
             type="email"
@@ -128,7 +172,7 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="edit-client-phone">Phone</Label>
+          <Label htmlFor="edit-client-phone">{uiZh.phone}</Label>
           <Input
             id="edit-client-phone"
             className={authFieldClassName}
@@ -138,8 +182,43 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
         </div>
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="edit-client-owner">{uiZh.assignedOwner}</Label>
+          <select
+            id="edit-client-owner"
+            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            disabled={pending}
+            {...form.register("ownerId")}
+          >
+            <option value="" className="bg-[#121214]">
+              Unassigned
+            </option>
+            {owners.map((owner) => (
+              <option
+                key={owner.userId}
+                value={owner.userId}
+                className="bg-[#121214]"
+              >
+                {owner.fullName}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="edit-client-follow-up">{uiZh.followUpDate}</Label>
+          <Input
+            id="edit-client-follow-up"
+            type="date"
+            className={authFieldClassName}
+            disabled={pending}
+            {...form.register("followUpAt")}
+          />
+        </div>
+      </div>
+
       <div className="space-y-2">
-        <Label htmlFor="edit-client-project">Project (optional)</Label>
+        <Label htmlFor="edit-client-project">{uiZh.relatedProjectOptional}</Label>
         <select
           id="edit-client-project"
           className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
@@ -157,12 +236,23 @@ export function EditClientForm({ client, projects }: EditClientFormProps) {
         </select>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="edit-client-notes">{uiZh.notes}</Label>
+        <textarea
+          id="edit-client-notes"
+          rows={4}
+          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"
+          disabled={pending}
+          {...form.register("notes")}
+        />
+      </div>
+
       <Button
         type="submit"
         disabled={pending}
         className="bg-white text-black hover:bg-white/90"
       >
-        {pending ? "Saving…" : "Save changes"}
+        {pending ? uiZh.saving : uiZh.saveChanges}
       </Button>
     </form>
   );

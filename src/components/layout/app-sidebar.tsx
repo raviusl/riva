@@ -3,13 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Bilingual } from "@/components/ui/bilingual";
+import type { SidebarNav } from "@/components/layout/resolve-sidebar-nav";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { copy, navItems } from "@/config/i18n";
+import { navItems } from "@/config/i18n";
+import { uiZh } from "@/config/ui-zh";
 import { cn } from "@/lib/utils";
 
-export function AppSidebar() {
+export function AppSidebar({
+  businessName = null,
+  items = navItems,
+}: {
+  businessName?: string | null;
+  items?: SidebarNav;
+}) {
   const pathname = usePathname();
 
   return (
@@ -20,9 +27,11 @@ export function AppSidebar() {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold tracking-tight text-white">
-            {copy.appName.zh}
+            {uiZh.appName}
           </p>
-          <p className="truncate text-[11px] text-white/40">{copy.commandCenter.en}</p>
+          <p className="truncate text-[11px] text-white/40">
+            {businessName ?? uiZh.appName}
+          </p>
         </div>
       </div>
 
@@ -30,7 +39,7 @@ export function AppSidebar() {
 
       <ScrollArea className="flex-1 px-2 py-3">
         <nav className="flex flex-col gap-0.5">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const active =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
@@ -50,18 +59,14 @@ export function AppSidebar() {
                 <span className="mt-0.5 text-[15px] leading-none" aria-hidden>
                   {item.emoji}
                 </span>
-                <Bilingual
-                  text={item.label}
-                  compact
-                  zhClassName={cn(
+                <span
+                  className={cn(
                     "leading-snug",
                     active ? "text-white" : "text-white/80 group-hover:text-white",
                   )}
-                  enClassName={cn(
-                    "leading-snug",
-                    active ? "text-white/45" : "text-white/30 group-hover:text-white/45",
-                  )}
-                />
+                >
+                  {item.label.zh}
+                </span>
               </Link>
             );
           })}

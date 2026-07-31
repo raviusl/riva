@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" fill="none" aria-hidden="true">
+  <!--
+    RIVA brand ink landscape — original asset (Project 068).
+    Abstract Chinese landscape: empty sky, soft ridges, quiet water.
+    Tuned for visible silhouette on #191919 canvas.
+  -->
+  <defs>
+    <linearGradient id="riva-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7e5e4" stop-opacity="0.22"/>
+      <stop offset="42%" stop-color="#d6d3d1" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#a8a29e" stop-opacity="0.4"/>
+    </linearGradient>
+    <radialGradient id="riva-mist" cx="48%" cy="28%" r="55%">
+      <stop offset="0%" stop-color="#f5f5f4" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#f5f5f4" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="riva-fog-left" cx="18%" cy="62%" r="35%">
+      <stop offset="0%" stop-color="#d6d3d1" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#d6d3d1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#riva-sky)"/>
+  <ellipse cx="760" cy="220" rx="640" ry="200" fill="url(#riva-mist)"/>
+
+  <path
+    d="M0 500 C160 458 260 430 400 448 C560 470 640 400 790 418 C940 436 1040 372 1180 398 C1320 424 1440 450 1600 436 L1600 900 L0 900 Z"
+    fill="#d6d3d1"
+    fill-opacity="0.72"
+  />
+  <path
+    d="M0 610 C200 555 340 585 500 568 C700 545 820 505 980 528 C1140 552 1280 522 1600 548 L1600 900 L0 900 Z"
+    fill="#a8a29e"
+    fill-opacity="0.68"
+  />
+  <path
+    d="M0 730 C240 688 460 715 700 698 C960 676 1180 708 1600 690 L1600 900 L0 900 Z"
+    fill="#78716c"
+    fill-opacity="0.62"
+  />
+
+  <ellipse cx="280" cy="580" rx="260" ry="70" fill="url(#riva-fog-left)"/>
+
+  <path
+    d="M1210 505 C1224 458 1238 422 1248 388 C1262 432 1284 478 1306 514 C1274 506 1238 502 1210 505 Z"
+    fill="#44403c"
+    fill-opacity="0.55"
+  />
+  <path
+    d="M300 545 C314 502 328 468 338 434 C352 478 374 522 396 556 C364 548 328 544 300 545 Z"
+    fill="#44403c"
+    fill-opacity="0.45"
+  />
+
+  <path
+    d="M0 770 C380 752 780 788 1160 762 C1360 748 1480 756 1600 742"
+    stroke="#e7e5e4"
+    stroke-opacity="0.5"
+    stroke-width="18"
+    stroke-linecap="round"
+  />
+</svg>

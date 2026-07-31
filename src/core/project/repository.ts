@@ -4,14 +4,21 @@ import type { Project, ProjectStatus, ProjectType } from "@/core/types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export function mapProjectRow(data: Record<string, unknown>): Project {
+  const legacyStatus = data.status as string;
+  const status =
+    legacyStatus === "draft" ? "planning" : (legacyStatus as ProjectStatus);
+
   return {
     id: data.id as string,
     workspace_id: data.workspace_id as string,
     company_id: data.company_id as string,
     name: data.name as string,
+    description: (data.description as string | null | undefined) ?? null,
     project_type: (data.project_type as ProjectType | null | undefined) ?? null,
-    status: data.status as ProjectStatus,
+    status,
     owner_id: (data.owner_id as string | null | undefined) ?? null,
+    start_date: (data.start_date as string | null | undefined) ?? null,
+    end_date: (data.end_date as string | null | undefined) ?? null,
     created_at: data.created_at as string,
     updated_at: data.updated_at as string,
   };
@@ -21,16 +28,22 @@ export type InsertProjectRow = {
   workspace_id: string;
   company_id: string;
   name: string;
+  description?: string | null;
   project_type?: ProjectType | null;
   status: ProjectStatus;
   owner_id?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
 };
 
 export type UpdateProjectRow = {
   name?: string;
+  description?: string | null;
   project_type?: ProjectType | null;
   status?: ProjectStatus;
   owner_id?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
 };
 
 export async function insertProject(row: InsertProjectRow): Promise<Project> {

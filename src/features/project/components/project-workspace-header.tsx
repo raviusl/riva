@@ -15,6 +15,8 @@ import {
   restoreProjectAction,
 } from "@/core/actions/project-actions";
 import type { Project } from "@/core/types";
+import { buildWorkspaceBreadcrumbs } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 type ProjectWorkspaceHeaderProps = {
   workspaceId: string;
@@ -33,8 +35,10 @@ function projectStatusTone(
   switch (status) {
     case "active":
       return "success";
-    case "draft":
+    case "planning":
       return "info";
+    case "completed":
+      return "success";
     case "archived":
       return "default";
     default:
@@ -67,16 +71,16 @@ export function ProjectWorkspaceHeader({
     if (project.status !== "archived") {
       next.push({
         key: "edit",
-        label: "Edit",
+        label: uiZh.edit,
         href: `/dashboard/projects/${project.id}/edit`,
         disabled: pending,
       });
     }
 
-    if (project.status === "draft") {
+    if (project.status === "planning") {
       next.push({
         key: "activate",
-        label: "Activate",
+        label: uiZh.activate,
         disabled: pending,
         onClick: () => {
           startTransition(async () => {
@@ -89,7 +93,7 @@ export function ProjectWorkspaceHeader({
               toast.error(result.error);
               return;
             }
-            toast.success("Project activated");
+            toast.success(uiZh.projectActivated);
             router.refresh();
           });
         },
@@ -99,7 +103,7 @@ export function ProjectWorkspaceHeader({
     if (project.status === "active") {
       next.push({
         key: "archive",
-        label: "Archive",
+        label: uiZh.archive,
         disabled: pending,
         onClick: () => {
           startTransition(async () => {
@@ -112,7 +116,7 @@ export function ProjectWorkspaceHeader({
               toast.error(result.error);
               return;
             }
-            toast.success("Project archived");
+            toast.success(uiZh.projectArchivedToast);
             router.refresh();
           });
         },
@@ -122,7 +126,7 @@ export function ProjectWorkspaceHeader({
     if (project.status === "archived") {
       next.push({
         key: "restore",
-        label: "Restore",
+        label: uiZh.restore,
         disabled: pending,
         onClick: () => {
           startTransition(async () => {
@@ -135,7 +139,7 @@ export function ProjectWorkspaceHeader({
               toast.error(result.error);
               return;
             }
-            toast.success("Project restored");
+            toast.success(uiZh.projectRestoredToast);
             router.refresh();
           });
         },
@@ -156,17 +160,14 @@ export function ProjectWorkspaceHeader({
 
   return (
     <WorkspaceHeader
-      eyebrow="Project Workspace"
+      eyebrow={uiZh.projectWorkspaceTitle}
       title={project.name}
       status={{
         label: statusLabel(project.status),
         tone: projectStatusTone(project.status),
       }}
       lifecycle={lifecycleLabel(project)}
-      breadcrumbs={[
-        { label: "Projects", href: "/dashboard/projects" },
-        { label: project.name },
-      ]}
+      breadcrumbs={buildWorkspaceBreadcrumbs("project")}
       actions={actions}
     />
   );

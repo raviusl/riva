@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { RivaBackground } from "@/components/layout/riva-background";
 import { AppProviders } from "@/components/providers/app-providers";
 import { siteConfig } from "@/config/site";
 
@@ -30,11 +31,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="zh-Hant" className="dark" suppressHydrationWarning>
+    <html lang="zh-CN" className="dark" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-svh bg-[#070708] text-white antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} relative min-h-svh bg-transparent text-white antialiased`}
       >
-        <AppProviders>{children}</AppProviders>
+        <RivaBackground />
+        <div className="relative z-10 min-h-svh bg-transparent">
+          <AppProviders>{children}</AppProviders>
+        </div>
       </body>
     </html>
   );

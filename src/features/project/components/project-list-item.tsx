@@ -12,6 +12,8 @@ import {
   restoreProjectAction,
 } from "@/core/actions/project-actions";
 import type { Project } from "@/core/types";
+import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
+import { uiZh } from "@/config/ui-zh";
 
 type ProjectListItemProps = {
   workspaceId: string;
@@ -32,7 +34,7 @@ export function ProjectListItem({
 }: ProjectListItemProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const detailHref = `/dashboard/projects/${project.id}`;
+  const detailHref = buildWorkspaceOverviewHref("project", project.id);
 
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-4 sm:px-5">
@@ -74,7 +76,7 @@ export function ProjectListItem({
                   Edit
                 </Button>
               ) : null}
-              {project.status === "draft" ? (
+              {project.status === "planning" ? (
                 <Button
                   type="button"
                   size="sm"
@@ -91,7 +93,7 @@ export function ProjectListItem({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Project activated");
+                      toast.success(uiZh.projectActivated);
                       router.refresh();
                     });
                   }}
@@ -116,7 +118,7 @@ export function ProjectListItem({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Project archived");
+                      toast.success(uiZh.projectArchivedToast);
                       router.refresh();
                     });
                   }}
@@ -141,7 +143,7 @@ export function ProjectListItem({
                         toast.error(result.error);
                         return;
                       }
-                      toast.success("Project restored");
+                      toast.success(uiZh.projectRestoredToast);
                       router.refresh();
                     });
                   }}

@@ -124,7 +124,7 @@ export async function resolveContextStep(
   return { step: "ready", context };
 }
 
-/** Gate dashboard routes: User → Workspace → Company → Dashboard */
+/** Gate dashboard routes: Business context required before Workspace modules. */
 export async function requireDashboardContext(): Promise<SessionContext> {
   const userId = await requireSessionUserId();
   const step = await resolveContextStep(userId);
@@ -133,11 +133,11 @@ export async function requireDashboardContext(): Promise<SessionContext> {
     redirect(
       step.workspaces.length === 0
         ? "/dashboard/workspaces/new"
-        : "/dashboard/select-workspace",
+        : "/dashboard/business",
     );
   }
   if (step.step === "company") {
-    redirect("/dashboard/select-company");
+    redirect("/dashboard/business");
   }
 
   return step.context;

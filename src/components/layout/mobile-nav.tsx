@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { MenuIcon } from "lucide-react";
 
-import { Bilingual } from "@/components/ui/bilingual";
+import type { SidebarNav } from "@/components/layout/resolve-sidebar-nav";
 import {
   Sheet,
   SheetContent,
@@ -13,10 +13,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { copy, navItems } from "@/config/i18n";
+import { navItems } from "@/config/i18n";
+import { uiZh } from "@/config/ui-zh";
 import { cn } from "@/lib/utils";
 
-export function MobileNav() {
+export function MobileNav({
+  businessName = null,
+  items = navItems,
+}: {
+  businessName?: string | null;
+  items?: SidebarNav;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -24,7 +31,7 @@ export function MobileNav() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger
         className="inline-flex size-8 items-center justify-center rounded-lg text-white hover:bg-white/[0.06] lg:hidden"
-        aria-label="Open navigation"
+        aria-label={uiZh.openNavigation}
       >
         <MenuIcon className="size-4" />
       </SheetTrigger>
@@ -34,11 +41,11 @@ export function MobileNav() {
       >
         <SheetHeader className="border-b border-white/[0.06] px-5 py-4">
           <SheetTitle className="text-left text-white">
-            {copy.appName.en}
+            {businessName ?? uiZh.appName}
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-0.5 p-3">
-          {navItems.map((item) => {
+          {items.map((item) => {
             const active =
               item.href === "/dashboard"
                 ? pathname === "/dashboard"
@@ -59,18 +66,14 @@ export function MobileNav() {
                 <span className="mt-0.5 text-[15px] leading-none" aria-hidden>
                   {item.emoji}
                 </span>
-                <Bilingual
-                  text={item.label}
-                  compact
-                  zhClassName={cn(
+                <span
+                  className={cn(
                     "leading-snug",
                     active ? "text-white" : "text-white/80",
                   )}
-                  enClassName={cn(
-                    "leading-snug",
-                    active ? "text-white/45" : "text-white/30",
-                  )}
-                />
+                >
+                  {item.label.zh}
+                </span>
               </Link>
             );
           })}

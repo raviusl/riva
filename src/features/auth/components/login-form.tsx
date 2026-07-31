@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense, useState, useTransition } from "react";
+import { Suspense, useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
@@ -21,6 +21,7 @@ import {
   authCardClassName,
   authFieldClassName,
   authPrimaryButtonClassName,
+  resolvePostLoginHref,
   safeAuthNextPath,
 } from "@/features/auth/lib/auth-ui";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +31,7 @@ type Mode = "signin" | "forgot";
 function AuthFormInner() {
   const searchParams = useSearchParams();
   const nextPath = safeAuthNextPath(searchParams.get("next"));
+  const reason = searchParams.get("reason");
   const [mode, setMode] = useState<Mode>("signin");
   const [pending, startTransition] = useTransition();
 
@@ -42,6 +44,16 @@ function AuthFormInner() {
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
+
+  useEffect(() => {
+    if (reason === "session_expired") {
+      toast.message("Session expired. Please sign in again.");
+      return;
+    }
+    if (reason === "signed_out") {
+      toast.message("Signed out.");
+    }
+  }, [reason]);
 
   function switchMode(next: Mode) {
     setMode(next);
@@ -86,9 +98,7 @@ function AuthFormInner() {
                   toast.error(error.message);
                   return;
                 }
-                window.location.assign(
-                  nextPath === "/dashboard" ? "/dashboard/enter" : nextPath,
-                );
+                window.location.assign(resolvePostLoginHref(nextPath));
               } catch (error) {
                 const message =
                   error instanceof Error ? error.message : "Sign in failed";

@@ -10,13 +10,23 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uiZh } from "@/config/ui-zh";
 import { createCompanyAction } from "@/core/actions/company-actions";
-import { COMPANY_TYPES } from "@/core/types";
+import { COMPANY_TYPES, type CompanyType } from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
+
+const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
+  agency: uiZh.companyTypeAgency,
+  brand: uiZh.companyTypeBrand,
+  venue: uiZh.companyTypeVenue,
+  corporate: uiZh.companyTypeCorporate,
+  wedding: uiZh.companyTypeWedding,
+  other: uiZh.companyTypeOther,
+};
 
 const formSchema = z.object({
   workspaceId: z.string().uuid(),
-  name: z.string().min(1, "Company name is required").max(160),
+  name: z.string().min(1, uiZh.companyNameRequired).max(160),
   type: z.enum(COMPANY_TYPES).optional(),
 });
 
@@ -52,14 +62,14 @@ export function CreateCompanyForm({ workspaceId }: CreateCompanyFormProps) {
             toast.error(result.error);
             return;
           }
-          toast.success("Company created");
+          toast.success(uiZh.companyCreated);
           router.push("/dashboard");
           router.refresh();
         });
       })}
     >
       <div className="space-y-2">
-        <Label htmlFor="company-name">Company name</Label>
+        <Label htmlFor="company-name">{uiZh.companyNameLabel}</Label>
         <Input
           id="company-name"
           className={authFieldClassName}
@@ -69,7 +79,7 @@ export function CreateCompanyForm({ workspaceId }: CreateCompanyFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="company-type">Type</Label>
+        <Label htmlFor="company-type">{uiZh.type}</Label>
         <select
           id="company-type"
           className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
@@ -78,7 +88,7 @@ export function CreateCompanyForm({ workspaceId }: CreateCompanyFormProps) {
         >
           {COMPANY_TYPES.map((type) => (
             <option key={type} value={type} className="bg-[#121214]">
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {COMPANY_TYPE_LABELS[type]}
             </option>
           ))}
         </select>
@@ -89,7 +99,7 @@ export function CreateCompanyForm({ workspaceId }: CreateCompanyFormProps) {
         disabled={pending}
         className="bg-white text-black hover:bg-white/90"
       >
-        {pending ? "Creating…" : "Create company"}
+        {pending ? uiZh.creating : uiZh.createCompany}
       </Button>
     </form>
   );

@@ -1,0 +1,49 @@
+import { formatDistanceToNow } from "date-fns";
+
+import { uiZh } from "@/config/ui-zh";
+import type { AuditRecord } from "@/core/audit";
+
+type MeetingWorkspaceActivityPanelProps = {
+  records: AuditRecord[];
+};
+
+export function MeetingWorkspaceActivityPanel({
+  records,
+}: MeetingWorkspaceActivityPanelProps) {
+  return (
+    <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-5">
+      <div>
+        <h2 className="text-sm font-medium text-white">{uiZh.activity}</h2>
+        <p className="mt-1 text-xs text-white/45">{uiZh.activityAuditDesc}</p>
+      </div>
+
+      {records.length === 0 ? (
+        <p className="mt-4 text-sm text-white/45">{uiZh.noAuditedChanges}</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {records.map((record) => (
+            <li
+              key={record.id}
+              className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3"
+            >
+              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <p className="text-sm capitalize text-white">{record.action}</p>
+                <p className="text-[11px] text-white/35">
+                  {formatDistanceToNow(new Date(record.createdAt), {
+                    addSuffix: true,
+                  })}
+                </p>
+              </div>
+              <p className="mt-1 text-xs text-white/45">
+                {uiZh.entityActorLine(
+                  record.entityType,
+                  record.actorId?.slice(0, 8) ?? uiZh.systemActor,
+                )}
+              </p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}

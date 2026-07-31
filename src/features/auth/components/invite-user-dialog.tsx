@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { uiZh } from "@/config/ui-zh";
 import { createInvitationAction } from "@/features/auth/actions/invitation-actions";
 import {
   InviteUserFields,
@@ -37,10 +38,9 @@ export function InviteUserDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md border-white/10 bg-[#121214] text-white sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-white">Invite User</DialogTitle>
+          <DialogTitle className="text-white">{uiZh.inviteUser}</DialogTitle>
           <DialogDescription className="text-white/45">
-            Send a secure invitation. The user sets a password after opening the
-            link. Invitations expire in 72 hours and can be used once.
+            {uiZh.inviteUserDesc}
           </DialogDescription>
         </DialogHeader>
 
@@ -71,7 +71,7 @@ export function InviteUserDialog({
             onClick={() => onOpenChange(false)}
             disabled={pending}
           >
-            Cancel
+            {uiZh.cancel}
           </Button>
           <Button
             type="submit"
@@ -79,7 +79,7 @@ export function InviteUserDialog({
             disabled={pending}
             className="bg-white text-black hover:bg-white/90"
           >
-            {pending ? "Sending…" : "Send Invitation"}
+            {pending ? uiZh.sending : uiZh.sendInvitation}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { uiZh } from "@/config/ui-zh";
 import { requireSessionUserId } from "@/core/auth/session";
 import {
   listCompaniesForUserInWorkspace,
@@ -26,24 +27,23 @@ export default async function CompaniesPage() {
     <div className="mx-auto w-full max-w-3xl space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl text-white">Companies</h1>
+          <h1 className="text-xl text-white">{uiZh.companies}</h1>
           <p className="mt-2 text-sm text-white/45">
-            Manage companies in{" "}
-            <span className="text-white/70">{workspace.name}</span>. One
-            workspace can contain multiple companies.
+            {uiZh.manageCompaniesIn(workspace.name)}。
+            {uiZh.oneWorkspaceMultipleCompanies}
           </p>
         </div>
         <Link
           href="/dashboard/companies/new"
           className="rounded-lg bg-white px-3 py-2 text-sm font-medium text-black hover:bg-white/90"
         >
-          Create
+          {uiZh.create}
         </Link>
       </div>
 
       {companies.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/10 px-5 py-8 text-sm text-white/45">
-          No companies in this workspace yet. Create one to get started.
+          {uiZh.noCompaniesYet}
         </div>
       ) : (
         <ul className="space-y-3">

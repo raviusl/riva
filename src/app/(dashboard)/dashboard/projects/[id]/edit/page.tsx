@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
+import { uiZh } from "@/config/ui-zh";
 import { requireDashboardContext } from "@/core/auth/context";
 import { getProjectById } from "@/core/project/project";
 import { EditProjectForm } from "@/features/project/components/edit-project-form";
@@ -35,9 +36,9 @@ export default async function EditProjectPage({ params }: PageProps) {
           href={`/dashboard/projects/${project.id}`}
           className="text-xs text-white/40 hover:text-white/70"
         >
-          ← {project.name}
+          {uiZh.backToList(project.name)}
         </Link>
-        <h1 className="mt-3 text-xl text-white">Edit project</h1>
+        <h1 className="mt-3 text-xl text-white">{uiZh.editProject}</h1>
         <p className="mt-2 text-sm text-white/45">{project.name}</p>
       </div>
 

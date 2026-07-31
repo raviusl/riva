@@ -1,19 +1,28 @@
 /**
- * Authentication foundation surface (Sprint 001 + Sprint 003).
+ * Authentication foundation surface (Sprint 001 + Sprint 003 + Project 050).
  *
  * Session / guards are server-only — import from:
  * - `@/lib/auth/session`
  * - `@/lib/auth/guards`
+ * - `@/lib/auth/redirects`
+ * - `@/lib/auth/routes`
  *
  * Existing auth flows remain in `core/auth` and `features/auth`.
  * Middleware session refresh remains in `src/middleware.ts`
  * via `@/lib/supabase/middleware`.
  */
+import {
+  AUTH_CALLBACK_PATH,
+  AUTH_INVITE_ACCEPT_PATH,
+  AUTH_LOGIN_PATH,
+  AUTH_UPDATE_PASSWORD_PATH,
+} from "@/lib/auth/routes";
+
 export const authConfig = {
-  loginPath: "/login",
-  callbackPath: "/auth/callback",
-  updatePasswordPath: "/auth/update-password",
-  inviteAcceptPath: "/invite/accept",
+  loginPath: AUTH_LOGIN_PATH,
+  callbackPath: AUTH_CALLBACK_PATH,
+  updatePasswordPath: AUTH_UPDATE_PASSWORD_PATH,
+  inviteAcceptPath: AUTH_INVITE_ACCEPT_PATH,
 } as const;
 
 export {
@@ -34,3 +43,19 @@ export {
   type AuthPermissionDefinition,
   type AuthPermissionSet,
 } from "./permissions";
+
+export {
+  AUTH_LOGIN_PATH,
+  AUTH_CALLBACK_PATH,
+  AUTH_ERROR_PATH,
+  AUTH_UPDATE_PASSWORD_PATH,
+  AUTH_INVITE_ACCEPT_PATH,
+  AUTH_UNAUTHORIZED_PATH,
+  AUTH_ENTER_PATH,
+  buildLoginHref,
+  buildUnauthorizedHref,
+  isAuthProtectedPath,
+  isAuthPublicPath,
+  isAuthEntryPath,
+  type AuthRedirectReason,
+} from "./routes";

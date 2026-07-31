@@ -13,11 +13,12 @@ import { Label } from "@/components/ui/label";
 import { createProjectAction } from "@/core/actions/project-actions";
 import { PROJECT_TYPES } from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
+import { uiZh } from "@/config/ui-zh";
 
 const formSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
-  name: z.string().min(1, "Project name is required").max(160),
+  name: z.string().min(1, uiZh.projectNameRequired).max(160),
   projectType: z.enum(PROJECT_TYPES).optional(),
 });
 
@@ -54,13 +55,13 @@ export function CreateProjectForm({
             companyId: values.companyId,
             name: values.name,
             projectType: values.projectType,
-            status: "draft",
+            status: "planning",
           });
           if (!result.ok) {
             toast.error(result.error);
             return;
           }
-          toast.success("Project created");
+          toast.success(uiZh.projectCreated);
           router.push("/dashboard/projects");
           router.refresh();
         });
@@ -70,7 +71,7 @@ export function CreateProjectForm({
       <input type="hidden" {...form.register("companyId")} />
 
       <div className="space-y-2">
-        <Label htmlFor="project-name">Project name</Label>
+        <Label htmlFor="project-name">{uiZh.projectName}</Label>
         <Input
           id="project-name"
           className={authFieldClassName}
@@ -85,7 +86,7 @@ export function CreateProjectForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="project-type">Type</Label>
+        <Label htmlFor="project-type">{uiZh.type}</Label>
         <select
           id="project-type"
           className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
@@ -105,7 +106,7 @@ export function CreateProjectForm({
         disabled={pending}
         className="bg-white text-black hover:bg-white/90"
       >
-        {pending ? "Creating…" : "Create project"}
+        {pending ? uiZh.creating : uiZh.createProject}
       </Button>
     </form>
   );

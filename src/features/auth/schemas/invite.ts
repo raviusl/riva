@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { uiZh } from "@/config/ui-zh";
+
 export const INVITE_ROLES = [
   "admin",
   "coordinator",
@@ -28,9 +30,9 @@ export const INVITE_ROLE_LABELS: Record<
 export const INVITATION_TTL_HOURS = 72;
 
 export const inviteUserSchema = z.object({
-  fullName: z.string().min(1, "Full name is required").max(120),
-  email: z.string().email("Enter a valid email address"),
-  company: z.string().min(1, "Company is required").max(160),
+  fullName: z.string().min(1, uiZh.fullNameRequired).max(120),
+  email: z.string().email(uiZh.validEmailRequired),
+  company: z.string().min(1, uiZh.companyRequired).max(160),
   role: z.enum(INVITE_ROLES),
 });
 

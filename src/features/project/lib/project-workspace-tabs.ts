@@ -1,12 +1,14 @@
+import { uiZh } from "@/config/ui-zh";
+
 export const PROJECT_WORKSPACE_TABS = [
-  { id: "overview", label: "Overview" },
-  { id: "clients", label: "Clients" },
-  { id: "vendors", label: "Vendors" },
-  { id: "timeline", label: "Timeline" },
-  { id: "documents", label: "Documents" },
-  { id: "finance", label: "Finance" },
-  { id: "tasks", label: "Tasks" },
-  { id: "activity", label: "Activity" },
+  { id: "overview", label: uiZh.overview },
+  { id: "clients", label: uiZh.clients },
+  { id: "vendors", label: uiZh.vendors },
+  { id: "timeline", label: uiZh.timeline },
+  { id: "documents", label: uiZh.documents },
+  { id: "finance", label: uiZh.finance },
+  { id: "tasks", label: uiZh.tasks },
+  { id: "activity", label: uiZh.activity },
 ] as const;
 
 export type ProjectWorkspaceTabId =
@@ -15,7 +17,6 @@ export type ProjectWorkspaceTabId =
 export const DEFAULT_PROJECT_WORKSPACE_TAB: ProjectWorkspaceTabId = "overview";
 
 export const PROJECT_WORKSPACE_PLACEHOLDER_TABS = [
-  "timeline",
   "documents",
   "finance",
   "tasks",

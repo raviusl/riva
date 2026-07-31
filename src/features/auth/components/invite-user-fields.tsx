@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { uiZh } from "@/config/ui-zh";
 import {
   INVITE_ROLE_LABELS,
   INVITE_ROLES,
@@ -39,7 +40,7 @@ export function InviteUserFields({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-fullName`}>Full Name</Label>
+        <Label htmlFor={`${idPrefix}-fullName`}>{uiZh.fullName}</Label>
         <Input
           id={`${idPrefix}-fullName`}
           className={inviteFieldClass}
@@ -54,7 +55,7 @@ export function InviteUserFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-email`}>Email</Label>
+        <Label htmlFor={`${idPrefix}-email`}>{uiZh.email}</Label>
         <Input
           id={`${idPrefix}-email`}
           type="email"
@@ -70,7 +71,7 @@ export function InviteUserFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-company`}>Company</Label>
+        <Label htmlFor={`${idPrefix}-company`}>{uiZh.company}</Label>
         <Input
           id={`${idPrefix}-company`}
           className={inviteFieldClass}
@@ -85,7 +86,7 @@ export function InviteUserFields({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-role`}>Role</Label>
+        <Label htmlFor={`${idPrefix}-role`}>{uiZh.role}</Label>
         <Controller
           control={form.control}
           name="role"
@@ -101,7 +102,7 @@ export function InviteUserFields({
             >
               {INVITE_ROLES.map((role) => (
                 <option key={role} value={role} className="bg-[#111] text-white">
-                  {INVITE_ROLE_LABELS[role].en}
+                  {INVITE_ROLE_LABELS[role].zh}
                 </option>
               ))}
             </select>
@@ -124,16 +125,16 @@ export function notifyInvitationDelivery(result: {
   emailWarning?: string;
 }) {
   if (result.emailSent) {
-    toast.success(`Invitation sent to ${result.email}`);
+    toast.success(uiZh.invitationSentTo(result.email));
     return;
   }
 
-  toast.success("Invitation created");
+  toast.success(uiZh.invitationCreated);
   if (result.emailWarning) {
     toast.message(result.emailWarning);
   }
   if (result.inviteUrl) {
-    toast.message("Invite link (copy now)", {
+    toast.message(uiZh.inviteLinkCopyNow, {
       description: result.inviteUrl,
       duration: 20_000,
     });

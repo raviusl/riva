@@ -17,6 +17,8 @@ import {
   parseProjectWorkspaceTab,
   type ProjectWorkspaceTabId,
 } from "@/features/project/lib/project-workspace-tabs";
+import { ProjectTimelineEnginePanel } from "@/features/timeline-engine";
+import { uiZh } from "@/config/ui-zh";
 
 type ProjectWorkspaceProps = {
   workspaceId: string;
@@ -29,6 +31,7 @@ type ProjectWorkspaceProps = {
   canWriteVendor: boolean;
   canReadClient: boolean;
   canReadVendor: boolean;
+  canReadTimeline?: boolean;
   /** Server-parsed tab from the request URL (SSR + refresh). */
   initialTab?: ProjectWorkspaceTabId;
 };
@@ -44,6 +47,7 @@ export function ProjectWorkspace({
   canWriteVendor,
   canReadClient,
   canReadVendor,
+  canReadTimeline = false,
   initialTab = DEFAULT_PROJECT_WORKSPACE_TAB,
 }: ProjectWorkspaceProps) {
   const searchParams = useSearchParams();
@@ -110,37 +114,45 @@ export function ProjectWorkspace({
         ) : null}
 
         {activeTab === "timeline" ? (
-          <WorkspaceComingSoon
-            title="Timeline"
-            description="Project timeline and milestones will appear here."
-          />
+          canReadTimeline ? (
+            <ProjectTimelineEnginePanel
+              workspaceId={workspaceId}
+              companyId={companyId}
+              projectId={project.id}
+            />
+          ) : (
+            <WorkspaceComingSoon
+              title={uiZh.timeline}
+              description={uiZh.projectTimelineSoon}
+            />
+          )
         ) : null}
 
         {activeTab === "documents" ? (
           <WorkspaceComingSoon
-            title="Documents"
-            description="Project files and documents will appear here."
+            title={uiZh.documents}
+            description={uiZh.projectDocumentsSoon}
           />
         ) : null}
 
         {activeTab === "finance" ? (
           <WorkspaceComingSoon
-            title="Finance"
-            description="Project invoices and payments will appear here."
+            title={uiZh.finance}
+            description={uiZh.projectFinanceSoon}
           />
         ) : null}
 
         {activeTab === "tasks" ? (
           <WorkspaceComingSoon
-            title="Tasks"
-            description="Project tasks and assignments will appear here."
+            title={uiZh.tasks}
+            description={uiZh.projectTasksSoonPlaceholder}
           />
         ) : null}
 
         {activeTab === "activity" ? (
           <WorkspaceComingSoon
-            title="Activity"
-            description="Project activity and audit history will appear here."
+            title={uiZh.activity}
+            description={uiZh.projectActivitySoonPlaceholder}
           />
         ) : null}
       </div>

@@ -7,7 +7,6 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 
-import { Bilingual } from "@/components/ui/bilingual";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { copy } from "@/config/i18n";
+import { uiZh } from "@/config/ui-zh";
 import { createClient } from "@/lib/supabase/client";
 
 const clientSchema = z.object({
@@ -84,7 +83,7 @@ export function QuickActions() {
       error,
     } = await supabase.auth.getUser();
     if (error || !user) {
-      toast.error(`${copy.signIn.zh} / ${copy.signIn.en}`);
+      toast.error(uiZh.signIn);
       return null;
     }
     return { supabase, user };
@@ -101,32 +100,23 @@ export function QuickActions() {
   return (
     <>
       <section className="space-y-3">
-        <Bilingual
-          text={copy.quickActions}
-          zhClassName="text-sm text-white/80"
-          enClassName="text-white/35"
-        />
+        <h2 className="text-sm text-white/80">{uiZh.quickActions}</h2>
         <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {(
             [
-              { kind: "client" as const, label: copy.addClient },
-              { kind: "wedding" as const, label: copy.addWedding },
-              { kind: "task" as const, label: copy.addTask },
-              { kind: "quote" as const, label: copy.addQuote },
+              { kind: "client" as const, label: uiZh.newClientTitle },
+              { kind: "wedding" as const, label: uiZh.addWedding },
+              { kind: "task" as const, label: uiZh.newTaskTitle },
+              { kind: "quote" as const, label: uiZh.addQuote },
             ] as const
           ).map((action) => (
             <Button
               key={action.kind}
               variant="outline"
               onClick={() => setOpen(action.kind)}
-              className="h-auto justify-start border-white/[0.08] bg-white/[0.03] px-4 py-3 text-left hover:bg-white/[0.06]"
+              className="h-auto justify-start border-white/[0.08] bg-white/[0.03] px-4 py-3 text-left text-white/90 hover:bg-white/[0.06]"
             >
-              <Bilingual
-                text={action.label}
-                compact
-                zhClassName="text-white/90"
-                enClassName="text-white/40"
-              />
+              {action.label}
             </Button>
           ))}
         </div>
@@ -135,9 +125,7 @@ export function QuickActions() {
       <Sheet open={open === "client"} onOpenChange={(v) => !v && close()}>
         <SheetContent className="border-white/10 bg-[#111113] text-white sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>
-              <Bilingual text={copy.addClient} />
-            </SheetTitle>
+            <SheetTitle>{uiZh.newClientTitle}</SheetTitle>
           </SheetHeader>
           <form
             className="mt-6 space-y-4"
@@ -155,26 +143,26 @@ export function QuickActions() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success(`${copy.addClient.zh} ✓`);
+                toast.success(`${uiZh.newClientTitle} ✓`);
                 close();
                 router.refresh();
               });
             })}
           >
             <div className="space-y-2">
-              <Label>姓名 / Name</Label>
+              <Label>{uiZh.name}</Label>
               <Input className="bg-white/5" {...clientForm.register("name")} />
             </div>
             <div className="space-y-2">
-              <Label>{copy.email.zh} / {copy.email.en}</Label>
+              <Label>{uiZh.email}</Label>
               <Input className="bg-white/5" {...clientForm.register("email")} />
             </div>
             <div className="space-y-2">
-              <Label>电话 / Phone</Label>
+              <Label>{uiZh.phone}</Label>
               <Input className="bg-white/5" {...clientForm.register("phone")} />
             </div>
             <Button type="submit" disabled={pending} className="w-full">
-              {copy.save.zh} / {copy.save.en}
+              {uiZh.save}
             </Button>
           </form>
         </SheetContent>
@@ -183,9 +171,7 @@ export function QuickActions() {
       <Sheet open={open === "wedding"} onOpenChange={(v) => !v && close()}>
         <SheetContent className="border-white/10 bg-[#111113] text-white sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>
-              <Bilingual text={copy.addWedding} />
-            </SheetTitle>
+            <SheetTitle>{uiZh.addWedding}</SheetTitle>
           </SheetHeader>
           <form
             className="mt-6 space-y-4"
@@ -204,22 +190,18 @@ export function QuickActions() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success(`${copy.addWedding.zh} ✓`);
+                toast.success(`${uiZh.addWedding} ✓`);
                 close();
                 router.refresh();
               });
             })}
           >
             <div className="space-y-2">
-              <Label>
-                {copy.weddingName.zh} / {copy.weddingName.en}
-              </Label>
+              <Label>{uiZh.weddingName}</Label>
               <Input className="bg-white/5" {...weddingForm.register("name")} />
             </div>
             <div className="space-y-2">
-              <Label>
-                {copy.date.zh} / {copy.date.en}
-              </Label>
+              <Label>{uiZh.date}</Label>
               <Input
                 type="date"
                 className="bg-white/5"
@@ -227,13 +209,11 @@ export function QuickActions() {
               />
             </div>
             <div className="space-y-2">
-              <Label>
-                {copy.venue.zh} / {copy.venue.en}
-              </Label>
+              <Label>{uiZh.venue}</Label>
               <Input className="bg-white/5" {...weddingForm.register("venue")} />
             </div>
             <Button type="submit" disabled={pending} className="w-full">
-              {copy.save.zh} / {copy.save.en}
+              {uiZh.save}
             </Button>
           </form>
         </SheetContent>
@@ -242,9 +222,7 @@ export function QuickActions() {
       <Sheet open={open === "task"} onOpenChange={(v) => !v && close()}>
         <SheetContent className="border-white/10 bg-[#111113] text-white sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>
-              <Bilingual text={copy.addTask} />
-            </SheetTitle>
+            <SheetTitle>{uiZh.newTaskTitle}</SheetTitle>
           </SheetHeader>
           <form
             className="mt-6 space-y-4"
@@ -267,20 +245,18 @@ export function QuickActions() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success(`${copy.addTask.zh} ✓`);
+                toast.success(`${uiZh.newTaskTitle} ✓`);
                 close();
                 router.refresh();
               });
             })}
           >
             <div className="space-y-2">
-              <Label>任务 / Task</Label>
+              <Label>{uiZh.taskSingular}</Label>
               <Input className="bg-white/5" {...taskForm.register("title")} />
             </div>
             <div className="space-y-2">
-              <Label>
-                {copy.dueTime.zh} / {copy.dueTime.en}
-              </Label>
+              <Label>{uiZh.dueTime}</Label>
               <Input
                 type="datetime-local"
                 className="bg-white/5"
@@ -288,21 +264,19 @@ export function QuickActions() {
               />
             </div>
             <div className="space-y-2">
-              <Label>
-                {copy.priority.zh} / {copy.priority.en}
-              </Label>
+              <Label>{uiZh.priority}</Label>
               <select
                 className="flex h-9 w-full rounded-md border border-white/10 bg-white/5 px-3 text-sm"
                 {...taskForm.register("priority")}
               >
-                <option value="low">低 / Low</option>
-                <option value="medium">中 / Medium</option>
-                <option value="high">高 / High</option>
-                <option value="urgent">紧急 / Urgent</option>
+                <option value="low">{uiZh.priorityLow}</option>
+                <option value="medium">{uiZh.priorityMedium}</option>
+                <option value="high">{uiZh.priorityHigh}</option>
+                <option value="urgent">{uiZh.priorityUrgent}</option>
               </select>
             </div>
             <Button type="submit" disabled={pending} className="w-full">
-              {copy.save.zh} / {copy.save.en}
+              {uiZh.save}
             </Button>
           </form>
         </SheetContent>
@@ -311,9 +285,7 @@ export function QuickActions() {
       <Sheet open={open === "quote"} onOpenChange={(v) => !v && close()}>
         <SheetContent className="border-white/10 bg-[#111113] text-white sm:max-w-md">
           <SheetHeader>
-            <SheetTitle>
-              <Bilingual text={copy.addQuote} />
-            </SheetTitle>
+            <SheetTitle>{uiZh.addQuote}</SheetTitle>
           </SheetHeader>
           <form
             className="mt-6 space-y-4"
@@ -336,21 +308,21 @@ export function QuickActions() {
                   toast.error(error.message);
                   return;
                 }
-                toast.success(`${copy.addQuote.zh} ✓`);
+                toast.success(`${uiZh.addQuote} ✓`);
                 close();
                 router.refresh();
               });
             })}
           >
             <div className="space-y-2">
-              <Label>说明 / Description</Label>
+              <Label>{uiZh.description}</Label>
               <Input
                 className="bg-white/5"
                 {...quoteForm.register("description")}
               />
             </div>
             <div className="space-y-2">
-              <Label>金额 / Amount</Label>
+              <Label>{uiZh.amount}</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -359,9 +331,7 @@ export function QuickActions() {
               />
             </div>
             <div className="space-y-2">
-              <Label>
-                {copy.date.zh} / {copy.date.en}
-              </Label>
+              <Label>{uiZh.date}</Label>
               <Input
                 type="date"
                 className="bg-white/5"
@@ -369,7 +339,7 @@ export function QuickActions() {
               />
             </div>
             <Button type="submit" disabled={pending} className="w-full">
-              {copy.save.zh} / {copy.save.en}
+              {uiZh.save}
             </Button>
           </form>
         </SheetContent>
