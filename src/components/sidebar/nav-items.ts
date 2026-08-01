@@ -6,10 +6,11 @@ export type WorkspaceNavItem = {
   href: string;
   /** Path prefixes that count as active for this item (besides href). */
   matchPrefixes?: readonly string[];
+  children?: readonly WorkspaceNavItem[];
 };
 
 /**
- * First-level Workspace sidebar navigation (Project 061 / 073).
+ * First-level Workspace sidebar navigation (Project 061 / 073 / 089).
  * Labels are Simplified Chinese only.
  */
 export const WORKSPACE_NAV_ITEMS: readonly WorkspaceNavItem[] = [
@@ -38,6 +39,20 @@ export const WORKSPACE_NAV_ITEMS: readonly WorkspaceNavItem[] = [
       "/dashboard/documents",
       "/dashboard/files",
       "/dashboard/automations",
+    ],
+  },
+  {
+    id: "finance",
+    label: uiZh.navFinance,
+    href: "/dashboard/finance",
+    matchPrefixes: ["/dashboard/finance"],
+    children: [
+      {
+        id: "finance-quotations",
+        label: uiZh.quotations,
+        href: "/dashboard/finance/quotations",
+        matchPrefixes: ["/dashboard/finance/quotations"],
+      },
     ],
   },
   {

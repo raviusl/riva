@@ -8,7 +8,15 @@ import { buildFinanceWorkspaceTabHref } from "@/features/finance/lib/finance-wor
 import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 
 export default async function FinancePage() {
-  await requireDashboardContext();
+  const context = await requireDashboardContext();
+
+  if (!context.permissions.has("finance.read")) {
+    return (
+      <div className="mx-auto w-full max-w-3xl rounded-2xl border border-white/[0.08] px-5 py-8 text-sm text-white/55">
+        {uiZh.noPermissionFinance}
+      </div>
+    );
+  }
 
   const workspaceHref = buildWorkspaceOverviewHref(
     "finance",

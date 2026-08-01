@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { WorkspaceLayout } from "@/components/layout/workspace-layout";
+import { uiZh } from "@/config/ui-zh";
 import { requireDashboardContext } from "@/core/auth/context";
 import { FinanceWorkspace } from "@/features/finance/components/finance-workspace";
 import { loadFinanceWorkspace } from "@/features/finance/lib/load-finance-workspace";
@@ -22,6 +23,14 @@ export default async function FinanceWorkspacePage({
   const { id } = await params;
   const query = await searchParams;
   const context = await requireDashboardContext();
+
+  if (!context.permissions.has("finance.read")) {
+    return (
+      <div className="mx-auto w-full max-w-3xl rounded-2xl border border-white/[0.08] px-5 py-8 text-sm text-white/55">
+        {uiZh.noPermissionFinance}
+      </div>
+    );
+  }
 
   const hubId = id.trim() || FINANCE_WORKSPACE_HUB_ID;
   const initialTab = parseFinanceWorkspaceTab(query.tab);
