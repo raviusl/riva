@@ -10,6 +10,7 @@ export enum ActivityTargetType {
   Document = "document",
   File = "file",
   Invoice = "invoice",
+  Quotation = "quotation",
   User = "user",
 }
 
@@ -25,6 +26,7 @@ export const ACTIVITY_TARGET_TYPES: readonly ActivityTargetType[] = [
   ActivityTargetType.Document,
   ActivityTargetType.File,
   ActivityTargetType.Invoice,
+  ActivityTargetType.Quotation,
   ActivityTargetType.User,
 ];
 

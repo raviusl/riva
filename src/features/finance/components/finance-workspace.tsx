@@ -24,11 +24,13 @@ import {
 type FinanceWorkspaceProps = {
   model: FinanceWorkspaceModel;
   initialTab?: FinanceWorkspaceTabId;
+  canCreateQuotation?: boolean;
 };
 
 export function FinanceWorkspace({
   model,
   initialTab = DEFAULT_FINANCE_WORKSPACE_TAB,
+  canCreateQuotation = false,
 }: FinanceWorkspaceProps) {
   const searchParams = useSearchParams();
   const activeTab = parseFinanceWorkspaceTab(
@@ -69,7 +71,10 @@ export function FinanceWorkspace({
         ) : null}
 
         {activeTab === "quotations" ? (
-          <FinanceWorkspaceQuotationsPanel records={model.records} />
+          <FinanceWorkspaceQuotationsPanel
+            records={model.records}
+            canCreate={canCreateQuotation}
+          />
         ) : null}
 
         {activeTab === "budget" ? (

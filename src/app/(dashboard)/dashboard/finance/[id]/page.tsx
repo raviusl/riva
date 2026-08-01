@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { WorkspaceLayout } from "@/components/layout/workspace-layout";
 import { requireDashboardContext } from "@/core/auth/context";
 import { FinanceWorkspace } from "@/features/finance/components/finance-workspace";
-import { getFinanceWorkspacePreview } from "@/features/finance/lib/finance-workspace-preview";
+import { loadFinanceWorkspace } from "@/features/finance/lib/load-finance-workspace";
 import {
   FINANCE_WORKSPACE_HUB_ID,
   buildFinanceWorkspaceTabHref,
@@ -21,7 +21,7 @@ export default async function FinanceWorkspacePage({
 }: PageProps) {
   const { id } = await params;
   const query = await searchParams;
-  await requireDashboardContext();
+  const context = await requireDashboardContext();
 
   const hubId = id.trim() || FINANCE_WORKSPACE_HUB_ID;
   const initialTab = parseFinanceWorkspaceTab(query.tab);
@@ -34,11 +34,19 @@ export default async function FinanceWorkspacePage({
     );
   }
 
-  const model = getFinanceWorkspacePreview(FINANCE_WORKSPACE_HUB_ID);
+  const model = await loadFinanceWorkspace({
+    companyId: context.company.id,
+    workspaceId: context.workspace.id,
+    hubId: FINANCE_WORKSPACE_HUB_ID,
+  });
 
   return (
     <WorkspaceLayout backHref="/dashboard/finance" backLabel="← Finance">
-      <FinanceWorkspace model={model} initialTab={initialTab} />
+      <FinanceWorkspace
+        model={model}
+        initialTab={initialTab}
+        canCreateQuotation={context.permissions.has("finance.write")}
+      />
     </WorkspaceLayout>
   );
 }

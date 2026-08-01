@@ -214,7 +214,6 @@ export type {
   FinanceIdInput,
   FinanceModel,
   FinancePermission,
-  FinanceRepository,
   FinanceService,
   FinanceStatus,
   FinanceType,

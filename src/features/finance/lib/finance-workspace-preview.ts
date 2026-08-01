@@ -8,7 +8,6 @@ import type {
   FinanceWorkspaceItem,
   FinanceWorkspaceModel,
   FinanceWorkspaceSummary,
-  QuotationDisplayStatus,
 } from "@/features/finance/lib/finance-types";
 import { FINANCE_WORKSPACE_HUB_ID } from "@/features/finance/lib/finance-workspace-tabs";
 import { uiZh } from "@/config/ui-zh";
@@ -38,7 +37,6 @@ function withLabels(
     projectName?: string | null;
     clientName?: string | null;
     vendorName?: string | null;
-    quotationStatus?: QuotationDisplayStatus;
   } = {},
 ): FinanceWorkspaceItem {
   return {
@@ -46,7 +44,6 @@ function withLabels(
     projectName: names.projectName ?? null,
     clientName: names.clientName ?? null,
     vendorName: names.vendorName ?? null,
-    quotationStatus: names.quotationStatus,
   };
 }
 
@@ -130,6 +127,9 @@ export function getFinanceWorkspacePreview(
     workspaceId: WORKSPACE_ID,
     createdBy: ACTOR,
     updatedBy: ACTOR,
+    convertedInvoiceId: null as string | null,
+    notes: null as string | null,
+    internalNotes: null as string | null,
   } as const;
 
   const records: FinanceWorkspaceItem[] = [
@@ -270,87 +270,6 @@ export function getFinanceWorkspacePreview(
         updatedAt: daysAgo(50),
       },
       { projectName: uiZh.previewChenWedding, clientName: "Jordan Lee" },
-    ),
-    withLabels(
-      {
-        ...base,
-        id: "00000000-0000-4000-8000-0000000000f7",
-        projectId: PROJECT_ID,
-        clientId: CLIENT_ID,
-        vendorId: null,
-        type: "quotation",
-        category: "services",
-        currency: "USD",
-        amount: 15_000,
-        tax: 0,
-        discount: 500,
-        status: "open",
-        referenceNumber: "QT-88",
-        issuedAt: daysAgo(8),
-        dueAt: daysFromNow(14),
-        paidAt: null,
-        createdAt: daysAgo(8),
-        updatedAt: daysAgo(8),
-      },
-      {
-        projectName: uiZh.previewChenWedding,
-        clientName: "Jordan Lee",
-        quotationStatus: "sent",
-      },
-    ),
-    withLabels(
-      {
-        ...base,
-        id: "00000000-0000-4000-8000-0000000000f8",
-        projectId: PROJECT_ID,
-        clientId: CLIENT_ID,
-        vendorId: null,
-        type: "quotation",
-        category: "products",
-        currency: "USD",
-        amount: 2_400,
-        tax: 0,
-        discount: 0,
-        status: "draft",
-        referenceNumber: "QT-91",
-        issuedAt: null,
-        dueAt: null,
-        paidAt: null,
-        createdAt: daysAgo(1),
-        updatedAt: daysAgo(1),
-      },
-      {
-        projectName: uiZh.previewChenWedding,
-        clientName: "Jordan Lee",
-        quotationStatus: "draft",
-      },
-    ),
-    withLabels(
-      {
-        ...base,
-        id: "00000000-0000-4000-8000-0000000000f9",
-        projectId: PROJECT_ID,
-        clientId: CLIENT_ID,
-        vendorId: null,
-        type: "quotation",
-        category: "services",
-        currency: "USD",
-        amount: 6_800,
-        tax: 0,
-        discount: 0,
-        status: "void",
-        referenceNumber: "QT-72",
-        issuedAt: daysAgo(40),
-        dueAt: daysAgo(10),
-        paidAt: null,
-        createdAt: daysAgo(40),
-        updatedAt: daysAgo(12),
-      },
-      {
-        projectName: uiZh.previewChenWedding,
-        clientName: "Jordan Lee",
-        quotationStatus: "rejected",
-      },
     ),
     withLabels(
       {

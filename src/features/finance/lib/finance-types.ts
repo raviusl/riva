@@ -1,22 +1,23 @@
 import type { Finance } from "@/core/finance";
+import type { QuotationStatus } from "@/core/finance/constants";
 
-/** Quotation lifecycle labels for Workspace UI (preview — not domain statuses). */
+/** @deprecated Use QuotationStatus from core — kept as alias for UI imports. */
+export type QuotationDisplayStatus = QuotationStatus;
+
 export const QUOTATION_DISPLAY_STATUSES = [
   "draft",
   "sent",
   "accepted",
   "rejected",
   "expired",
+  "void",
+  "cancelled",
 ] as const;
-export type QuotationDisplayStatus =
-  (typeof QUOTATION_DISPLAY_STATUSES)[number];
 
 export type FinanceWorkspaceItem = Finance & {
   projectName: string | null;
   clientName: string | null;
   vendorName: string | null;
-  /** UI-only quotation status for the Quotations tab. */
-  quotationStatus?: QuotationDisplayStatus;
 };
 
 export type FinanceBudgetLine = {

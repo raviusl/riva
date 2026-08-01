@@ -69,6 +69,7 @@ const COORDINATOR_PERMISSIONS: readonly PlatformPermission[] = [
   "document.read",
   "document.write",
   "finance.read",
+  "finance.write",
   "notification.read",
   "notification.write",
   "automation.read",
@@ -87,6 +88,7 @@ const SALES_PERMISSIONS: readonly PlatformPermission[] = [
   "timeline.read",
   "document.read",
   "finance.read",
+  "finance.write",
   "notification.read",
   "notification.write",
 ];

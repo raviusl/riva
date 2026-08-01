@@ -4,11 +4,13 @@ import {
   FINANCE_CATEGORIES,
   FINANCE_STATUSES,
   FINANCE_TYPES,
+  QUOTATION_STATUSES,
 } from "@/core/finance/constants";
 
 export const financeTypeSchema = z.enum(FINANCE_TYPES);
 export const financeStatusSchema = z.enum(FINANCE_STATUSES);
 export const financeCategorySchema = z.enum(FINANCE_CATEGORIES);
+export const quotationStatusSchema = z.enum(QUOTATION_STATUSES);
 
 const moneySchema = z.number().finite().nonnegative();
 const currencySchema = z
@@ -22,6 +24,24 @@ export const financeIdSchema = z.object({
 });
 
 export type FinanceIdInput = z.infer<typeof financeIdSchema>;
+
+export const quotationIdSchema = z.object({
+  quotationId: z.string().uuid(),
+  workspaceId: z.string().uuid(),
+  companyId: z.string().uuid(),
+});
+
+export type QuotationIdInput = z.infer<typeof quotationIdSchema>;
+
+export const financeLineItemInputSchema = z.object({
+  description: z.string().min(1).max(500),
+  quantity: z.number().finite().positive().default(1),
+  unitPrice: moneySchema.default(0),
+  tax: moneySchema.optional().default(0),
+  discount: moneySchema.optional().default(0),
+});
+
+export type FinanceLineItemInput = z.infer<typeof financeLineItemInputSchema>;
 
 export const createFinanceSchema = z.object({
   companyId: z.string().uuid(),
@@ -40,10 +60,31 @@ export const createFinanceSchema = z.object({
   issuedAt: z.string().min(1).max(64).optional().nullable(),
   dueAt: z.string().min(1).max(64).optional().nullable(),
   paidAt: z.string().min(1).max(64).optional().nullable(),
+  notes: z.string().max(8000).optional().nullable(),
+  internalNotes: z.string().max(8000).optional().nullable(),
   createdBy: z.string().uuid(),
 });
 
 export type CreateFinanceInput = z.infer<typeof createFinanceSchema>;
+
+export const createQuotationSchema = z.object({
+  companyId: z.string().uuid(),
+  workspaceId: z.string().uuid(),
+  projectId: z.string().uuid().optional().nullable(),
+  clientId: z.string().uuid().optional().nullable(),
+  vendorId: z.string().uuid().optional().nullable(),
+  category: financeCategorySchema.optional().default("general"),
+  currency: currencySchema.optional().default("USD"),
+  referenceNumber: z.string().max(100).optional().nullable(),
+  issuedAt: z.string().min(1).max(64).optional().nullable(),
+  dueAt: z.string().min(1).max(64).optional().nullable(),
+  notes: z.string().max(8000).optional().nullable(),
+  internalNotes: z.string().max(8000).optional().nullable(),
+  lineItems: z.array(financeLineItemInputSchema).min(1).max(200),
+  createdBy: z.string().uuid(),
+});
+
+export type CreateQuotationInput = z.infer<typeof createQuotationSchema>;
 
 export const updateFinanceSchema = z.object({
   financeId: z.string().uuid(),
@@ -61,10 +102,32 @@ export const updateFinanceSchema = z.object({
   issuedAt: z.string().min(1).max(64).optional().nullable(),
   dueAt: z.string().min(1).max(64).optional().nullable(),
   paidAt: z.string().min(1).max(64).optional().nullable(),
+  notes: z.string().max(8000).optional().nullable(),
+  internalNotes: z.string().max(8000).optional().nullable(),
   updatedBy: z.string().uuid(),
 });
 
 export type UpdateFinanceInput = z.infer<typeof updateFinanceSchema>;
+
+export const updateQuotationSchema = z.object({
+  quotationId: z.string().uuid(),
+  workspaceId: z.string().uuid(),
+  companyId: z.string().uuid(),
+  projectId: z.string().uuid().optional().nullable(),
+  clientId: z.string().uuid().optional().nullable(),
+  vendorId: z.string().uuid().optional().nullable(),
+  category: financeCategorySchema.optional(),
+  currency: currencySchema.optional(),
+  referenceNumber: z.string().max(100).optional().nullable(),
+  issuedAt: z.string().min(1).max(64).optional().nullable(),
+  dueAt: z.string().min(1).max(64).optional().nullable(),
+  notes: z.string().max(8000).optional().nullable(),
+  internalNotes: z.string().max(8000).optional().nullable(),
+  lineItems: z.array(financeLineItemInputSchema).min(1).max(200).optional(),
+  updatedBy: z.string().uuid(),
+});
+
+export type UpdateQuotationInput = z.infer<typeof updateQuotationSchema>;
 
 export const listFinanceQuerySchema = z.object({
   companyId: z.string().uuid(),
@@ -79,12 +142,30 @@ export const listFinanceQuerySchema = z.object({
 
 export type ListFinanceQuery = z.infer<typeof listFinanceQuerySchema>;
 
+export const listQuotationsQuerySchema = z.object({
+  companyId: z.string().uuid(),
+  workspaceId: z.string().uuid(),
+  projectId: z.string().uuid().optional(),
+  clientId: z.string().uuid().optional(),
+  status: quotationStatusSchema.optional(),
+});
+
+export type ListQuotationsQuery = z.infer<typeof listQuotationsQuerySchema>;
+
 export const deleteFinanceSchema = z.object({
   financeId: z.string().uuid(),
   actorId: z.string().uuid(),
 });
 
 export type DeleteFinanceInput = z.infer<typeof deleteFinanceSchema>;
+
+export const transitionQuotationSchema = quotationIdSchema.extend({
+  note: z.string().max(2000).optional().nullable(),
+});
+
+export type TransitionQuotationInput = z.infer<
+  typeof transitionQuotationSchema
+>;
 
 /** Full Finance shape validation (read model). */
 export const financeSchema = z.object({
@@ -105,6 +186,9 @@ export const financeSchema = z.object({
   issuedAt: z.string().min(1).max(64).nullable(),
   dueAt: z.string().min(1).max(64).nullable(),
   paidAt: z.string().min(1).max(64).nullable(),
+  convertedInvoiceId: z.string().uuid().nullable(),
+  notes: z.string().max(8000).nullable(),
+  internalNotes: z.string().max(8000).nullable(),
   createdBy: z.string().uuid(),
   updatedBy: z.string().uuid().nullable(),
   createdAt: z.string().min(1),

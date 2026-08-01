@@ -1,5 +1,5 @@
 /**
- * Shared Finance domain types — platform foundation (Project 035).
+ * Shared Finance domain types — platform foundation (Project 035 / 089).
  */
 
 import type {
@@ -12,13 +12,13 @@ export type {
   FinanceCategory,
   FinanceStatus,
   FinanceType,
+  QuotationStatus,
 } from "@/core/finance/constants";
 
 export type FinanceId = string;
 
 /**
  * Core Finance entity shared across Project, Client, Vendor, and company workspaces.
- * Persistence and payments providers are deferred.
  */
 export type Finance = {
   id: FinanceId;
@@ -38,6 +38,9 @@ export type Finance = {
   issuedAt: string | null;
   dueAt: string | null;
   paidAt: string | null;
+  convertedInvoiceId: string | null;
+  notes: string | null;
+  internalNotes: string | null;
   createdBy: string;
   updatedBy: string | null;
   createdAt: string;
@@ -54,3 +57,23 @@ export type Payment = Finance & { type: "payment" };
 export type Refund = Finance & { type: "refund" };
 export type Budget = Finance & { type: "budget" };
 export type Transaction = Finance & { type: "transaction" };
+
+export type FinanceLineItem = {
+  id: string;
+  financeId: string;
+  workspaceId: string;
+  companyId: string;
+  position: number;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  tax: number;
+  discount: number;
+  amount: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type QuotationWithLines = Quotation & {
+  lineItems: FinanceLineItem[];
+};

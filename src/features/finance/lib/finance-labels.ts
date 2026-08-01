@@ -1,6 +1,5 @@
-import type { FinanceStatus, FinanceType } from "@/core/finance";
+import type { FinanceStatus, FinanceType, QuotationStatus } from "@/core/finance";
 import { uiZh } from "@/config/ui-zh";
-import type { QuotationDisplayStatus } from "@/features/finance/lib/finance-types";
 
 export function formatFinanceMoney(
   amount: number,
@@ -78,7 +77,14 @@ export function invoiceStatusLabel(status: FinanceStatus): string {
     case "draft":
       return uiZh.draft;
     case "open":
+    case "sent":
       return uiZh.sent;
+    case "accepted":
+      return uiZh.decisionAccepted;
+    case "rejected":
+      return uiZh.decisionRejected;
+    case "expired":
+      return uiZh.inviteStatusExpired;
     case "paid":
       return uiZh.paid;
     case "overdue":
@@ -86,10 +92,12 @@ export function invoiceStatusLabel(status: FinanceStatus): string {
     case "cancelled":
     case "void":
       return uiZh.cancelled;
+    default:
+      return status;
   }
 }
 
-export function quotationStatusLabel(status: QuotationDisplayStatus): string {
+export function quotationStatusLabel(status: QuotationStatus): string {
   switch (status) {
     case "draft":
       return uiZh.draft;
@@ -101,6 +109,9 @@ export function quotationStatusLabel(status: QuotationDisplayStatus): string {
       return uiZh.decisionRejected;
     case "expired":
       return uiZh.inviteStatusExpired;
+    case "void":
+    case "cancelled":
+      return uiZh.cancelled;
     default:
       return status;
   }
