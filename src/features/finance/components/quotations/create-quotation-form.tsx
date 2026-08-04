@@ -15,10 +15,6 @@ import {
   QuotationLineItemsEditor,
   type LineItemDraft,
 } from "@/features/finance/components/quotations/quotation-line-items";
-import {
-  FINANCE_WORKSPACE_HUB_ID,
-  buildFinanceWorkspaceTabHref,
-} from "@/features/finance/lib/finance-workspace-tabs";
 
 type CreateQuotationFormProps = {
   workspaceId: string;
@@ -41,7 +37,6 @@ export function CreateQuotationForm({
 }: CreateQuotationFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [referenceNumber, setReferenceNumber] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [projectId, setProjectId] = useState(defaultProjectId);
   const [clientId, setClientId] = useState(defaultClientId);
@@ -76,7 +71,7 @@ export function CreateQuotationForm({
         vendorId: vendorId || null,
         category: "general",
         currency,
-        referenceNumber: referenceNumber.trim() || null,
+        referenceNumber: null,
         dueAt: dueAt ? new Date(dueAt).toISOString() : null,
         notes: notes.trim() || null,
         internalNotes: internalNotes.trim() || null,
@@ -94,8 +89,8 @@ export function CreateQuotationForm({
         return;
       }
 
-      toast.success(uiZh.createQuotation);
-      router.push(`/dashboard/finance/quotations/${result.data.quotationId}`);
+      toast.success(uiZh.quotationCreated);
+      router.push("/dashboard/finance/quotations");
       router.refresh();
     });
   }
@@ -104,12 +99,12 @@ export function CreateQuotationForm({
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-white/70">{uiZh.referenceNumber}</Label>
+          <Label className="text-white/70">{uiZh.quotationNumber}</Label>
           <Input
             className={authFieldClassName}
-            value={referenceNumber}
-            onChange={(event) => setReferenceNumber(event.target.value)}
-            placeholder="QT-1001"
+            value={uiZh.quotationNumberAuto}
+            disabled
+            readOnly
           />
         </div>
         <div className="space-y-1.5">
@@ -208,13 +203,7 @@ export function CreateQuotationForm({
           type="button"
           variant="ghost"
           disabled={pending}
-          onClick={() =>
-            router.push(
-              buildFinanceWorkspaceTabHref(FINANCE_WORKSPACE_HUB_ID, "quotations", {
-                explicitOverview: true,
-              }),
-            )
-          }
+          onClick={() => router.push("/dashboard/finance/quotations")}
         >
           {uiZh.cancel}
         </Button>

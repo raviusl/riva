@@ -6,7 +6,6 @@ import { useCallback } from "react";
 import { WorkspaceComingSoon } from "@/components/layout/workspace-coming-soon";
 import { WorkspaceTabNav } from "@/components/layout/workspace-tab-nav";
 import type { Client, Project, Vendor } from "@/core/types";
-import { ProjectWorkspaceClientsPanel } from "@/features/project/components/project-workspace-clients-panel";
 import { ProjectWorkspaceHeader } from "@/features/project/components/project-workspace-header";
 import { ProjectWorkspaceOverview } from "@/features/project/components/project-workspace-overview";
 import { ProjectWorkspaceVendorsPanel } from "@/features/project/components/project-workspace-vendors-panel";
@@ -18,6 +17,7 @@ import {
   type ProjectWorkspaceTabId,
 } from "@/features/project/lib/project-workspace-tabs";
 import { ProjectTimelineEnginePanel } from "@/features/timeline-engine";
+import { WeddingTimelineBuilder } from "@/features/wedding-timeline";
 import { uiZh } from "@/config/ui-zh";
 
 type ProjectWorkspaceProps = {
@@ -27,12 +27,12 @@ type ProjectWorkspaceProps = {
   clients: Client[];
   vendors: Vendor[];
   canWriteProject: boolean;
-  canWriteClient: boolean;
   canWriteVendor: boolean;
-  canReadClient: boolean;
   canReadVendor: boolean;
   canReadTimeline?: boolean;
-  /** Server-parsed tab from the request URL (SSR + refresh). */
+  canWriteTimeline?: boolean;
+  coordinatorLabel?: string | null;
+  salesLabel?: string | null;
   initialTab?: ProjectWorkspaceTabId;
 };
 
@@ -43,15 +43,15 @@ export function ProjectWorkspace({
   clients,
   vendors,
   canWriteProject,
-  canWriteClient,
   canWriteVendor,
-  canReadClient,
   canReadVendor,
   canReadTimeline = false,
+  canWriteTimeline = false,
+  coordinatorLabel,
+  salesLabel,
   initialTab = DEFAULT_PROJECT_WORKSPACE_TAB,
 }: ProjectWorkspaceProps) {
   const searchParams = useSearchParams();
-  // Prefer live URL so back/forward and deep-links update without remount.
   const activeTab = parseProjectWorkspaceTab(
     searchParams.get("tab") ?? initialTab,
   );
@@ -59,7 +59,6 @@ export function ProjectWorkspace({
   const hrefForTab = useCallback(
     (tabId: string) => {
       const tab = parseProjectWorkspaceTab(tabId);
-      // Keep ?tab=overview shareable; bare URL still opens Overview.
       return buildProjectWorkspaceTabHref(project.id, tab, {
         explicitOverview: true,
       });
@@ -87,20 +86,9 @@ export function ProjectWorkspace({
           <ProjectWorkspaceOverview
             project={project}
             clients={clients}
-            vendors={vendors}
-            canWriteClient={canWriteClient}
-            canWriteVendor={canWriteVendor}
-            canReadClient={canReadClient}
-            canReadVendor={canReadVendor}
-          />
-        ) : null}
-
-        {activeTab === "clients" ? (
-          <ProjectWorkspaceClientsPanel
-            project={project}
-            clients={clients}
-            canWriteClient={canWriteClient}
-            canReadClient={canReadClient}
+            canWriteProject={canWriteProject}
+            coordinatorLabel={coordinatorLabel}
+            salesLabel={salesLabel}
           />
         ) : null}
 
@@ -115,44 +103,97 @@ export function ProjectWorkspace({
 
         {activeTab === "timeline" ? (
           canReadTimeline ? (
-            <ProjectTimelineEnginePanel
-              workspaceId={workspaceId}
-              companyId={companyId}
-              projectId={project.id}
-            />
+            <div className="space-y-8">
+              <WeddingTimelineBuilder
+                workspaceId={workspaceId}
+                companyId={companyId}
+                project={project}
+                vendors={vendors}
+                canWrite={canWriteTimeline}
+                coupleName={
+                  clients[0]?.display_name ||
+                  [clients[0]?.bride_name, clients[0]?.groom_name]
+                    .filter(Boolean)
+                    .join(" & ") ||
+                  clients[0]?.name ||
+                  null
+                }
+              />
+              {/* Keep lifecycle engine available as secondary reference */}
+              <details className="rounded-2xl border border-white/[0.06] px-4 py-3">
+                <summary className="cursor-pointer text-xs text-white/40">
+                  {uiZh.timeline} · Lifecycle
+                </summary>
+                <div className="mt-4">
+                  <ProjectTimelineEnginePanel
+                    workspaceId={workspaceId}
+                    companyId={companyId}
+                    projectId={project.id}
+                  />
+                </div>
+              </details>
+            </div>
           ) : (
             <WorkspaceComingSoon
               title={uiZh.timeline}
-              description={uiZh.projectTimelineSoon}
+              description={uiZh.tlNoPermission}
             />
           )
-        ) : null}
-
-        {activeTab === "documents" ? (
-          <WorkspaceComingSoon
-            title={uiZh.documents}
-            description={uiZh.projectDocumentsSoon}
-          />
-        ) : null}
-
-        {activeTab === "finance" ? (
-          <WorkspaceComingSoon
-            title={uiZh.finance}
-            description={uiZh.projectFinanceSoon}
-          />
         ) : null}
 
         {activeTab === "tasks" ? (
           <WorkspaceComingSoon
             title={uiZh.tasks}
-            description={uiZh.projectTasksSoonPlaceholder}
+            description={uiZh.comingSoonModule}
           />
         ) : null}
 
-        {activeTab === "activity" ? (
+        {activeTab === "meetings" ? (
           <WorkspaceComingSoon
-            title={uiZh.activity}
-            description={uiZh.projectActivitySoonPlaceholder}
+            title={uiZh.meetings}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "schedule" ? (
+          <WorkspaceComingSoon
+            title={uiZh.schedule}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "package" ? (
+          <WorkspaceComingSoon
+            title={uiZh.packageTab}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "documents" ? (
+          <WorkspaceComingSoon
+            title={uiZh.documents}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "gallery" ? (
+          <WorkspaceComingSoon
+            title={uiZh.gallery}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "notes" ? (
+          <WorkspaceComingSoon
+            title={uiZh.notes}
+            description={uiZh.comingSoonModule}
+          />
+        ) : null}
+
+        {activeTab === "finance" ? (
+          <WorkspaceComingSoon
+            title={uiZh.financeComingSoon}
+            description={uiZh.comingSoonModule}
           />
         ) : null}
       </div>

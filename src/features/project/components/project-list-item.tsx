@@ -76,7 +76,8 @@ export function ProjectListItem({
                   Edit
                 </Button>
               ) : null}
-              {project.status === "planning" ? (
+              {(project.status === "planning" ||
+                project.status === "confirmed") ? (
                 <Button
                   type="button"
                   size="sm"
@@ -101,7 +102,7 @@ export function ProjectListItem({
                   Activate
                 </Button>
               ) : null}
-              {project.status === "active" ? (
+              {project.status === "execution" ? (
                 <Button
                   type="button"
                   size="sm"

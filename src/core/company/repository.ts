@@ -16,6 +16,24 @@ export function mapCompanyRow(data: Record<string, unknown>): Company {
     timezone: (data.timezone as string | null | undefined) ?? null,
     locale: (data.locale as string | null | undefined) ?? null,
     currency: (data.currency as string | null | undefined) ?? null,
+    registration_no: (data.registration_no as string | null | undefined) ?? null,
+    address: (data.address as string | null | undefined) ?? null,
+    phone: (data.phone as string | null | undefined) ?? null,
+    email: (data.email as string | null | undefined) ?? null,
+    website: (data.website as string | null | undefined) ?? null,
+    bank_name: (data.bank_name as string | null | undefined) ?? null,
+    bank_account_name:
+      (data.bank_account_name as string | null | undefined) ?? null,
+    bank_account_number:
+      (data.bank_account_number as string | null | undefined) ?? null,
+    swift_code: (data.swift_code as string | null | undefined) ?? null,
+    signature_url: (data.signature_url as string | null | undefined) ?? null,
+    default_payment_terms:
+      (data.default_payment_terms as string | null | undefined) ?? null,
+    default_terms_and_conditions:
+      (data.default_terms_and_conditions as string | null | undefined) ?? null,
+    default_document_footer:
+      (data.default_document_footer as string | null | undefined) ?? null,
     created_at: data.created_at as string,
     updated_at: data.updated_at as string,
   };
@@ -42,6 +60,19 @@ export type UpdateCompanyRow = {
   timezone?: string | null;
   locale?: string | null;
   currency?: string | null;
+  registration_no?: string | null;
+  address?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  bank_name?: string | null;
+  bank_account_name?: string | null;
+  bank_account_number?: string | null;
+  swift_code?: string | null;
+  signature_url?: string | null;
+  default_payment_terms?: string | null;
+  default_terms_and_conditions?: string | null;
+  default_document_footer?: string | null;
   status?: CompanyStatus;
 };
 

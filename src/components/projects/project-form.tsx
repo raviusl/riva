@@ -62,6 +62,9 @@ type ProjectFormProps = {
   workspaceId: string;
   companyId: string;
   clients: Client[];
+  defaultClientId?: string | null;
+  defaultName?: string;
+  defaultWeddingDate?: string | null;
   onSuccess?: (projectId: string) => void;
   onCancel?: () => void;
 };
@@ -70,6 +73,9 @@ export function ProjectForm({
   workspaceId,
   companyId,
   clients,
+  defaultClientId,
+  defaultName,
+  defaultWeddingDate,
   onSuccess,
   onCancel,
 }: ProjectFormProps) {
@@ -78,12 +84,12 @@ export function ProjectForm({
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
-      name: "",
-      clientId: "",
+      name: defaultName ?? "",
+      clientId: defaultClientId ?? "",
       description: "",
       startDate: "",
       endDate: "",
-      status: "planning",
+      status: "inquiry",
     },
   });
 
@@ -100,6 +106,9 @@ export function ProjectForm({
             clientId: values.clientId || null,
             startDate: values.startDate || null,
             endDate: values.endDate || null,
+            weddingDate: defaultWeddingDate || null,
+            eventDate: defaultWeddingDate || null,
+            projectType: "wedding",
             status: values.status,
           });
 

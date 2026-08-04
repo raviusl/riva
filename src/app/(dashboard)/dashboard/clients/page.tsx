@@ -1,5 +1,6 @@
 import { requireDashboardContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
+import { listProjectsByCompany } from "@/core/project/project";
 import { ClientList } from "@/components/crm/client-list";
 import { uiZh } from "@/config/ui-zh";
 
@@ -14,15 +15,27 @@ export default async function ClientsPage() {
     );
   }
 
-  const clients = await listClientsByCompany(
-    context.workspace.id,
-    context.company.id,
-  );
+  const [clients, projects] = await Promise.all([
+    listClientsByCompany(context.workspace.id, context.company.id),
+    context.permissions.has("project.read")
+      ? listProjectsByCompany(context.workspace.id, context.company.id)
+      : Promise.resolve([]),
+  ]);
   const canWrite = context.permissions.has("client.write");
+
+  const projectCountByClient = new Map<string, number>();
+  for (const project of projects) {
+    if (!project.client_id) continue;
+    projectCountByClient.set(
+      project.client_id,
+      (projectCountByClient.get(project.client_id) ?? 0) + 1,
+    );
+  }
 
   const rows = clients.map((client) => ({
     client,
-    projectCount: client.project_id ? 1 : 0,
+    projectCount:
+      projectCountByClient.get(client.id) ?? (client.project_id ? 1 : 0),
   }));
 
   return (

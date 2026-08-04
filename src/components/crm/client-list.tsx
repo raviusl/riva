@@ -64,24 +64,41 @@ export function ClientList({
   canWrite,
 }: ClientListProps) {
   const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [activeFilter, setActiveFilter] = useState<string>("all");
   const [sortKey, setSortKey] = useState<SortKey>("updatedAt");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const base = q
-      ? rows.filter(({ client }) => {
-          const haystack = [
-            client.name,
-            client.email ?? "",
-            client.phone ?? "",
-            formatClientStatus(client.status),
-          ]
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(q);
-        })
-      : rows;
+    const base = rows.filter(({ client }) => {
+      if (statusFilter !== "all" && client.status !== statusFilter) {
+        return false;
+      }
+      if (typeFilter !== "all" && client.client_type !== typeFilter) {
+        return false;
+      }
+      if (activeFilter === "active" && !client.is_active) return false;
+      if (activeFilter === "inactive" && client.is_active) return false;
+      if (activeFilter === "archived" && client.status !== "archived") {
+        return false;
+      }
+      if (!q) return true;
+      const haystack = [
+        client.name,
+        client.display_name ?? "",
+        client.client_code ?? "",
+        client.bride_name ?? "",
+        client.groom_name ?? "",
+        client.email ?? "",
+        client.phone ?? "",
+        formatClientStatus(client.status),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    });
 
     return [...base].sort((left, right) => {
       const a = left.client;
@@ -89,8 +106,8 @@ export function ClientList({
       switch (sortKey) {
         case "name":
           return compareValues(
-            a.name.toLowerCase(),
-            b.name.toLowerCase(),
+            (a.display_name || a.name).toLowerCase(),
+            (b.display_name || b.name).toLowerCase(),
             sortDir,
           );
         case "status":
@@ -114,7 +131,7 @@ export function ClientList({
           return compareValues(a.updated_at, b.updated_at, sortDir);
       }
     });
-  }, [query, rows, sortDir, sortKey]);
+  }, [activeFilter, query, rows, sortDir, sortKey, statusFilter, typeFilter]);
 
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
@@ -157,6 +174,9 @@ export function ClientList({
     );
   }
 
+  const selectClass =
+    "h-10 rounded-md border border-white/[0.08] bg-white/[0.03] px-3 text-sm text-white/80";
+
   return (
     <div className="mx-auto w-full max-w-6xl space-y-10">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
@@ -180,17 +200,57 @@ export function ClientList({
       </div>
 
       {rows.length > 0 ? (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={uiZh.searchClients}
-          className="h-10 max-w-md border-white/[0.08] bg-white/[0.03] text-white placeholder:text-white/30 backdrop-blur-sm"
-            aria-label={uiZh.searchClients}
-          />
-          <p className="text-xs text-white/35">
-            {uiZh.countOfTotal(filtered.length, rows.length)}
-          </p>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={uiZh.searchClients}
+              className="h-10 max-w-md border-white/[0.08] bg-white/[0.03] text-white placeholder:text-white/30 backdrop-blur-sm"
+              aria-label={uiZh.searchClients}
+            />
+            <p className="text-xs text-white/35">
+              {uiZh.countOfTotal(filtered.length, rows.length)}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <select
+              className={selectClass}
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              aria-label={uiZh.status}
+            >
+              <option value="all">{uiZh.filterAllStatuses}</option>
+              <option value="inquiry">{uiZh.clientStatusInquiry}</option>
+              <option value="follow_up">{uiZh.clientStatusFollowUp}</option>
+              <option value="confirmed">{uiZh.clientStatusConfirmed}</option>
+              <option value="completed">{uiZh.clientStatusCompleted}</option>
+              <option value="cancelled">{uiZh.clientStatusCancelled}</option>
+              <option value="archived">{uiZh.clientStatusArchived}</option>
+            </select>
+            <select
+              className={selectClass}
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              aria-label={uiZh.type}
+            >
+              <option value="all">{uiZh.filterAllTypes}</option>
+              <option value="wedding">{uiZh.clientTypeWedding}</option>
+              <option value="corporate">{uiZh.clientTypeCorporate}</option>
+              <option value="private">{uiZh.clientTypePrivate}</option>
+              <option value="others">{uiZh.clientTypeOthers}</option>
+            </select>
+            <select
+              className={selectClass}
+              value={activeFilter}
+              onChange={(e) => setActiveFilter(e.target.value)}
+              aria-label={uiZh.active}
+            >
+              <option value="all">{uiZh.all}</option>
+              <option value="active">{uiZh.filterActive}</option>
+              <option value="inactive">{uiZh.filterInactive}</option>
+            </select>
+          </div>
         </div>
       ) : null}
 
@@ -221,6 +281,9 @@ export function ClientList({
               <TableRow className="border-white/[0.06] hover:bg-transparent">
                 <TableHead className="px-4 py-3">
                   <SortButton label={uiZh.clientName} column="name" />
+                </TableHead>
+                <TableHead className="hidden px-4 py-3 md:table-cell">
+                  {uiZh.clientCode}
                 </TableHead>
                 <TableHead className="px-4 py-3">
                   <SortButton label={uiZh.status} column="status" />
@@ -254,8 +317,15 @@ export function ClientList({
                       href={`/dashboard/clients/${client.id}`}
                       className="font-medium text-white/90 transition hover:text-white"
                     >
-                      {client.name}
+                      {client.display_name || client.name}
                     </Link>
+                    <p className="mt-0.5 text-[11px] text-white/35">
+                      {client.client_type ?? uiZh.emDash}
+                      {!client.is_active ? ` · ${uiZh.filterInactive}` : ""}
+                    </p>
+                  </TableCell>
+                  <TableCell className="hidden px-4 py-3.5 text-white/45 md:table-cell">
+                    {client.client_code || uiZh.emDash}
                   </TableCell>
                   <TableCell className="px-4 py-3.5 text-white/55">
                     {formatClientStatus(client.status)}
@@ -281,3 +351,4 @@ export function ClientList({
     </div>
   );
 }
+

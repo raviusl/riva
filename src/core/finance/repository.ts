@@ -14,7 +14,29 @@ import type {
   Quotation,
 } from "@/core/finance/types";
 import type { FinanceCategory, FinanceStatus, FinanceType } from "@/core/finance/constants";
+import {
+  emptyQuotationDocumentContent,
+  parseQuotationDocumentContent,
+  resolveLineItemKind,
+  type FinanceLineItemKind,
+  type QuotationDocumentContent,
+} from "@/core/finance/document-content";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Json } from "@/types/database";
+
+/** PostgREST / Postgres errors when 093.x columns or tables are not applied yet. */
+function isMissingSchemaError(error: unknown): boolean {
+  const code = (error as { code?: string } | null)?.code;
+  const message = (error as { message?: string } | null)?.message ?? "";
+  return (
+    code === "PGRST204" ||
+    code === "PGRST205" ||
+    code === "42703" ||
+    code === "42P01" ||
+    /could not find the (table|column)/i.test(message) ||
+    /column .* does not exist/i.test(message)
+  );
+}
 
 /**
  * Finance persistence contract — implemented for Project 089.
@@ -66,6 +88,9 @@ export function mapFinanceRow(data: Record<string, unknown>): Finance {
       (data.converted_invoice_id as string | null | undefined) ?? null,
     notes: (data.notes as string | null | undefined) ?? null,
     internalNotes: (data.internal_notes as string | null | undefined) ?? null,
+    documentContent: parseQuotationDocumentContent(
+      data.document_content ?? {},
+    ),
     createdBy: data.created_by as string,
     updatedBy: (data.updated_by as string | null | undefined) ?? null,
     createdAt: data.created_at as string,
@@ -86,6 +111,9 @@ export function mapLineItemRow(data: Record<string, unknown>): FinanceLineItem {
     tax: asNumber(data.tax),
     discount: asNumber(data.discount),
     amount: asNumber(data.amount),
+    itemKind: resolveLineItemKind(data.item_kind),
+    unitOfMeasure: (data.unit_of_measure as string | null | undefined) ?? null,
+    notes: (data.notes as string | null | undefined) ?? null,
     createdAt: data.created_at as string,
     updatedAt: data.updated_at as string,
   };
@@ -198,38 +226,49 @@ export async function insertFinance(input: {
   convertedInvoiceId?: string | null;
   notes?: string | null;
   internalNotes?: string | null;
+  documentContent?: QuotationDocumentContent | null;
   createdBy: string;
   updatedBy?: string | null;
 }): Promise<Finance> {
   const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("finance_records")
-    .insert({
-      company_id: input.companyId,
-      workspace_id: input.workspaceId,
-      project_id: input.projectId ?? null,
-      client_id: input.clientId ?? null,
-      vendor_id: input.vendorId ?? null,
-      type: input.type,
-      category: input.category ?? "general",
-      currency: input.currency ?? "USD",
-      amount: input.amount,
-      tax: input.tax ?? 0,
-      discount: input.discount ?? 0,
-      status: input.status ?? "draft",
-      reference_number: input.referenceNumber ?? null,
-      issued_at: input.issuedAt ?? null,
-      due_at: input.dueAt ?? null,
-      paid_at: input.paidAt ?? null,
-      converted_invoice_id: input.convertedInvoiceId ?? null,
-      notes: input.notes ?? null,
-      internal_notes: input.internalNotes ?? null,
-      created_by: input.createdBy,
-      updated_by: input.updatedBy ?? null,
-    })
-    .select("*")
-    .single();
+  const baseRow = {
+    company_id: input.companyId,
+    workspace_id: input.workspaceId,
+    project_id: input.projectId ?? null,
+    client_id: input.clientId ?? null,
+    vendor_id: input.vendorId ?? null,
+    type: input.type,
+    category: input.category ?? "general",
+    currency: input.currency ?? "USD",
+    amount: input.amount,
+    tax: input.tax ?? 0,
+    discount: input.discount ?? 0,
+    status: input.status ?? "draft",
+    reference_number: input.referenceNumber ?? null,
+    issued_at: input.issuedAt ?? null,
+    due_at: input.dueAt ?? null,
+    paid_at: input.paidAt ?? null,
+    converted_invoice_id: input.convertedInvoiceId ?? null,
+    notes: input.notes ?? null,
+    internal_notes: input.internalNotes ?? null,
+    created_by: input.createdBy,
+    updated_by: input.updatedBy ?? null,
+  };
 
+  const withContent = {
+    ...baseRow,
+    document_content: (input.documentContent ??
+      emptyQuotationDocumentContent()) as Json,
+  };
+
+  let result = await admin.from("finance_records").insert(withContent).select("*").single();
+
+  if (result.error && isMissingSchemaError(result.error)) {
+    // Pre-093.1 DB: document_content column not applied yet.
+    result = await admin.from("finance_records").insert(baseRow).select("*").single();
+  }
+
+  const { data, error } = result;
   if (error || !data) {
     throw error ?? new Error("insertFinance returned no row");
   }
@@ -258,6 +297,7 @@ export async function updateFinanceById(
     convertedInvoiceId?: string | null;
     notes?: string | null;
     internalNotes?: string | null;
+    documentContent?: QuotationDocumentContent | null;
     updatedBy: string;
   },
 ): Promise<Finance> {
@@ -280,6 +320,7 @@ export async function updateFinanceById(
     converted_invoice_id?: string | null;
     notes?: string | null;
     internal_notes?: string | null;
+    document_content?: Json;
     updated_by: string;
   } = {
     updated_by: patch.updatedBy,
@@ -308,8 +349,12 @@ export async function updateFinanceById(
   if (patch.internalNotes !== undefined) {
     updatePayload.internal_notes = patch.internalNotes;
   }
+  if (patch.documentContent !== undefined) {
+    updatePayload.document_content = (patch.documentContent ??
+      emptyQuotationDocumentContent()) as Json;
+  }
 
-  const { data, error } = await admin
+  let result = await admin
     .from("finance_records")
     .update(updatePayload)
     .eq("id", financeId)
@@ -318,6 +363,24 @@ export async function updateFinanceById(
     .select("*")
     .single();
 
+  if (
+    result.error &&
+    isMissingSchemaError(result.error) &&
+    updatePayload.document_content !== undefined
+  ) {
+    const { document_content: _omit, ...withoutContent } = updatePayload;
+    void _omit;
+    result = await admin
+      .from("finance_records")
+      .update(withoutContent)
+      .eq("id", financeId)
+      .eq("company_id", companyId)
+      .eq("workspace_id", workspaceId)
+      .select("*")
+      .single();
+  }
+
+  const { data, error } = result;
   if (error || !data) {
     throw error ?? new Error("updateFinanceById returned no row");
   }
@@ -340,18 +403,216 @@ export async function listLineItems(
   );
 }
 
+type LineItemWriteInput = {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  tax: number;
+  discount: number;
+  amount: number;
+  itemKind?: FinanceLineItemKind;
+  unitOfMeasure?: string | null;
+  notes?: string | null;
+};
+
+async function insertLineItems(
+  financeId: string,
+  companyId: string,
+  workspaceId: string,
+  items: LineItemWriteInput[],
+): Promise<FinanceLineItem[]> {
+  if (items.length === 0) return [];
+
+  const admin = createAdminClient();
+  const baseRows = items.map((item, index) => ({
+    finance_id: financeId,
+    company_id: companyId,
+    workspace_id: workspaceId,
+    position: index,
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unitPrice,
+    tax: item.tax,
+    discount: item.discount,
+    amount: item.amount,
+  }));
+
+  const withKind = baseRows.map((row, index) => ({
+    ...row,
+    item_kind: items[index]?.itemKind ?? "line",
+    unit_of_measure: items[index]?.unitOfMeasure ?? null,
+    notes: items[index]?.notes ?? null,
+  }));
+
+  let result = await admin
+    .from("finance_line_items")
+    .insert(withKind)
+    .select("*")
+    .order("position", { ascending: true });
+
+  if (result.error && isMissingSchemaError(result.error)) {
+    // Retry without newer commercial columns when migrations are pending.
+    const withKindOnly = baseRows.map((row, index) => ({
+      ...row,
+      item_kind: items[index]?.itemKind ?? "line",
+    }));
+    result = await admin
+      .from("finance_line_items")
+      .insert(withKindOnly)
+      .select("*")
+      .order("position", { ascending: true });
+  }
+
+  if (result.error && isMissingSchemaError(result.error)) {
+    // Pre-093.1 DB: item_kind column not applied yet.
+    result = await admin
+      .from("finance_line_items")
+      .insert(baseRows)
+      .select("*")
+      .order("position", { ascending: true });
+  }
+
+  const { data, error } = result;
+  if (error) throw error;
+  return (data ?? []).map((row) =>
+    mapLineItemRow(row as Record<string, unknown>),
+  );
+}
+
+export async function deleteFinanceById(
+  companyId: string,
+  workspaceId: string,
+  financeId: string,
+): Promise<void> {
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("finance_records")
+    .delete()
+    .eq("id", financeId)
+    .eq("company_id", companyId)
+    .eq("workspace_id", workspaceId);
+
+  if (error) throw error;
+}
+
+/**
+ * Persist finance header + line items inside one DB transaction (RPC).
+ * Falls back to compensating delete if the RPC is not yet applied.
+ */
+export async function createFinanceWithLineItems(
+  input: Parameters<typeof insertFinance>[0],
+  items: LineItemWriteInput[],
+): Promise<{ finance: Finance; lineItems: FinanceLineItem[] }> {
+  const admin = createAdminClient();
+
+  const recordPayload = {
+    company_id: input.companyId,
+    workspace_id: input.workspaceId,
+    project_id: input.projectId ?? null,
+    client_id: input.clientId ?? null,
+    vendor_id: input.vendorId ?? null,
+    type: input.type,
+    category: input.category ?? "general",
+    currency: input.currency ?? "USD",
+    amount: input.amount,
+    tax: input.tax ?? 0,
+    discount: input.discount ?? 0,
+    status: input.status ?? "draft",
+    reference_number: input.referenceNumber ?? null,
+    issued_at: input.issuedAt ?? null,
+    due_at: input.dueAt ?? null,
+    notes: input.notes ?? null,
+    internal_notes: input.internalNotes ?? null,
+    created_by: input.createdBy,
+    updated_by: input.updatedBy ?? null,
+  };
+
+  // Include document_content only when provided; RPC / DB may not have the column yet.
+  const recordWithContent =
+    input.documentContent !== undefined
+      ? {
+          ...recordPayload,
+          document_content: (input.documentContent ??
+            emptyQuotationDocumentContent()) as Json,
+        }
+      : recordPayload;
+
+  const itemsPayload = items.map((item) => ({
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unitPrice,
+    tax: item.tax,
+    discount: item.discount,
+    amount: item.amount,
+  }));
+
+  const { data, error } = await admin.rpc(
+    "create_finance_quotation_with_items",
+    {
+      p_record: recordWithContent,
+      p_items: itemsPayload,
+    },
+  );
+
+  if (!error && data && typeof data === "object") {
+    const payload = data as {
+      finance?: Record<string, unknown>;
+      line_items?: Record<string, unknown>[];
+    };
+    if (payload.finance) {
+      return {
+        finance: mapFinanceRow(payload.finance),
+        lineItems: (payload.line_items ?? []).map((row) =>
+          mapLineItemRow(row),
+        ),
+      };
+    }
+  }
+
+  const rpcMissing =
+    !!error &&
+    (error.code === "PGRST202" ||
+      error.code === "42883" ||
+      /could not find the function|function .* does not exist/i.test(
+        error.message ?? "",
+      ));
+
+  if (error && !rpcMissing) {
+    throw error;
+  }
+
+  // Fallback when RPC migration is not applied yet.
+  if (rpcMissing) {
+    console.warn(
+      "create_finance_quotation_with_items RPC unavailable; using compensating rollback",
+      error.message,
+    );
+  }
+
+  const finance = await insertFinance(input);
+  try {
+    const lineItems = await insertLineItems(
+      finance.id,
+      input.companyId,
+      input.workspaceId,
+      items,
+    );
+    return { finance, lineItems };
+  } catch (writeError) {
+    try {
+      await deleteFinanceById(input.companyId, input.workspaceId, finance.id);
+    } catch (rollbackError) {
+      console.error("createFinanceWithLineItems rollback failed", rollbackError);
+    }
+    throw writeError;
+  }
+}
+
 export async function replaceLineItems(
   financeId: string,
   companyId: string,
   workspaceId: string,
-  items: Array<{
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    tax: number;
-    discount: number;
-    amount: number;
-  }>,
+  items: LineItemWriteInput[],
 ): Promise<FinanceLineItem[]> {
   const admin = createAdminClient();
 
@@ -364,29 +625,5 @@ export async function replaceLineItems(
 
   if (deleteError) throw deleteError;
 
-  if (items.length === 0) return [];
-
-  const { data, error } = await admin
-    .from("finance_line_items")
-    .insert(
-      items.map((item, index) => ({
-        finance_id: financeId,
-        company_id: companyId,
-        workspace_id: workspaceId,
-        position: index,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unitPrice,
-        tax: item.tax,
-        discount: item.discount,
-        amount: item.amount,
-      })),
-    )
-    .select("*")
-    .order("position", { ascending: true });
-
-  if (error) throw error;
-  return (data ?? []).map((row) =>
-    mapLineItemRow(row as Record<string, unknown>),
-  );
+  return insertLineItems(financeId, companyId, workspaceId, items);
 }

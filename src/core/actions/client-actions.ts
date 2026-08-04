@@ -6,6 +6,7 @@ import { requireSessionUserId } from "@/core/auth/session";
 import {
   archiveClient,
   createClient,
+  deleteClient,
   markClientFollowUp,
   restoreClient,
   updateClient,
@@ -91,6 +92,23 @@ export async function archiveClientAction(
     return {
       ok: false,
       error: toCoreUserMessage(error, "Failed to archive client"),
+    };
+  }
+}
+
+export async function deleteClientAction(
+  input: ClientIdInput,
+): Promise<ClientActionResult<{ clientId: string }>> {
+  try {
+    const userId = await requireSessionUserId();
+    await requireClientWrite(userId, input.workspaceId, input.companyId);
+    await deleteClient(input, { actorId: userId });
+    revalidateClientPaths(input.clientId);
+    return { ok: true, data: { clientId: input.clientId } };
+  } catch (error) {
+    return {
+      ok: false,
+      error: toCoreUserMessage(error, "Failed to delete client"),
     };
   }
 }

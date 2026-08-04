@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { formatProjectStatus } from "@/components/projects/project-labels";
 import { WorkspaceEntityLink } from "@/components/layout/workspace-entity-link";
 import { uiZh } from "@/config/ui-zh";
 import type { Project, Vendor } from "@/core/types";
@@ -26,18 +27,7 @@ function statusLabel(status: Vendor["status"]) {
 }
 
 function projectStatusLabel(status: Project["status"]) {
-  switch (status) {
-    case "planning":
-      return uiZh.planning;
-    case "active":
-      return uiZh.projectActive;
-    case "completed":
-      return uiZh.completed;
-    case "archived":
-      return uiZh.archived;
-    default:
-      return status;
-  }
+  return formatProjectStatus(status);
 }
 
 function formatDate(value: string | null) {

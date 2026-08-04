@@ -34,6 +34,7 @@ function revalidateFinancePaths(quotationId?: string) {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/finance");
   revalidatePath("/dashboard/finance/workspace");
+  revalidatePath("/dashboard/finance/quotations");
   if (quotationId) {
     revalidatePath(`/dashboard/finance/quotations/${quotationId}`);
     revalidatePath(`/dashboard/finance/quotations/${quotationId}/edit`);

@@ -97,7 +97,7 @@ export function ClientListItem({
                   Edit
                 </Button>
               ) : null}
-              {client.status === "active" ? (
+              {client.status === "inquiry" && client.is_active ? (
                 <Button
                   type="button"
                   size="sm"

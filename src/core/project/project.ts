@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getCompanyById } from "@/core/company/company";
-import { updateClient } from "@/core/client/client";
+import { updateClientById, findClientById } from "@/core/client/repository";
 import { getClientById } from "@/core/client/client";
 import { CoreError } from "@/core/errors";
 import {
@@ -16,6 +16,7 @@ import type { Project, ProjectStatus } from "@/core/types";
 import { getWorkspaceById } from "@/core/workspace/workspace";
 import {
   findProjectById,
+  findProjectsByClient,
   findProjectsByCompany,
   findProjectsByWorkspace,
   insertProject,
@@ -25,9 +26,13 @@ import {
 export type { CreateProjectInput, UpdateProjectInput, ProjectIdInput };
 
 const EDITABLE_STATUSES: ProjectStatus[] = [
+  "inquiry",
+  "proposal",
+  "confirmed",
   "planning",
-  "active",
+  "execution",
   "completed",
+  "cancelled",
 ];
 
 function assertEditable(project: Project): void {
@@ -37,6 +42,11 @@ function assertEditable(project: Project): void {
       "Archived projects cannot be edited. Restore the project first.",
     );
   }
+}
+
+function trimOrNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
 }
 
 async function assertCompanyInWorkspace(
@@ -52,6 +62,20 @@ async function assertCompanyInWorkspace(
   }
 }
 
+async function linkClientToProject(input: {
+  workspaceId: string;
+  companyId: string;
+  clientId: string;
+  projectId: string;
+}): Promise<void> {
+  const client = await getClientById(
+    input.clientId,
+    input.workspaceId,
+    input.companyId,
+  );
+  await updateClientById(client.id, { project_id: input.projectId });
+}
+
 export async function createProject(
   input: CreateProjectInput,
 ): Promise<Project> {
@@ -59,43 +83,52 @@ export async function createProject(
   await getWorkspaceById(values.workspaceId);
   await assertCompanyInWorkspace(values.workspaceId, values.companyId);
 
+  if (values.clientId) {
+    await getClientById(
+      values.clientId,
+      values.workspaceId,
+      values.companyId,
+    );
+  }
+
   try {
-    const project = await insertProject({
+    let project = await insertProject({
       workspace_id: values.workspaceId,
       company_id: values.companyId,
+      client_id: values.clientId ?? null,
       name: values.name.trim(),
-      description: values.description?.trim() || null,
+      project_code: trimOrNull(values.projectCode),
+      description: trimOrNull(values.description),
       project_type: values.projectType ?? null,
-      status: values.status ?? "planning",
+      status: values.status ?? "inquiry",
       owner_id: values.ownerId ?? null,
+      coordinator_id: values.coordinatorId ?? null,
+      sales_id: values.salesId ?? null,
       start_date: values.startDate || null,
       end_date: values.endDate || null,
+      wedding_date: values.weddingDate || null,
+      event_date: values.eventDate || values.weddingDate || null,
+      venue: trimOrNull(values.venue),
+      session: values.session ?? null,
+      package_name: trimOrNull(values.packageName),
+      expected_pax: values.expectedPax ?? null,
+      theme: trimOrNull(values.theme),
+      dress_code: trimOrNull(values.dressCode),
     });
 
+    if (!project.project_code) {
+      project = await updateProjectById(project.id, {
+        project_code: `PRJ-${project.id.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
+      });
+    }
+
     if (values.clientId) {
-      const client = await getClientById(
-        values.clientId,
-        values.workspaceId,
-        values.companyId,
-      );
-      const actorId = values.ownerId;
-      await updateClient(
-        {
-          workspaceId: values.workspaceId,
-          companyId: values.companyId,
-          clientId: client.id,
-          name: client.name,
-          email: client.email,
-          phone: client.phone,
-          projectId: project.id,
-          ownerId: client.owner_id,
-          clientType: client.client_type,
-          status: client.status,
-          followUpAt: client.follow_up_at,
-          notes: client.notes,
-        },
-        actorId ? { actorId } : undefined,
-      );
+      await linkClientToProject({
+        workspaceId: values.workspaceId,
+        companyId: values.companyId,
+        clientId: values.clientId,
+        projectId: project.id,
+      });
     }
 
     return project;
@@ -155,6 +188,23 @@ export async function listProjectsByWorkspace(
   }
 }
 
+export async function listProjectsByClient(
+  workspaceId: string,
+  companyId: string,
+  clientId: string,
+): Promise<Project[]> {
+  await getWorkspaceById(workspaceId);
+  await assertCompanyInWorkspace(workspaceId, companyId);
+  await getClientById(clientId, workspaceId, companyId);
+
+  try {
+    return await findProjectsByClient(workspaceId, companyId, clientId);
+  } catch (error) {
+    console.error("listProjectsByClient failed", error);
+    throw new CoreError("PROJECT_LIST_FAILED", "Failed to list projects.");
+  }
+}
+
 export async function updateProject(input: UpdateProjectInput): Promise<Project> {
   const values = updateProjectSchema.parse(input);
   const project = await getProjectById(values.projectId, values.workspaceId);
@@ -171,20 +221,74 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
 
   assertEditable(project);
 
+  if (values.clientId) {
+    await getClientById(
+      values.clientId,
+      values.workspaceId,
+      values.companyId,
+    );
+  }
+
   try {
-    return await updateProjectById(project.id, {
+    const updated = await updateProjectById(project.id, {
       name: values.name.trim(),
+      client_id:
+        values.clientId !== undefined ? values.clientId : project.client_id,
+      project_code:
+        values.projectCode !== undefined
+          ? trimOrNull(values.projectCode)
+          : project.project_code,
       description:
         values.description !== undefined
-          ? values.description?.trim() || null
+          ? trimOrNull(values.description)
           : project.description,
       project_type: values.projectType ?? null,
       status: values.status ?? project.status,
       owner_id: values.ownerId !== undefined ? values.ownerId : project.owner_id,
+      coordinator_id:
+        values.coordinatorId !== undefined
+          ? values.coordinatorId
+          : project.coordinator_id,
+      sales_id:
+        values.salesId !== undefined ? values.salesId : project.sales_id,
       start_date:
         values.startDate !== undefined ? values.startDate : project.start_date,
       end_date: values.endDate !== undefined ? values.endDate : project.end_date,
+      wedding_date:
+        values.weddingDate !== undefined
+          ? values.weddingDate
+          : project.wedding_date,
+      event_date:
+        values.eventDate !== undefined ? values.eventDate : project.event_date,
+      venue:
+        values.venue !== undefined ? trimOrNull(values.venue) : project.venue,
+      session: values.session !== undefined ? values.session : project.session,
+      package_name:
+        values.packageName !== undefined
+          ? trimOrNull(values.packageName)
+          : project.package_name,
+      expected_pax:
+        values.expectedPax !== undefined
+          ? values.expectedPax
+          : project.expected_pax,
+      theme:
+        values.theme !== undefined ? trimOrNull(values.theme) : project.theme,
+      dress_code:
+        values.dressCode !== undefined
+          ? trimOrNull(values.dressCode)
+          : project.dress_code,
     });
+
+    if (values.clientId) {
+      await linkClientToProject({
+        workspaceId: values.workspaceId,
+        companyId: values.companyId,
+        clientId: values.clientId,
+        projectId: updated.id,
+      });
+    }
+
+    return updated;
   } catch (error) {
     console.error("updateProject failed", error);
     throw new CoreError("PROJECT_UPDATE_FAILED", "Failed to update project.");
@@ -244,6 +348,7 @@ export async function restoreProject(input: ProjectIdInput): Promise<Project> {
   }
 }
 
+/** Move project into Execution stage (legacy “activate”). */
 export async function activateProject(input: ProjectIdInput): Promise<Project> {
   const values = projectIdSchema.parse(input);
   const project = await getProjectById(values.projectId, values.workspaceId);
@@ -260,12 +365,12 @@ export async function activateProject(input: ProjectIdInput): Promise<Project> {
       "Archived projects cannot be activated. Restore first.",
     );
   }
-  if (project.status === "active") {
+  if (project.status === "execution") {
     return project;
   }
 
   try {
-    return await updateProjectById(project.id, { status: "active" });
+    return await updateProjectById(project.id, { status: "execution" });
   } catch (error) {
     console.error("activateProject failed", error);
     throw new CoreError(
@@ -273,4 +378,14 @@ export async function activateProject(input: ProjectIdInput): Promise<Project> {
       "Failed to activate project.",
     );
   }
+}
+
+/** Resolve primary client for a project (projects.client_id or reverse link). */
+export async function getProjectPrimaryClient(
+  project: Project,
+): Promise<Awaited<ReturnType<typeof findClientById>>> {
+  if (project.client_id) {
+    return findClientById(project.client_id, project.workspace_id);
+  }
+  return null;
 }

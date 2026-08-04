@@ -74,8 +74,8 @@ export function ClientForm({
             email: values.email || null,
             phone: values.phone || null,
             notes: composeClientNotes(values.companyName, values.notes),
-            status: "active",
-            clientType: "individual",
+            status: "inquiry",
+            clientType: "wedding",
           });
 
           if (!result.ok) {

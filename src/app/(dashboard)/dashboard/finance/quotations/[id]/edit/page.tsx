@@ -4,10 +4,12 @@ import { notFound, redirect } from "next/navigation";
 import { uiZh } from "@/config/ui-zh";
 import { requireDashboardContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
+import { listFinancePackages } from "@/core/finance/packages";
 import { getQuotation } from "@/core/finance/quotation";
 import { listProjectsByCompany } from "@/core/project/project";
 import { listVendorsByCompany } from "@/core/vendor/vendor";
-import { EditQuotationForm } from "@/features/finance/components/quotations/edit-quotation-form";
+import { QuotationEditor } from "@/features/finance/components/quotations/quotation-editor";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -36,14 +38,31 @@ export default async function EditQuotationPage({ params }: PageProps) {
     redirect(`/dashboard/finance/quotations/${id}`);
   }
 
-  const [projects, clients, vendors] = await Promise.all([
-    listProjectsByCompany(context.workspace.id, context.company.id),
-    listClientsByCompany(context.workspace.id, context.company.id),
-    listVendorsByCompany(context.workspace.id, context.company.id),
-  ]);
+  const admin = createAdminClient();
+  const [{ data: profile }, projects, clients, vendors, packages] =
+    await Promise.all([
+      admin
+        .from("profiles")
+        .select("full_name, display_name")
+        .eq("id", context.userId)
+        .maybeSingle(),
+      listProjectsByCompany(context.workspace.id, context.company.id),
+      listClientsByCompany(context.workspace.id, context.company.id),
+      listVendorsByCompany(context.workspace.id, context.company.id),
+      listFinancePackages({
+        workspaceId: context.workspace.id,
+        companyId: context.company.id,
+      }).catch(() => []),
+    ]);
+
+  const preparedByName =
+    quotation.documentContent?.preparedBy?.trim() ||
+    profile?.display_name?.trim() ||
+    profile?.full_name?.trim() ||
+    "";
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-8">
       <div>
         <Link
           href={`/dashboard/finance/quotations/${id}`}
@@ -57,14 +76,17 @@ export default async function EditQuotationPage({ params }: PageProps) {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-        <EditQuotationForm
-          quotation={quotation}
-          projects={projects}
-          clients={clients}
-          vendors={vendors}
-        />
-      </div>
+      <QuotationEditor
+        mode="edit"
+        workspaceId={context.workspace.id}
+        company={context.company}
+        projects={projects}
+        clients={clients}
+        vendors={vendors}
+        packages={packages}
+        preparedByName={preparedByName}
+        quotation={quotation}
+      />
     </div>
   );
 }

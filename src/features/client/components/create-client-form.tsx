@@ -7,34 +7,62 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { formatClientStatus } from "@/components/crm/client-notes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClientAction } from "@/core/actions/client-actions";
 import {
-  CLIENT_STATUSES,
   CLIENT_TYPES,
+  type ClientStatus,
+  type ClientType,
   type Project,
 } from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
 import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 import { uiZh } from "@/config/ui-zh";
 
-const formSchema = z.object({
+const CREATE_CLIENT_STATUSES = [
+  "inquiry",
+  "follow_up",
+  "confirmed",
+  "completed",
+  "cancelled",
+] as const satisfies readonly ClientStatus[];
+
+const createClientFormSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   projectId: z.string().uuid().optional().or(z.literal("")),
   ownerId: z.string().uuid().optional().or(z.literal("")),
   name: z.string().min(1, uiZh.clientNameRequired).max(160),
+  brideName: z.string().max(160).optional(),
+  groomName: z.string().max(160).optional(),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().max(40).optional(),
+  whatsapp: z.string().max(40).optional(),
+  weddingDate: z.string().optional(),
+  venue: z.string().max(300).optional(),
   clientType: z.enum(CLIENT_TYPES),
-  status: z.enum(CLIENT_STATUSES),
+  status: z.enum(CREATE_CLIENT_STATUSES),
   followUpAt: z.string().optional(),
   notes: z.string().max(4000).optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+function clientTypeLabel(type: ClientType): string {
+  switch (type) {
+    case "wedding":
+      return uiZh.weddingMode;
+    case "corporate":
+      return uiZh.corporateClient;
+    case "private":
+      return "Private";
+    case "others":
+      return "Others";
+  }
+}
+
+type FormValues = z.infer<typeof createClientFormSchema>;
 
 export type ClientOwnerOption = {
   userId: string;
@@ -63,17 +91,22 @@ export function CreateClientForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(createClientFormSchema),
     defaultValues: {
       workspaceId,
       companyId,
       projectId: defaultProjectId,
       ownerId: defaultOwnerId,
       name: "",
+      brideName: "",
+      groomName: "",
       email: "",
       phone: "",
-      clientType: "individual",
-      status: "active",
+      whatsapp: "",
+      weddingDate: "",
+      venue: "",
+      clientType: "wedding",
+      status: "inquiry",
       followUpAt: "",
       notes: "",
     },
@@ -89,9 +122,15 @@ export function CreateClientForm({
             companyId: values.companyId,
             projectId: values.projectId || null,
             ownerId: values.ownerId || null,
+            leadOwnerId: values.ownerId || null,
             name: values.name,
+            brideName: values.brideName || null,
+            groomName: values.groomName || null,
             email: values.email || null,
             phone: values.phone || null,
+            whatsapp: values.whatsapp || null,
+            weddingDate: values.weddingDate || null,
+            venue: values.venue || null,
             clientType: values.clientType,
             status: values.status,
             followUpAt: values.followUpAt || null,
@@ -131,6 +170,27 @@ export function CreateClientForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
+          <Label htmlFor="bride-name">{uiZh.brideName}</Label>
+          <Input
+            id="bride-name"
+            className={authFieldClassName}
+            disabled={pending}
+            {...form.register("brideName")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="groom-name">{uiZh.groomName}</Label>
+          <Input
+            id="groom-name"
+            className={authFieldClassName}
+            disabled={pending}
+            {...form.register("groomName")}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
           <Label htmlFor="client-type">{uiZh.type}</Label>
           <select
             id="client-type"
@@ -140,15 +200,7 @@ export function CreateClientForm({
           >
             {CLIENT_TYPES.map((type) => (
               <option key={type} value={type} className="bg-[#121214]">
-                {type === "corporate"
-                  ? uiZh.corporateClient
-                  : type === "bride"
-                    ? uiZh.clientTypeBride
-                    : type === "groom"
-                      ? uiZh.clientTypeGroom
-                      : type === "individual"
-                        ? uiZh.clientTypeIndividual
-                        : type}
+                {clientTypeLabel(type)}
               </option>
             ))}
           </select>
@@ -161,13 +213,34 @@ export function CreateClientForm({
             disabled={pending}
             {...form.register("status")}
           >
-            <option value="active" className="bg-[#121214]">
-              Active
-            </option>
-            <option value="follow_up" className="bg-[#121214]">
-              Follow-up
-            </option>
+            {CREATE_CLIENT_STATUSES.map((status) => (
+              <option key={status} value={status} className="bg-[#121214]">
+                {formatClientStatus(status)}
+              </option>
+            ))}
           </select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="wedding-date">{uiZh.weddingDate}</Label>
+          <Input
+            id="wedding-date"
+            type="date"
+            className={authFieldClassName}
+            disabled={pending}
+            {...form.register("weddingDate")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="venue">{uiZh.venue}</Label>
+          <Input
+            id="venue"
+            className={authFieldClassName}
+            disabled={pending}
+            {...form.register("venue")}
+          />
         </div>
       </div>
 
@@ -191,6 +264,16 @@ export function CreateClientForm({
             {...form.register("phone")}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="client-whatsapp">{uiZh.whatsapp}</Label>
+        <Input
+          id="client-whatsapp"
+          className={authFieldClassName}
+          disabled={pending}
+          {...form.register("whatsapp")}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

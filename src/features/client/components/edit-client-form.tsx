@@ -7,14 +7,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { formatClientStatus } from "@/components/crm/client-notes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateClientAction } from "@/core/actions/client-actions";
 import {
-  CLIENT_STATUSES,
   CLIENT_TYPES,
   type Client,
+  type ClientStatus,
+  type ClientType,
   type Project,
 } from "@/core/types";
 import { authFieldClassName } from "@/features/auth/lib/auth-ui";
@@ -22,7 +24,15 @@ import type { ClientOwnerOption } from "@/features/client/components/create-clie
 import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 import { uiZh } from "@/config/ui-zh";
 
-const formSchema = z.object({
+const EDITABLE_CLIENT_STATUSES = [
+  "inquiry",
+  "follow_up",
+  "confirmed",
+  "completed",
+  "cancelled",
+] as const satisfies readonly ClientStatus[];
+
+const editClientFormSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   clientId: z.string().uuid(),
@@ -32,12 +42,25 @@ const formSchema = z.object({
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().max(40).optional(),
   clientType: z.enum(CLIENT_TYPES),
-  status: z.enum(CLIENT_STATUSES),
+  status: z.enum(EDITABLE_CLIENT_STATUSES),
   followUpAt: z.string().optional(),
   notes: z.string().max(4000).optional(),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+function clientTypeLabel(type: ClientType): string {
+  switch (type) {
+    case "wedding":
+      return uiZh.weddingMode;
+    case "corporate":
+      return uiZh.corporateClient;
+    case "private":
+      return "Private";
+    case "others":
+      return "Others";
+  }
+}
+
+type FormValues = z.infer<typeof editClientFormSchema>;
 
 type EditClientFormProps = {
   client: Client;
@@ -53,7 +76,7 @@ export function EditClientForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(editClientFormSchema),
     defaultValues: {
       workspaceId: client.workspace_id,
       companyId: client.company_id,
@@ -63,8 +86,11 @@ export function EditClientForm({
       name: client.name,
       email: client.email ?? "",
       phone: client.phone ?? "",
-      clientType: client.client_type ?? "individual",
-      status: client.status === "archived" ? "active" : client.status,
+      clientType: client.client_type ?? "wedding",
+      status:
+        client.status === "archived"
+          ? "inquiry"
+          : client.status,
       followUpAt: client.follow_up_at ?? "",
       notes: client.notes ?? "",
     },
@@ -129,15 +155,7 @@ export function EditClientForm({
           >
             {CLIENT_TYPES.map((type) => (
               <option key={type} value={type} className="bg-[#121214]">
-                {type === "corporate"
-                  ? uiZh.corporateClient
-                  : type === "bride"
-                    ? uiZh.clientTypeBride
-                    : type === "groom"
-                      ? uiZh.clientTypeGroom
-                      : type === "individual"
-                        ? uiZh.clientTypeIndividual
-                        : type}
+                {clientTypeLabel(type)}
               </option>
             ))}
           </select>
@@ -150,12 +168,11 @@ export function EditClientForm({
             disabled={pending}
             {...form.register("status")}
           >
-            <option value="active" className="bg-[#121214]">
-              Active
-            </option>
-            <option value="follow_up" className="bg-[#121214]">
-              Follow-up
-            </option>
+            {EDITABLE_CLIENT_STATUSES.map((status) => (
+              <option key={status} value={status} className="bg-[#121214]">
+                {formatClientStatus(status)}
+              </option>
+            ))}
           </select>
         </div>
       </div>

@@ -130,6 +130,7 @@ export function getFinanceWorkspacePreview(
     convertedInvoiceId: null as string | null,
     notes: null as string | null,
     internalNotes: null as string | null,
+    documentContent: {} as import("@/core/finance/document-content").QuotationDocumentContent,
   } as const;
 
   const records: FinanceWorkspaceItem[] = [

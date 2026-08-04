@@ -44,16 +44,27 @@ export function parseClientNotesBody(
   return rest || null;
 }
 
+function humanizeEnumValue(value: string): string {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 export function formatClientStatus(status: string): string {
   switch (status) {
+    case "inquiry":
     case "active":
-      return uiZh.clientStatusActive;
+      return uiZh.weddingStatusInquiry;
     case "follow_up":
       return uiZh.clientStatusFollowUp;
+    case "confirmed":
+      return uiZh.confirmed;
+    case "completed":
+      return uiZh.completed;
+    case "cancelled":
+      return uiZh.cancelled;
     case "archived":
       return uiZh.clientStatusArchived;
     default:
-      return status;
+      return humanizeEnumValue(status);
   }
 }
 

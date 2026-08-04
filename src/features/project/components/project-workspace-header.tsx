@@ -33,12 +33,16 @@ function projectStatusTone(
   status: Project["status"],
 ): WorkspaceHeaderStatus["tone"] {
   switch (status) {
-    case "active":
-      return "success";
+    case "inquiry":
+    case "proposal":
+    case "confirmed":
     case "planning":
       return "info";
+    case "execution":
+      return "success";
     case "completed":
       return "success";
+    case "cancelled":
     case "archived":
       return "default";
     default:
@@ -77,7 +81,7 @@ export function ProjectWorkspaceHeader({
       });
     }
 
-    if (project.status === "planning") {
+    if (project.status === "planning" || project.status === "confirmed") {
       next.push({
         key: "activate",
         label: uiZh.activate,
@@ -100,7 +104,7 @@ export function ProjectWorkspaceHeader({
       });
     }
 
-    if (project.status === "active") {
+    if (project.status === "execution") {
       next.push({
         key: "archive",
         label: uiZh.archive,

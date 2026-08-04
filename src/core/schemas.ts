@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import {
+  CLIENT_SOURCES,
   CLIENT_STATUSES,
   CLIENT_TYPES,
   COMPANY_TYPES,
@@ -11,6 +12,7 @@ import {
   PROJECT_TYPES,
   VENDOR_CATEGORIES,
   VENDOR_STATUSES,
+  WEDDING_SESSIONS,
   WORKSPACE_STATUSES,
 } from "@/core/types";
 
@@ -19,6 +21,15 @@ const slugSchema = z
   .min(1)
   .max(64)
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Slug must be lowercase kebab-case");
+
+const dateYmd = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+  .optional()
+  .nullable();
+
+const optionalText = (max: number) =>
+  z.string().max(max).optional().nullable();
 
 const countrySchema = z
   .string()
@@ -112,6 +123,19 @@ export const updateCompanySettingsSchema = z.object({
   timezone: z.string().min(1).max(64).optional().nullable(),
   locale: z.string().min(2).max(16).optional().nullable(),
   currency: currencySchema.optional().nullable(),
+  registrationNo: z.string().max(120).optional().nullable(),
+  address: z.string().max(2000).optional().nullable(),
+  phone: z.string().max(60).optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  website: z.string().max(500).optional().nullable(),
+  bankName: z.string().max(160).optional().nullable(),
+  bankAccountName: z.string().max(200).optional().nullable(),
+  bankAccountNumber: z.string().max(80).optional().nullable(),
+  swiftCode: z.string().max(32).optional().nullable(),
+  signatureUrl: z.string().max(1000).optional().nullable(),
+  defaultPaymentTerms: z.string().max(4000).optional().nullable(),
+  defaultTermsAndConditions: z.string().max(8000).optional().nullable(),
+  defaultDocumentFooter: z.string().max(2000).optional().nullable(),
 });
 
 export type UpdateCompanySettingsInput = z.infer<
@@ -140,22 +164,25 @@ export type CreatePersonInput = z.infer<typeof createPersonSchema>;
 export const createProjectSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
+  clientId: z.string().uuid().optional().nullable(),
   name: z.string().min(1).max(160),
-  description: z.string().max(4000).optional().nullable(),
+  projectCode: optionalText(40),
+  description: optionalText(4000),
   projectType: z.enum(PROJECT_TYPES).nullable().optional(),
   status: z.enum(PROJECT_STATUSES).optional(),
   ownerId: z.string().uuid().nullable().optional(),
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
-  clientId: z.string().uuid().optional().nullable(),
+  coordinatorId: z.string().uuid().nullable().optional(),
+  salesId: z.string().uuid().nullable().optional(),
+  startDate: dateYmd,
+  endDate: dateYmd,
+  weddingDate: dateYmd,
+  eventDate: dateYmd,
+  venue: optionalText(300),
+  session: z.enum(WEDDING_SESSIONS).nullable().optional(),
+  packageName: optionalText(200),
+  expectedPax: z.number().int().nonnegative().nullable().optional(),
+  theme: optionalText(200),
+  dressCode: optionalText(200),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
@@ -164,21 +191,25 @@ export const updateProjectSchema = z.object({
   workspaceId: z.string().uuid(),
   companyId: z.string().uuid(),
   projectId: z.string().uuid(),
+  clientId: z.string().uuid().nullable().optional(),
   name: z.string().min(1).max(160),
-  description: z.string().max(4000).optional().nullable(),
+  projectCode: optionalText(40),
+  description: optionalText(4000),
   projectType: z.enum(PROJECT_TYPES).nullable().optional(),
   status: z.enum(PROJECT_STATUSES).optional(),
   ownerId: z.string().uuid().nullable().optional(),
-  startDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Start date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
-  endDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "End date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
+  coordinatorId: z.string().uuid().nullable().optional(),
+  salesId: z.string().uuid().nullable().optional(),
+  startDate: dateYmd,
+  endDate: dateYmd,
+  weddingDate: dateYmd,
+  eventDate: dateYmd,
+  venue: optionalText(300),
+  session: z.enum(WEDDING_SESSIONS).nullable().optional(),
+  packageName: optionalText(200),
+  expectedPax: z.number().int().nonnegative().nullable().optional(),
+  theme: optionalText(200),
+  dressCode: optionalText(200),
 });
 
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
@@ -196,17 +227,45 @@ export const createClientSchema = z.object({
   companyId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
   ownerId: z.string().uuid().nullable().optional(),
+  leadOwnerId: z.string().uuid().nullable().optional(),
+  assignedPicId: z.string().uuid().nullable().optional(),
+  clientCode: optionalText(40),
   name: z.string().min(1).max(160),
+  companyName: optionalText(200),
+  brideName: optionalText(160),
+  groomName: optionalText(160),
+  displayName: optionalText(200),
+  contactPerson: optionalText(160),
   email: z.string().email().optional().nullable(),
-  phone: z.string().max(40).optional().nullable(),
+  phone: optionalText(40),
+  whatsapp: optionalText(40),
+  instagram: optionalText(120),
+  facebook: optionalText(120),
+  homeAddress: optionalText(500),
+  city: optionalText(120),
+  state: optionalText(120),
+  country: optionalText(120),
+  birthday: dateYmd,
+  anniversary: dateYmd,
   clientType: z.enum(CLIENT_TYPES).nullable().optional(),
   status: z.enum(CLIENT_STATUSES).optional(),
-  followUpAt: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Follow-up date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
-  notes: z.string().max(4000).optional().nullable(),
+  isActive: z.boolean().optional(),
+  source: z.enum(CLIENT_SOURCES).nullable().optional(),
+  followUpAt: dateYmd,
+  weddingDate: dateYmd,
+  weddingType: optionalText(120),
+  session: z.enum(WEDDING_SESSIONS).nullable().optional(),
+  includeRom: z.boolean().optional(),
+  includeLunch: z.boolean().optional(),
+  includeDinner: z.boolean().optional(),
+  venue: optionalText(300),
+  ballroom: optionalText(200),
+  expectedPax: z.number().int().nonnegative().nullable().optional(),
+  theme: optionalText(200),
+  dressCode: optionalText(200),
+  religion: optionalText(120),
+  language: optionalText(120),
+  notes: optionalText(4000),
 });
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;
@@ -217,17 +276,45 @@ export const updateClientSchema = z.object({
   clientId: z.string().uuid(),
   projectId: z.string().uuid().nullable().optional(),
   ownerId: z.string().uuid().nullable().optional(),
+  leadOwnerId: z.string().uuid().nullable().optional(),
+  assignedPicId: z.string().uuid().nullable().optional(),
+  clientCode: optionalText(40),
   name: z.string().min(1).max(160),
+  companyName: optionalText(200),
+  brideName: optionalText(160),
+  groomName: optionalText(160),
+  displayName: optionalText(200),
+  contactPerson: optionalText(160),
   email: z.string().email().optional().nullable(),
-  phone: z.string().max(40).optional().nullable(),
+  phone: optionalText(40),
+  whatsapp: optionalText(40),
+  instagram: optionalText(120),
+  facebook: optionalText(120),
+  homeAddress: optionalText(500),
+  city: optionalText(120),
+  state: optionalText(120),
+  country: optionalText(120),
+  birthday: dateYmd,
+  anniversary: dateYmd,
   clientType: z.enum(CLIENT_TYPES).nullable().optional(),
   status: z.enum(CLIENT_STATUSES).optional(),
-  followUpAt: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Follow-up date must be YYYY-MM-DD")
-    .optional()
-    .nullable(),
-  notes: z.string().max(4000).optional().nullable(),
+  isActive: z.boolean().optional(),
+  source: z.enum(CLIENT_SOURCES).nullable().optional(),
+  followUpAt: dateYmd,
+  weddingDate: dateYmd,
+  weddingType: optionalText(120),
+  session: z.enum(WEDDING_SESSIONS).nullable().optional(),
+  includeRom: z.boolean().optional(),
+  includeLunch: z.boolean().optional(),
+  includeDinner: z.boolean().optional(),
+  venue: optionalText(300),
+  ballroom: optionalText(200),
+  expectedPax: z.number().int().nonnegative().nullable().optional(),
+  theme: optionalText(200),
+  dressCode: optionalText(200),
+  religion: optionalText(120),
+  language: optionalText(120),
+  notes: optionalText(4000),
 });
 
 export type UpdateClientInput = z.infer<typeof updateClientSchema>;

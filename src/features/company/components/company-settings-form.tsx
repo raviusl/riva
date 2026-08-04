@@ -50,6 +50,19 @@ const formSchema = z.object({
   locale: z.string().optional(),
   currency: z.string().max(3).optional(),
   country: z.string().max(2).optional(),
+  registrationNo: z.string().max(120).optional(),
+  address: z.string().max(2000).optional(),
+  phone: z.string().max(60).optional(),
+  email: z.string().optional(),
+  website: z.string().max(500).optional(),
+  bankName: z.string().max(160).optional(),
+  bankAccountName: z.string().max(200).optional(),
+  bankAccountNumber: z.string().max(80).optional(),
+  swiftCode: z.string().max(32).optional(),
+  signatureUrl: z.string().max(1000).optional(),
+  defaultPaymentTerms: z.string().max(4000).optional(),
+  defaultTermsAndConditions: z.string().max(8000).optional(),
+  defaultDocumentFooter: z.string().max(2000).optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,6 +93,19 @@ export function CompanySettingsForm({
       locale: company.locale ?? "",
       currency: company.currency ?? "",
       country: company.country ?? "",
+      registrationNo: company.registration_no ?? "",
+      address: company.address ?? "",
+      phone: company.phone ?? "",
+      email: company.email ?? "",
+      website: company.website ?? "",
+      bankName: company.bank_name ?? "",
+      bankAccountName: company.bank_account_name ?? "",
+      bankAccountNumber: company.bank_account_number ?? "",
+      swiftCode: company.swift_code ?? "",
+      signatureUrl: company.signature_url ?? "",
+      defaultPaymentTerms: company.default_payment_terms ?? "",
+      defaultTermsAndConditions: company.default_terms_and_conditions ?? "",
+      defaultDocumentFooter: company.default_document_footer ?? "",
     },
   });
 
@@ -102,6 +128,21 @@ export function CompanySettingsForm({
               timezone: values.timezone?.trim() || null,
               locale: values.locale?.trim() || null,
               currency: currency || null,
+              registrationNo: values.registrationNo?.trim() || null,
+              address: values.address?.trim() || null,
+              phone: values.phone?.trim() || null,
+              email: values.email?.trim() || null,
+              website: values.website?.trim() || null,
+              bankName: values.bankName?.trim() || null,
+              bankAccountName: values.bankAccountName?.trim() || null,
+              bankAccountNumber: values.bankAccountNumber?.trim() || null,
+              swiftCode: values.swiftCode?.trim() || null,
+              signatureUrl: values.signatureUrl?.trim() || null,
+              defaultPaymentTerms: values.defaultPaymentTerms?.trim() || null,
+              defaultTermsAndConditions:
+                values.defaultTermsAndConditions?.trim() || null,
+              defaultDocumentFooter:
+                values.defaultDocumentFooter?.trim() || null,
             });
             if (!result.ok) {
               toast.error(result.error);
@@ -160,6 +201,139 @@ export function CompanySettingsForm({
             placeholder={uiZh.httpsPlaceholder}
             disabled={!editable || pending}
             {...form.register("logoUrl")}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="company-settings-reg">{uiZh.registrationNo}</Label>
+          <Input
+            id="company-settings-reg"
+            className={authFieldClassName}
+            disabled={!editable || pending}
+            {...form.register("registrationNo")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="company-settings-address">{uiZh.address}</Label>
+          <textarea
+            id="company-settings-address"
+            className={`${authFieldClassName} min-h-20`}
+            disabled={!editable || pending}
+            {...form.register("address")}
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-phone">{uiZh.phone}</Label>
+            <Input
+              id="company-settings-phone"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("phone")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-email">{uiZh.email}</Label>
+            <Input
+              id="company-settings-email"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("email")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-website">{uiZh.website}</Label>
+            <Input
+              id="company-settings-website"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("website")}
+            />
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-bank-name">{uiZh.bankName}</Label>
+            <Input
+              id="company-settings-bank-name"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("bankName")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-bank-account">
+              {uiZh.bankAccountName}
+            </Label>
+            <Input
+              id="company-settings-bank-account"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("bankAccountName")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-bank-number">
+              {uiZh.bankAccountNumber}
+            </Label>
+            <Input
+              id="company-settings-bank-number"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("bankAccountNumber")}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="company-settings-swift">{uiZh.swiftCode}</Label>
+            <Input
+              id="company-settings-swift"
+              className={authFieldClassName}
+              disabled={!editable || pending}
+              {...form.register("swiftCode")}
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="company-settings-signature">
+              {uiZh.signatureUrl}
+            </Label>
+            <Input
+              id="company-settings-signature"
+              className={authFieldClassName}
+              placeholder={uiZh.httpsPlaceholder}
+              disabled={!editable || pending}
+              {...form.register("signatureUrl")}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="company-settings-payment-terms">
+            {uiZh.paymentTerms}
+          </Label>
+          <textarea
+            id="company-settings-payment-terms"
+            className={`${authFieldClassName} min-h-20`}
+            disabled={!editable || pending}
+            {...form.register("defaultPaymentTerms")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="company-settings-terms">
+            {uiZh.termsAndConditions}
+          </Label>
+          <textarea
+            id="company-settings-terms"
+            className={`${authFieldClassName} min-h-24`}
+            disabled={!editable || pending}
+            {...form.register("defaultTermsAndConditions")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="company-settings-footer">{uiZh.documentFooter}</Label>
+          <textarea
+            id="company-settings-footer"
+            className={`${authFieldClassName} min-h-16`}
+            disabled={!editable || pending}
+            {...form.register("defaultDocumentFooter")}
           />
         </div>
 

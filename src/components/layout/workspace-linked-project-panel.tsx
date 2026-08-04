@@ -10,12 +10,20 @@ type WorkspaceLinkedProjectPanelProps = {
 
 function statusLabel(status: Project["status"]) {
   switch (status) {
+    case "inquiry":
+      return uiZh.weddingStatusInquiry;
+    case "proposal":
+      return "Proposal";
+    case "confirmed":
+      return uiZh.confirmed;
     case "planning":
       return uiZh.projectStatusPlanning;
-    case "active":
+    case "execution":
       return uiZh.projectStatusActive;
     case "completed":
       return uiZh.projectStatusCompleted;
+    case "cancelled":
+      return uiZh.cancelled;
     case "archived":
       return uiZh.projectStatusArchived;
     default:

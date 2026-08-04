@@ -64,10 +64,14 @@ export {
 } from "@/core/client/audit";
 
 export {
+  activateProject,
+  archiveProject,
   createProject,
   getProjectById,
+  listProjectsByClient,
   listProjectsByCompany,
   listProjectsByWorkspace,
+  restoreProject,
   updateProject,
 } from "@/core/project/project";
 
@@ -107,6 +111,7 @@ export {
 export {
   CORE_PERMISSIONS,
   CORE_ROLES,
+  CLIENT_SOURCES,
   CLIENT_STATUSES,
   CLIENT_TYPES,
   COMPANY_STATUSES,
@@ -120,6 +125,7 @@ export {
   PROJECT_TYPES,
   VENDOR_CATEGORIES,
   VENDOR_STATUSES,
+  WEDDING_SESSIONS,
   WORKSPACE_STATUSES,
 } from "@/core/types";
 

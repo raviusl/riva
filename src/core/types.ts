@@ -36,9 +36,13 @@ export const PERSON_STATUSES = MEMBERSHIP_STATUSES;
 export type PersonStatus = MembershipStatus;
 
 export const PROJECT_STATUSES = [
+  "inquiry",
+  "proposal",
+  "confirmed",
   "planning",
-  "active",
+  "execution",
   "completed",
+  "cancelled",
   "archived",
 ] as const;
 export type ProjectStatus = (typeof PROJECT_STATUSES)[number];
@@ -53,17 +57,47 @@ export const PROJECT_TYPES = [
 ] as const;
 export type ProjectType = (typeof PROJECT_TYPES)[number];
 
-/** Sprint 015 client types (Product Blueprint). */
+/** Project 097 client types (CRM foundation). */
 export const CLIENT_TYPES = [
-  "bride",
-  "groom",
+  "wedding",
   "corporate",
-  "individual",
+  "private",
+  "others",
 ] as const;
 export type ClientType = (typeof CLIENT_TYPES)[number];
 
-export const CLIENT_STATUSES = ["active", "follow_up", "archived"] as const;
+/** Pipeline status — archive is terminal soft-delete. */
+export const CLIENT_STATUSES = [
+  "inquiry",
+  "follow_up",
+  "confirmed",
+  "completed",
+  "cancelled",
+  "archived",
+] as const;
 export type ClientStatus = (typeof CLIENT_STATUSES)[number];
+
+export const CLIENT_SOURCES = [
+  "facebook",
+  "instagram",
+  "tiktok",
+  "xiaohongshu",
+  "google",
+  "referral",
+  "walk_in",
+  "existing_client",
+  "others",
+] as const;
+export type ClientSource = (typeof CLIENT_SOURCES)[number];
+
+export const WEDDING_SESSIONS = [
+  "rom",
+  "lunch",
+  "dinner",
+  "tea_ceremony",
+  "others",
+] as const;
+export type WeddingSession = (typeof WEDDING_SESSIONS)[number];
 
 /** Sprint 016 vendor categories. */
 export const VENDOR_CATEGORIES = [
@@ -167,6 +201,19 @@ export type Company = {
   timezone: string | null;
   locale: string | null;
   currency: string | null;
+  registration_no: string | null;
+  address: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  bank_name: string | null;
+  bank_account_name: string | null;
+  bank_account_number: string | null;
+  swift_code: string | null;
+  signature_url: string | null;
+  default_payment_terms: string | null;
+  default_terms_and_conditions: string | null;
+  default_document_footer: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -214,13 +261,25 @@ export type Project = {
   id: string;
   workspace_id: string;
   company_id: string;
+  client_id: string | null;
   name: string;
+  project_code: string | null;
   description: string | null;
   project_type: ProjectType | null;
   status: ProjectStatus;
   owner_id: string | null;
+  coordinator_id: string | null;
+  sales_id: string | null;
   start_date: string | null;
   end_date: string | null;
+  wedding_date: string | null;
+  event_date: string | null;
+  venue: string | null;
+  session: string | null;
+  package_name: string | null;
+  expected_pax: number | null;
+  theme: string | null;
+  dress_code: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -232,12 +291,44 @@ export type Client = {
   company_id: string;
   project_id: string | null;
   owner_id: string | null;
+  lead_owner_id: string | null;
+  assigned_pic_id: string | null;
+  client_code: string | null;
   name: string;
+  company_name: string | null;
+  bride_name: string | null;
+  groom_name: string | null;
+  display_name: string | null;
+  contact_person: string | null;
   email: string | null;
   phone: string | null;
+  whatsapp: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  home_address: string | null;
+  city: string | null;
+  state: string | null;
+  country: string | null;
+  birthday: string | null;
+  anniversary: string | null;
   client_type: ClientType | null;
   status: ClientStatus;
+  is_active: boolean;
+  source: ClientSource | null;
   follow_up_at: string | null;
+  wedding_date: string | null;
+  wedding_type: string | null;
+  session: string | null;
+  include_rom: boolean;
+  include_lunch: boolean;
+  include_dinner: boolean;
+  venue: string | null;
+  ballroom: string | null;
+  expected_pax: number | null;
+  theme: string | null;
+  dress_code: string | null;
+  religion: string | null;
+  language: string | null;
   notes: string | null;
   created_at: string;
   updated_at: string;

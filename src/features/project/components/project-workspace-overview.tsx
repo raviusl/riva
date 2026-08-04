@@ -1,44 +1,198 @@
 "use client";
 
-import type { Client, Project, Vendor } from "@/core/types";
-import { ProjectWorkspaceClientsPanel } from "@/features/project/components/project-workspace-clients-panel";
-import { ProjectWorkspaceVendorsPanel } from "@/features/project/components/project-workspace-vendors-panel";
+import Link from "next/link";
+
+import type { Client, Project } from "@/core/types";
+import { formatProjectStatus } from "@/components/projects/project-labels";
+import { uiZh } from "@/config/ui-zh";
+import { cn } from "@/lib/utils";
 
 type ProjectWorkspaceOverviewProps = {
   project: Project;
   clients: Client[];
-  vendors: Vendor[];
-  canWriteClient: boolean;
-  canWriteVendor: boolean;
-  canReadClient: boolean;
-  canReadVendor: boolean;
+  canWriteProject: boolean;
+  coordinatorLabel?: string | null;
+  salesLabel?: string | null;
 };
 
-/** Current Project Workspace body: linked clients + vendors. */
+function formatDate(value: string | null | undefined): string {
+  if (!value) return uiZh.emDash;
+  return new Date(value).toLocaleDateString("zh-CN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function countdownLabel(weddingDate: string | null): string {
+  if (!weddingDate) return uiZh.emDash;
+  const target = new Date(`${weddingDate}T00:00:00`);
+  if (Number.isNaN(target.getTime())) return uiZh.emDash;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diff = Math.round(
+    (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  if (diff < 0) return uiZh.weddingPassed;
+  return uiZh.daysUntilWedding(diff);
+}
+
+function coupleName(clients: Client[], project: Project): string {
+  const primary =
+    clients.find((c) => c.id === project.client_id) ?? clients[0] ?? null;
+  if (!primary) return uiZh.emDash;
+  return (
+    primary.display_name ||
+    [primary.bride_name, primary.groom_name].filter(Boolean).join(" & ") ||
+    primary.name
+  );
+}
+
+function OverviewCard({
+  label,
+  value,
+  emphasize,
+}: {
+  label: string;
+  value: string;
+  emphasize?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-3">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/35">
+        {label}
+      </p>
+      <p
+        className={cn(
+          "mt-1.5 text-sm text-white/80",
+          emphasize && "text-base font-medium text-white",
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function PlaceholderPanel({
+  title,
+  empty,
+}: {
+  title: string;
+  empty: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-4">
+      <p className="text-[11px] uppercase tracking-[0.14em] text-white/35">
+        {title}
+      </p>
+      <p className="mt-3 text-sm text-white/40">{empty}</p>
+    </div>
+  );
+}
+
+/** Project 097 — Wedding Project Overview (foundation widgets). */
 export function ProjectWorkspaceOverview({
   project,
   clients,
-  vendors,
-  canWriteClient,
-  canWriteVendor,
-  canReadClient,
-  canReadVendor,
+  canWriteProject,
+  coordinatorLabel,
+  salesLabel,
 }: ProjectWorkspaceOverviewProps) {
+  const weddingDate = project.wedding_date || project.event_date;
+  const primaryClient =
+    clients.find((c) => c.id === project.client_id) ?? clients[0] ?? null;
+
   return (
     <div className="space-y-8">
-      <ProjectWorkspaceClientsPanel
-        project={project}
-        clients={clients}
-        canWriteClient={canWriteClient}
-        canReadClient={canReadClient}
-      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <OverviewCard
+          label={uiZh.couple}
+          value={coupleName(clients, project)}
+          emphasize
+        />
+        <OverviewCard label={uiZh.weddingDate} value={formatDate(weddingDate)} />
+        <OverviewCard
+          label={uiZh.countdown}
+          value={countdownLabel(weddingDate)}
+          emphasize
+        />
+        <OverviewCard
+          label={uiZh.status}
+          value={formatProjectStatus(project.status)}
+        />
+        <OverviewCard
+          label={uiZh.venue}
+          value={project.venue || primaryClient?.venue || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.weddingSession}
+          value={project.session || primaryClient?.session || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.coordinator}
+          value={coordinatorLabel || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.salesPersonLabel}
+          value={salesLabel || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.packageName}
+          value={project.package_name || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.projectCode}
+          value={project.project_code || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.eventDate}
+          value={formatDate(project.event_date)}
+        />
+        <OverviewCard
+          label={uiZh.expectedPax}
+          value={
+            project.expected_pax != null
+              ? String(project.expected_pax)
+              : primaryClient?.expected_pax != null
+                ? String(primaryClient.expected_pax)
+                : uiZh.emDash
+          }
+        />
+      </div>
 
-      <ProjectWorkspaceVendorsPanel
-        project={project}
-        vendors={vendors}
-        canWriteVendor={canWriteVendor}
-        canReadVendor={canReadVendor}
-      />
+      <p className="text-sm text-white/45">{uiZh.projectWorkspaceReady}</p>
+
+      <div className="grid gap-4 lg:grid-cols-3">
+        <PlaceholderPanel
+          title={uiZh.latestActivity}
+          empty={uiZh.noActivityYet}
+        />
+        <PlaceholderPanel title={uiZh.recentFiles} empty={uiZh.noFilesYet} />
+        <PlaceholderPanel
+          title={uiZh.upcomingTasks}
+          empty={uiZh.noUpcomingTasks}
+        />
+      </div>
+
+      {primaryClient ? (
+        <div className="flex flex-wrap items-center gap-3 text-sm">
+          <Link
+            href={`/dashboard/clients/${primaryClient.id}`}
+            className="text-white/55 underline-offset-4 hover:text-white/80 hover:underline"
+          >
+            {uiZh.client}: {primaryClient.display_name || primaryClient.name}
+          </Link>
+          {canWriteProject ? (
+            <Link
+              href={`/dashboard/projects/${project.id}/edit`}
+              className="text-white/55 underline-offset-4 hover:text-white/80 hover:underline"
+            >
+              {uiZh.editProject}
+            </Link>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -3,7 +3,6 @@
 import { useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
-import { WorkspaceLinkedProjectPanel } from "@/components/layout/workspace-linked-project-panel";
 import { WorkspaceTabNav } from "@/components/layout/workspace-tab-nav";
 import type { AuditRecord } from "@/core/audit";
 import type { Client, Project } from "@/core/types";
@@ -12,6 +11,7 @@ import { ClientWorkspaceHeader } from "@/features/client/components/client-works
 import { ClientWorkspaceMeetingsPanel } from "@/features/client/components/client-workspace-meetings-panel";
 import { ClientWorkspaceNotesPanel } from "@/features/client/components/client-workspace-notes-panel";
 import { ClientWorkspaceOverview } from "@/features/client/components/client-workspace-overview";
+import { ClientWorkspaceProjectsPanel } from "@/features/client/components/client-workspace-projects-panel";
 import {
   ClientWorkspaceDocumentsPanel,
   ClientWorkspaceFinancePanel,
@@ -25,17 +25,19 @@ import {
   parseClientWorkspaceTab,
   type ClientWorkspaceTabId,
 } from "@/features/client/lib/client-workspace-tabs";
-import { uiZh } from "@/config/ui-zh";
 
 type ClientWorkspaceProps = {
   workspaceId: string;
   companyId: string;
   client: Client;
   linkedProject: Project | null;
+  projects: Project[];
   ownerLabel: string | null;
+  picLabel?: string | null;
   meetings: MeetingWorkspaceModel[];
   activity: AuditRecord[];
   canWriteClient: boolean;
+  canWriteProject?: boolean;
   initialTab?: ClientWorkspaceTabId;
 };
 
@@ -44,10 +46,13 @@ export function ClientWorkspace({
   companyId,
   client,
   linkedProject,
+  projects,
   ownerLabel,
+  picLabel,
   meetings,
   activity,
   canWriteClient,
+  canWriteProject = false,
   initialTab = DEFAULT_CLIENT_WORKSPACE_TAB,
 }: ClientWorkspaceProps) {
   const searchParams = useSearchParams();
@@ -86,14 +91,16 @@ export function ClientWorkspace({
             client={client}
             linkedProject={linkedProject}
             ownerLabel={ownerLabel}
+            picLabel={picLabel}
             canWriteClient={canWriteClient}
           />
         ) : null}
 
         {activeTab === "projects" ? (
-          <WorkspaceLinkedProjectPanel
-            linkedProject={linkedProject}
-            emptyDescription={uiZh.linkClientToProjectHint}
+          <ClientWorkspaceProjectsPanel
+            client={client}
+            projects={projects}
+            canWriteProject={canWriteProject}
           />
         ) : null}
 

@@ -28,6 +28,9 @@ type QuotationSummaryProps = {
   tax: number;
   discount: number;
   currency: string;
+  subtotal?: number;
+  deposit?: number | null;
+  balance?: number | null;
 };
 
 export function QuotationSummary({
@@ -35,21 +38,48 @@ export function QuotationSummary({
   tax,
   discount,
   currency,
+  subtotal,
+  deposit,
+  balance,
 }: QuotationSummaryProps) {
   return (
     <div className="grid gap-2 text-sm text-white/70 sm:grid-cols-3">
+      {subtotal !== undefined ? (
+        <div>
+          <p className="text-xs text-white/40">{uiZh.subtotal}</p>
+          <p className="mt-1 text-white">
+            {formatFinanceMoney(subtotal, currency)}
+          </p>
+        </div>
+      ) : null}
       <div>
         <p className="text-xs text-white/40">{uiZh.tax}</p>
         <p className="mt-1 text-white">{formatFinanceMoney(tax, currency)}</p>
       </div>
       <div>
-        <p className="text-xs text-white/40">Discount</p>
+        <p className="text-xs text-white/40">{uiZh.discount}</p>
         <p className="mt-1 text-white">
           {formatFinanceMoney(discount, currency)}
         </p>
       </div>
+      {deposit != null && deposit > 0 ? (
+        <div>
+          <p className="text-xs text-white/40">{uiZh.deposit}</p>
+          <p className="mt-1 text-white">
+            {formatFinanceMoney(deposit, currency)}
+          </p>
+        </div>
+      ) : null}
+      {balance != null ? (
+        <div>
+          <p className="text-xs text-white/40">{uiZh.balanceDue}</p>
+          <p className="mt-1 text-white">
+            {formatFinanceMoney(balance, currency)}
+          </p>
+        </div>
+      ) : null}
       <div>
-        <p className="text-xs text-white/40">{uiZh.total}</p>
+        <p className="text-xs text-white/40">{uiZh.grandTotal}</p>
         <p className="mt-1 text-white">
           {formatFinanceMoney(amount, currency)}
         </p>
@@ -65,18 +95,41 @@ export type LineItemDraft = {
   unitPrice: number;
   tax: number;
   discount: number;
+  itemKind?: "line" | "package" | "charge" | "discount";
+  unitOfMeasure?: string | null;
+  notes?: string | null;
 };
+
+export function blankLineItem(
+  kind: LineItemDraft["itemKind"] = "line",
+): LineItemDraft {
+  return {
+    key: crypto.randomUUID(),
+    description: "",
+    quantity: 1,
+    unitPrice: 0,
+    tax: 0,
+    discount: 0,
+    itemKind: kind,
+    unitOfMeasure: "Lot",
+    notes: null,
+  };
+}
 
 type QuotationLineItemsEditorProps = {
   items: LineItemDraft[];
   onChange: (items: LineItemDraft[]) => void;
   disabled?: boolean;
+  allowEmpty?: boolean;
+  addLabel?: string;
 };
 
 export function QuotationLineItemsEditor({
   items,
   onChange,
   disabled = false,
+  allowEmpty = false,
+  addLabel,
 }: QuotationLineItemsEditorProps) {
   function updateAt(index: number, patch: Partial<LineItemDraft>) {
     onChange(
@@ -85,22 +138,33 @@ export function QuotationLineItemsEditor({
   }
 
   function removeAt(index: number) {
-    if (items.length <= 1) return;
+    if (!allowEmpty && items.length <= 1) return;
     onChange(items.filter((_, i) => i !== index));
   }
 
+  function duplicateAt(index: number) {
+    const source = items[index];
+    if (!source) return;
+    const copy: LineItemDraft = {
+      ...source,
+      key: crypto.randomUUID(),
+    };
+    const next = [...items];
+    next.splice(index + 1, 0, copy);
+    onChange(next);
+  }
+
+  function moveAt(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= items.length) return;
+    const next = [...items];
+    const [row] = next.splice(index, 1);
+    next.splice(target, 0, row);
+    onChange(next);
+  }
+
   function addRow() {
-    onChange([
-      ...items,
-      {
-        key: crypto.randomUUID(),
-        description: "",
-        quantity: 1,
-        unitPrice: 0,
-        tax: 0,
-        discount: 0,
-      },
-    ]);
+    onChange([...items, blankLineItem(items[0]?.itemKind ?? "line")]);
   }
 
   return (
@@ -115,101 +179,177 @@ export function QuotationLineItemsEditor({
           onClick={addRow}
           className="text-xs text-white/60 hover:text-white"
         >
-          {uiZh.addLineItem}
+          {addLabel ?? uiZh.addLineItem}
         </Button>
       </div>
-      {items.map((item, index) => (
-        <div
-          key={item.key}
-          className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
-        >
-          <div className="space-y-1.5">
-            <Label className="text-xs text-white/45">{uiZh.description}</Label>
-            <Input
-              className={authFieldClassName}
-              value={item.description}
-              disabled={disabled}
-              onChange={(event) =>
-                updateAt(index, { description: event.target.value })
-              }
-            />
+      {items.length === 0 ? (
+        <p className="text-xs text-white/40">{uiZh.noLineItemsYet}</p>
+      ) : null}
+      {items.map((item, index) => {
+        const lineAmount =
+          Math.max(0, item.quantity * item.unitPrice - item.discount) +
+          item.tax;
+        return (
+          <div
+            key={item.key}
+            className="space-y-2 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-xs text-white/40">
+                {uiZh.item} {index + 1}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={disabled || index === 0}
+                  onClick={() => moveAt(index, -1)}
+                  className="text-xs text-white/40 hover:text-white/70 disabled:opacity-30"
+                >
+                  {uiZh.moveUp}
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled || index === items.length - 1}
+                  onClick={() => moveAt(index, 1)}
+                  className="text-xs text-white/40 hover:text-white/70 disabled:opacity-30"
+                >
+                  {uiZh.moveDown}
+                </button>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => duplicateAt(index)}
+                  className="text-xs text-white/40 hover:text-white/70"
+                >
+                  {uiZh.duplicate}
+                </button>
+                <button
+                  type="button"
+                  disabled={
+                    disabled || (!allowEmpty && items.length <= 1)
+                  }
+                  onClick={() => removeAt(index)}
+                  className="text-xs text-white/40 hover:text-white/70 disabled:opacity-30"
+                >
+                  {uiZh.removeLineItem}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-white/45">{uiZh.description}</Label>
+              <textarea
+                className={`${authFieldClassName} min-h-16`}
+                value={item.description}
+                disabled={disabled}
+                onChange={(event) =>
+                  updateAt(index, { description: event.target.value })
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              <div className="space-y-1.5">
+                <Label className="text-xs text-white/45">{uiZh.quantity}</Label>
+                <Input
+                  type="number"
+                  min={0.01}
+                  step="0.01"
+                  className={authFieldClassName}
+                  value={item.quantity}
+                  disabled={disabled}
+                  onChange={(event) =>
+                    updateAt(index, {
+                      quantity: Number(event.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-white/45">{uiZh.unit}</Label>
+                <Input
+                  className={authFieldClassName}
+                  value={item.unitOfMeasure ?? ""}
+                  disabled={disabled}
+                  placeholder="Lot"
+                  onChange={(event) =>
+                    updateAt(index, { unitOfMeasure: event.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-white/45">{uiZh.unitPrice}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  className={authFieldClassName}
+                  value={item.unitPrice}
+                  disabled={disabled}
+                  onChange={(event) =>
+                    updateAt(index, {
+                      unitPrice: Number(event.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-white/45">{uiZh.discount}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  className={authFieldClassName}
+                  value={item.discount}
+                  disabled={disabled}
+                  onChange={(event) =>
+                    updateAt(index, {
+                      discount: Number(event.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-white/45">{uiZh.tax}</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  className={authFieldClassName}
+                  value={item.tax}
+                  disabled={disabled}
+                  onChange={(event) =>
+                    updateAt(index, { tax: Number(event.target.value) || 0 })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-white/45">
+              <span>{uiZh.amount}</span>
+              <span className="text-white/80">
+                {lineAmount.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs text-white/45">{uiZh.lineNotes}</Label>
+              <textarea
+                className={`${authFieldClassName} min-h-14`}
+                value={item.notes ?? ""}
+                disabled={disabled}
+                placeholder={uiZh.lineNotesPlaceholder}
+                onChange={(event) =>
+                  updateAt(index, { notes: event.target.value })
+                }
+              />
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs text-white/45">{uiZh.quantity}</Label>
-              <Input
-                type="number"
-                min={0.01}
-                step="0.01"
-                className={authFieldClassName}
-                value={item.quantity}
-                disabled={disabled}
-                onChange={(event) =>
-                  updateAt(index, {
-                    quantity: Number(event.target.value) || 0,
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-white/45">{uiZh.unitPrice}</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                className={authFieldClassName}
-                value={item.unitPrice}
-                disabled={disabled}
-                onChange={(event) =>
-                  updateAt(index, {
-                    unitPrice: Number(event.target.value) || 0,
-                  })
-                }
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-white/45">{uiZh.tax}</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                className={authFieldClassName}
-                value={item.tax}
-                disabled={disabled}
-                onChange={(event) =>
-                  updateAt(index, { tax: Number(event.target.value) || 0 })
-                }
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs text-white/45">Discount</Label>
-              <Input
-                type="number"
-                min={0}
-                step="0.01"
-                className={authFieldClassName}
-                value={item.discount}
-                disabled={disabled}
-                onChange={(event) =>
-                  updateAt(index, {
-                    discount: Number(event.target.value) || 0,
-                  })
-                }
-              />
-            </div>
-          </div>
-          {items.length > 1 ? (
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => removeAt(index)}
-              className="text-xs text-white/40 hover:text-white/70"
-            >
-              {uiZh.removeLineItem}
-            </button>
-          ) : null}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -223,6 +363,8 @@ type QuotationLineItemsTableProps = {
     tax: number;
     discount: number;
     amount: number;
+    unitOfMeasure?: string | null;
+    notes?: string | null;
   }>;
   currency: string;
 };
@@ -249,7 +391,9 @@ export function QuotationLineItemsTable({
             </p>
           </div>
           <p className="mt-1 text-xs text-white/45">
-            {item.quantity} × {formatFinanceMoney(item.unitPrice, currency)}
+            {item.quantity}
+            {item.unitOfMeasure ? ` ${item.unitOfMeasure}` : ""} ×{" "}
+            {formatFinanceMoney(item.unitPrice, currency)}
             {item.tax > 0
               ? ` · tax ${formatFinanceMoney(item.tax, currency)}`
               : ""}
@@ -257,6 +401,11 @@ export function QuotationLineItemsTable({
               ? ` · discount ${formatFinanceMoney(item.discount, currency)}`
               : ""}
           </p>
+          {item.notes ? (
+            <p className="mt-2 whitespace-pre-wrap text-xs text-white/40">
+              {item.notes}
+            </p>
+          ) : null}
         </li>
       ))}
     </ul>

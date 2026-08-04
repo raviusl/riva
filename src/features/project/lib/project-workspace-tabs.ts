@@ -1,14 +1,21 @@
 import { uiZh } from "@/config/ui-zh";
 
+/**
+ * Project 097 — Wedding Project Workspace tabs.
+ * Navigation only for modules not yet built (Coming Soon).
+ */
 export const PROJECT_WORKSPACE_TABS = [
   { id: "overview", label: uiZh.overview },
-  { id: "clients", label: uiZh.clients },
-  { id: "vendors", label: uiZh.vendors },
   { id: "timeline", label: uiZh.timeline },
-  { id: "documents", label: uiZh.documents },
-  { id: "finance", label: uiZh.finance },
   { id: "tasks", label: uiZh.tasks },
-  { id: "activity", label: uiZh.activity },
+  { id: "meetings", label: uiZh.meetings },
+  { id: "schedule", label: uiZh.schedule },
+  { id: "vendors", label: uiZh.vendors },
+  { id: "package", label: uiZh.packageTab },
+  { id: "documents", label: uiZh.documents },
+  { id: "gallery", label: uiZh.gallery },
+  { id: "notes", label: uiZh.notes },
+  { id: "finance", label: uiZh.financeComingSoon },
 ] as const;
 
 export type ProjectWorkspaceTabId =
@@ -17,10 +24,14 @@ export type ProjectWorkspaceTabId =
 export const DEFAULT_PROJECT_WORKSPACE_TAB: ProjectWorkspaceTabId = "overview";
 
 export const PROJECT_WORKSPACE_PLACEHOLDER_TABS = [
-  "documents",
-  "finance",
   "tasks",
-  "activity",
+  "meetings",
+  "schedule",
+  "package",
+  "documents",
+  "gallery",
+  "notes",
+  "finance",
 ] as const satisfies readonly ProjectWorkspaceTabId[];
 
 export function isProjectWorkspaceTabId(
@@ -37,7 +48,6 @@ export function parseProjectWorkspaceTab(
     : DEFAULT_PROJECT_WORKSPACE_TAB;
 }
 
-/** Build a project workspace URL for a tab (history / deep-link safe). */
 export function buildProjectWorkspaceHref(
   projectId: string,
   tab: ProjectWorkspaceTabId = DEFAULT_PROJECT_WORKSPACE_TAB,
@@ -49,7 +59,6 @@ export function buildProjectWorkspaceHref(
   return `${base}?tab=${tab}`;
 }
 
-/** Explicit tab URLs including ?tab=overview when requested. */
 export function buildProjectWorkspaceTabHref(
   projectId: string,
   tab: ProjectWorkspaceTabId,

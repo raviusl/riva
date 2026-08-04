@@ -40,10 +40,16 @@ function clientStatusTone(
   status: Client["status"],
 ): WorkspaceHeaderStatus["tone"] {
   switch (status) {
-    case "active":
-      return "success";
+    case "inquiry":
+      return "info";
     case "follow_up":
       return "warning";
+    case "confirmed":
+      return "success";
+    case "completed":
+      return "success";
+    case "cancelled":
+      return "default";
     case "archived":
       return "default";
     default:
@@ -81,7 +87,7 @@ export function ClientWorkspaceHeader({
       });
     }
 
-    if (client.status === "active") {
+    if (client.status === "inquiry" && client.is_active) {
       next.push({
         key: "follow-up",
         label: uiZh.followUp,
@@ -153,6 +159,7 @@ export function ClientWorkspaceHeader({
     canWriteClient,
     client.id,
     client.status,
+    client.is_active,
     companyId,
     pending,
     router,

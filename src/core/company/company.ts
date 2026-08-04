@@ -137,6 +137,20 @@ export async function updateCompanySettings(
       timezone: values.timezone?.trim() || null,
       locale: values.locale?.trim() || null,
       currency: values.currency ? values.currency.toUpperCase() : null,
+      registration_no: values.registrationNo?.trim() || null,
+      address: values.address?.trim() || null,
+      phone: values.phone?.trim() || null,
+      email: values.email?.trim() || null,
+      website: values.website?.trim() || null,
+      bank_name: values.bankName?.trim() || null,
+      bank_account_name: values.bankAccountName?.trim() || null,
+      bank_account_number: values.bankAccountNumber?.trim() || null,
+      swift_code: values.swiftCode?.trim() || null,
+      signature_url: values.signatureUrl?.trim() || null,
+      default_payment_terms: values.defaultPaymentTerms?.trim() || null,
+      default_terms_and_conditions:
+        values.defaultTermsAndConditions?.trim() || null,
+      default_document_footer: values.defaultDocumentFooter?.trim() || null,
     });
   } catch (error) {
     console.error("updateCompanySettings failed", error);

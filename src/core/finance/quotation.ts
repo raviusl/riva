@@ -23,7 +23,9 @@ import {
   type QuotationStatus,
 } from "@/core/finance/constants";
 import { buildFinanceEvent } from "@/core/finance/events";
+import { parseQuotationDocumentContent } from "@/core/finance/document-content";
 import {
+  createFinanceWithLineItems,
   findFinanceById,
   insertFinance,
   listLineItems,
@@ -66,6 +68,21 @@ function roundMoney(value: number): number {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
+/** Auto quotation number: QT-YYYYMMDD-XXXXXX */
+export function generateQuotationNumber(now: Date = new Date()): string {
+  const stamp = [
+    now.getUTCFullYear(),
+    String(now.getUTCMonth() + 1).padStart(2, "0"),
+    String(now.getUTCDate()).padStart(2, "0"),
+  ].join("");
+  const suffix = crypto
+    .randomUUID()
+    .replace(/-/g, "")
+    .slice(0, 6)
+    .toUpperCase();
+  return `QT-${stamp}-${suffix}`;
+}
+
 function rollupFromLines(items: FinanceLineItemInput[]): {
   amount: number;
   tax: number;
@@ -77,6 +94,9 @@ function rollupFromLines(items: FinanceLineItemInput[]): {
     tax: number;
     discount: number;
     amount: number;
+    itemKind: NonNullable<FinanceLineItemInput["itemKind"]>;
+    unitOfMeasure: string | null;
+    notes: string | null;
   }>;
 } {
   const prepared = items.map((item) => {
@@ -90,6 +110,9 @@ function rollupFromLines(items: FinanceLineItemInput[]): {
       tax,
       discount,
       amount: calculateTotal({ amount: base, tax, discount }),
+      itemKind: item.itemKind ?? "line",
+      unitOfMeasure: item.unitOfMeasure?.trim() || null,
+      notes: item.notes?.trim() || null,
     };
   });
 
@@ -271,34 +294,47 @@ export async function createQuotation(
   });
 
   const { amount, tax, discount, prepared } = rollupFromLines(parsed.lineItems);
+  const referenceNumber =
+    parsed.referenceNumber?.trim() || generateQuotationNumber();
 
-  const created = await insertFinance({
-    companyId,
-    workspaceId: parsed.workspaceId,
-    projectId: parsed.projectId ?? null,
-    clientId: parsed.clientId ?? null,
-    vendorId: parsed.vendorId ?? null,
-    type: "quotation",
-    category: parsed.category,
-    currency: parsed.currency,
-    amount,
-    tax,
-    discount,
-    status: "draft",
-    referenceNumber: parsed.referenceNumber ?? null,
-    issuedAt: parsed.issuedAt ?? null,
-    dueAt: parsed.dueAt ?? null,
-    notes: parsed.notes ?? null,
-    internalNotes: parsed.internalNotes ?? null,
-    createdBy: parsed.createdBy,
-  });
-
-  const lineItems = await replaceLineItems(
-    created.id,
-    companyId,
-    parsed.workspaceId,
-    prepared,
-  );
+  let created: Finance;
+  let lineItems: FinanceLineItem[];
+  try {
+    const persisted = await createFinanceWithLineItems(
+      {
+        companyId,
+        workspaceId: parsed.workspaceId,
+        projectId: parsed.projectId ?? null,
+        clientId: parsed.clientId ?? null,
+        vendorId: parsed.vendorId ?? null,
+        type: "quotation",
+        category: parsed.category,
+        currency: parsed.currency,
+        amount,
+        tax,
+        discount,
+        status: "draft",
+        referenceNumber,
+        issuedAt: parsed.issuedAt ?? null,
+        dueAt: parsed.dueAt ?? null,
+        notes: parsed.notes ?? null,
+        internalNotes: parsed.internalNotes ?? null,
+        documentContent: parsed.documentContent
+          ? parseQuotationDocumentContent(parsed.documentContent)
+          : undefined,
+        createdBy: parsed.createdBy,
+      },
+      prepared,
+    );
+    created = persisted.finance;
+    lineItems = persisted.lineItems;
+  } catch (error) {
+    throw new CoreError(
+      "QUOTATION_CREATE_FAILED",
+      "Failed to save quotation. Changes were rolled back.",
+      { cause: error },
+    );
+  }
 
   recordFinanceAudit({
     action: "create",
@@ -377,6 +413,10 @@ export async function updateQuotation(
       dueAt: parsed.dueAt,
       notes: parsed.notes,
       internalNotes: parsed.internalNotes,
+      documentContent:
+        parsed.documentContent !== undefined
+          ? parseQuotationDocumentContent(parsed.documentContent)
+          : undefined,
       amount,
       tax,
       discount,

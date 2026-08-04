@@ -13,6 +13,7 @@ import type { QuotationStatus } from "@/core/finance";
 import { getProjectById } from "@/core/project/project";
 import { QuotationActionsMenu } from "@/features/finance/components/quotations/quotation-actions-menu";
 import { QuotationActivityFeed } from "@/features/finance/components/quotations/quotation-activity-feed";
+import { QuotationDocumentActions } from "@/features/finance/components/quotations/quotation-document-actions";
 import {
   QuotationLineItemsTable,
   QuotationStatusBadge,
@@ -118,6 +119,13 @@ export default async function QuotationDetailPage({ params }: PageProps) {
             canDelete={context.permissions.has("finance.delete")}
           />
         </div>
+
+        <QuotationDocumentActions
+          quotationId={quotation.id}
+          workspaceId={quotation.workspaceId}
+          companyId={quotation.companyId}
+          canWrite={context.permissions.has("finance.write")}
+        />
 
         <section className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-5">
           <QuotationSummary

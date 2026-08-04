@@ -4,13 +4,15 @@ import { redirect } from "next/navigation";
 import { uiZh } from "@/config/ui-zh";
 import { requireDashboardContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
+import { listFinancePackages } from "@/core/finance/packages";
 import { listProjectsByCompany } from "@/core/project/project";
 import { listVendorsByCompany } from "@/core/vendor/vendor";
-import { CreateQuotationForm } from "@/features/finance/components/quotations/create-quotation-form";
+import { QuotationEditor } from "@/features/finance/components/quotations/quotation-editor";
 import {
   FINANCE_WORKSPACE_HUB_ID,
   buildFinanceWorkspaceTabHref,
 } from "@/features/finance/lib/finance-workspace-tabs";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 type PageProps = {
   searchParams: Promise<{
@@ -31,11 +33,27 @@ export default async function NewQuotationPage({ searchParams }: PageProps) {
     );
   }
 
-  const [projects, clients, vendors] = await Promise.all([
-    listProjectsByCompany(context.workspace.id, context.company.id),
-    listClientsByCompany(context.workspace.id, context.company.id),
-    listVendorsByCompany(context.workspace.id, context.company.id),
-  ]);
+  const admin = createAdminClient();
+  const [{ data: profile }, projects, clients, vendors, packages] =
+    await Promise.all([
+      admin
+        .from("profiles")
+        .select("full_name, display_name")
+        .eq("id", context.userId)
+        .maybeSingle(),
+      listProjectsByCompany(context.workspace.id, context.company.id),
+      listClientsByCompany(context.workspace.id, context.company.id),
+      listVendorsByCompany(context.workspace.id, context.company.id),
+      listFinancePackages({
+        workspaceId: context.workspace.id,
+        companyId: context.company.id,
+      }).catch(() => []),
+    ]);
+
+  const preparedByName =
+    profile?.display_name?.trim() ||
+    profile?.full_name?.trim() ||
+    "";
 
   const requestedProjectId = params.projectId?.trim() ?? "";
   const requestedClientId = params.clientId?.trim() ?? "";
@@ -51,7 +69,7 @@ export default async function NewQuotationPage({ searchParams }: PageProps) {
     : "";
 
   return (
-    <div className="mx-auto w-full max-w-2xl space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-8">
       <div>
         <Link
           href={buildFinanceWorkspaceTabHref(
@@ -67,17 +85,18 @@ export default async function NewQuotationPage({ searchParams }: PageProps) {
         <p className="mt-2 text-sm text-white/45">{context.company.name}</p>
       </div>
 
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-        <CreateQuotationForm
-          workspaceId={context.workspace.id}
-          companyId={context.company.id}
-          projects={projects}
-          clients={clients}
-          vendors={vendors}
-          defaultProjectId={defaultProjectId}
-          defaultClientId={defaultClientId}
-        />
-      </div>
+      <QuotationEditor
+        mode="create"
+        workspaceId={context.workspace.id}
+        company={context.company}
+        projects={projects}
+        clients={clients}
+        vendors={vendors}
+        packages={packages}
+        preparedByName={preparedByName}
+        defaultProjectId={defaultProjectId}
+        defaultClientId={defaultClientId}
+      />
     </div>
   );
 }

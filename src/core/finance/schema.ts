@@ -6,6 +6,10 @@ import {
   FINANCE_TYPES,
   QUOTATION_STATUSES,
 } from "@/core/finance/constants";
+import {
+  financeLineItemKindSchema,
+  quotationDocumentContentSchema,
+} from "@/core/finance/document-content";
 
 export const financeTypeSchema = z.enum(FINANCE_TYPES);
 export const financeStatusSchema = z.enum(FINANCE_STATUSES);
@@ -39,6 +43,9 @@ export const financeLineItemInputSchema = z.object({
   unitPrice: moneySchema.default(0),
   tax: moneySchema.optional().default(0),
   discount: moneySchema.optional().default(0),
+  itemKind: financeLineItemKindSchema.optional(),
+  unitOfMeasure: z.string().max(40).nullable().optional(),
+  notes: z.string().max(4000).nullable().optional(),
 });
 
 export type FinanceLineItemInput = z.infer<typeof financeLineItemInputSchema>;
@@ -62,6 +69,7 @@ export const createFinanceSchema = z.object({
   paidAt: z.string().min(1).max(64).optional().nullable(),
   notes: z.string().max(8000).optional().nullable(),
   internalNotes: z.string().max(8000).optional().nullable(),
+  documentContent: quotationDocumentContentSchema.optional(),
   createdBy: z.string().uuid(),
 });
 
@@ -80,6 +88,7 @@ export const createQuotationSchema = z.object({
   dueAt: z.string().min(1).max(64).optional().nullable(),
   notes: z.string().max(8000).optional().nullable(),
   internalNotes: z.string().max(8000).optional().nullable(),
+  documentContent: quotationDocumentContentSchema.optional(),
   lineItems: z.array(financeLineItemInputSchema).min(1).max(200),
   createdBy: z.string().uuid(),
 });
@@ -104,6 +113,7 @@ export const updateFinanceSchema = z.object({
   paidAt: z.string().min(1).max(64).optional().nullable(),
   notes: z.string().max(8000).optional().nullable(),
   internalNotes: z.string().max(8000).optional().nullable(),
+  documentContent: quotationDocumentContentSchema.optional(),
   updatedBy: z.string().uuid(),
 });
 
@@ -123,6 +133,7 @@ export const updateQuotationSchema = z.object({
   dueAt: z.string().min(1).max(64).optional().nullable(),
   notes: z.string().max(8000).optional().nullable(),
   internalNotes: z.string().max(8000).optional().nullable(),
+  documentContent: quotationDocumentContentSchema.optional(),
   lineItems: z.array(financeLineItemInputSchema).min(1).max(200).optional(),
   updatedBy: z.string().uuid(),
 });
@@ -189,6 +200,7 @@ export const financeSchema = z.object({
   convertedInvoiceId: z.string().uuid().nullable(),
   notes: z.string().max(8000).nullable(),
   internalNotes: z.string().max(8000).nullable(),
+  documentContent: quotationDocumentContentSchema.optional(),
   createdBy: z.string().uuid(),
   updatedBy: z.string().uuid().nullable(),
   createdAt: z.string().min(1),

@@ -1,12 +1,12 @@
-/**
- * Shared Finance domain types — platform foundation (Project 035 / 089).
- */
-
 import type {
   FinanceCategory,
   FinanceStatus,
   FinanceType,
 } from "@/core/finance/constants";
+import type {
+  FinanceLineItemKind,
+  QuotationDocumentContent,
+} from "@/core/finance/document-content";
 
 export type {
   FinanceCategory,
@@ -14,6 +14,11 @@ export type {
   FinanceType,
   QuotationStatus,
 } from "@/core/finance/constants";
+
+export type {
+  FinanceLineItemKind,
+  QuotationDocumentContent,
+} from "@/core/finance/document-content";
 
 export type FinanceId = string;
 
@@ -41,6 +46,7 @@ export type Finance = {
   convertedInvoiceId: string | null;
   notes: string | null;
   internalNotes: string | null;
+  documentContent: QuotationDocumentContent;
   createdBy: string;
   updatedBy: string | null;
   createdAt: string;
@@ -70,6 +76,9 @@ export type FinanceLineItem = {
   tax: number;
   discount: number;
   amount: number;
+  itemKind: FinanceLineItemKind;
+  unitOfMeasure: string | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
 };
