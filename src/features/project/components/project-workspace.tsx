@@ -17,6 +17,7 @@ import {
   type ProjectWorkspaceTabId,
 } from "@/features/project/lib/project-workspace-tabs";
 import { ProjectTimelineEnginePanel } from "@/features/timeline-engine";
+import { WeddingTaskManager } from "@/features/wedding-task";
 import { WeddingTimelineBuilder } from "@/features/wedding-timeline";
 import { uiZh } from "@/config/ui-zh";
 
@@ -31,6 +32,8 @@ type ProjectWorkspaceProps = {
   canReadVendor: boolean;
   canReadTimeline?: boolean;
   canWriteTimeline?: boolean;
+  canReadTasks?: boolean;
+  canWriteTasks?: boolean;
   coordinatorLabel?: string | null;
   salesLabel?: string | null;
   initialTab?: ProjectWorkspaceTabId;
@@ -47,6 +50,8 @@ export function ProjectWorkspace({
   canReadVendor,
   canReadTimeline = false,
   canWriteTimeline = false,
+  canReadTasks = false,
+  canWriteTasks = false,
   coordinatorLabel,
   salesLabel,
   initialTab = DEFAULT_PROJECT_WORKSPACE_TAB,
@@ -142,10 +147,21 @@ export function ProjectWorkspace({
         ) : null}
 
         {activeTab === "tasks" ? (
-          <WorkspaceComingSoon
-            title={uiZh.tasks}
-            description={uiZh.comingSoonModule}
-          />
+          canReadTasks ? (
+            <WeddingTaskManager
+              workspaceId={workspaceId}
+              companyId={companyId}
+              project={project}
+              clients={clients}
+              vendors={vendors}
+              canWrite={canWriteTasks}
+            />
+          ) : (
+            <WorkspaceComingSoon
+              title={uiZh.tasks}
+              description={uiZh.wtNoPermission}
+            />
+          )
         ) : null}
 
         {activeTab === "meetings" ? (

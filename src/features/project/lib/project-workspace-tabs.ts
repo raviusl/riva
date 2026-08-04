@@ -24,7 +24,6 @@ export type ProjectWorkspaceTabId =
 export const DEFAULT_PROJECT_WORKSPACE_TAB: ProjectWorkspaceTabId = "overview";
 
 export const PROJECT_WORKSPACE_PLACEHOLDER_TABS = [
-  "tasks",
   "meetings",
   "schedule",
   "package",
