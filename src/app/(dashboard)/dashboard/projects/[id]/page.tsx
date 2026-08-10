@@ -78,6 +78,8 @@ export default async function ProjectWorkspacePage({
         canWriteTimeline={context.permissions.has("timeline.write")}
         canReadTasks={context.permissions.has("task.read")}
         canWriteTasks={context.permissions.has("task.write")}
+        canReadPackages={context.permissions.has("project.read")}
+        canWritePackages={context.permissions.has("project.write")}
         coordinatorLabel={ownerLabelFromOptions(
           project.coordinator_id,
           owners,
