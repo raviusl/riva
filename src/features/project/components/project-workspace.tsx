@@ -39,6 +39,7 @@ type ProjectWorkspaceProps = {
   canWritePackages?: boolean;
   coordinatorLabel?: string | null;
   salesLabel?: string | null;
+  plannerLabel?: string | null;
   initialTab?: ProjectWorkspaceTabId;
 };
 
@@ -59,6 +60,7 @@ export function ProjectWorkspace({
   canWritePackages = false,
   coordinatorLabel,
   salesLabel,
+  plannerLabel,
   initialTab = DEFAULT_PROJECT_WORKSPACE_TAB,
 }: ProjectWorkspaceProps) {
   const searchParams = useSearchParams();
@@ -99,6 +101,7 @@ export function ProjectWorkspace({
             canWriteProject={canWriteProject}
             coordinatorLabel={coordinatorLabel}
             salesLabel={salesLabel}
+            plannerLabel={plannerLabel}
           />
         ) : null}
 

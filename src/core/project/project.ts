@@ -104,16 +104,20 @@ export async function createProject(
       owner_id: values.ownerId ?? null,
       coordinator_id: values.coordinatorId ?? null,
       sales_id: values.salesId ?? null,
+      planner_id: values.plannerId ?? null,
       start_date: values.startDate || null,
       end_date: values.endDate || null,
       wedding_date: values.weddingDate || null,
       event_date: values.eventDate || values.weddingDate || null,
       venue: trimOrNull(values.venue),
+      ballroom: trimOrNull(values.ballroom),
       session: values.session ?? null,
       package_name: trimOrNull(values.packageName),
       expected_pax: values.expectedPax ?? null,
+      budget: values.budget ?? null,
       theme: trimOrNull(values.theme),
       dress_code: trimOrNull(values.dressCode),
+      notes: trimOrNull(values.notes),
     });
 
     if (!project.project_code) {
@@ -251,6 +255,8 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
           : project.coordinator_id,
       sales_id:
         values.salesId !== undefined ? values.salesId : project.sales_id,
+      planner_id:
+        values.plannerId !== undefined ? values.plannerId : project.planner_id,
       start_date:
         values.startDate !== undefined ? values.startDate : project.start_date,
       end_date: values.endDate !== undefined ? values.endDate : project.end_date,
@@ -262,6 +268,10 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
         values.eventDate !== undefined ? values.eventDate : project.event_date,
       venue:
         values.venue !== undefined ? trimOrNull(values.venue) : project.venue,
+      ballroom:
+        values.ballroom !== undefined
+          ? trimOrNull(values.ballroom)
+          : project.ballroom,
       session: values.session !== undefined ? values.session : project.session,
       package_name:
         values.packageName !== undefined
@@ -271,12 +281,16 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
         values.expectedPax !== undefined
           ? values.expectedPax
           : project.expected_pax,
+      budget:
+        values.budget !== undefined ? values.budget : project.budget,
       theme:
         values.theme !== undefined ? trimOrNull(values.theme) : project.theme,
       dress_code:
         values.dressCode !== undefined
           ? trimOrNull(values.dressCode)
           : project.dress_code,
+      notes:
+        values.notes !== undefined ? trimOrNull(values.notes) : project.notes,
     });
 
     if (values.clientId) {

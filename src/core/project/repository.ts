@@ -37,17 +37,30 @@ export function mapProjectRow(data: Record<string, unknown>): Project {
     coordinator_id:
       (data.coordinator_id as string | null | undefined) ?? null,
     sales_id: (data.sales_id as string | null | undefined) ?? null,
+    planner_id: (data.planner_id as string | null | undefined) ?? null,
     start_date: (data.start_date as string | null | undefined) ?? null,
     end_date: (data.end_date as string | null | undefined) ?? null,
     wedding_date: (data.wedding_date as string | null | undefined) ?? null,
     event_date: (data.event_date as string | null | undefined) ?? null,
     venue: (data.venue as string | null | undefined) ?? null,
+    ballroom: (data.ballroom as string | null | undefined) ?? null,
     session: (data.session as string | null | undefined) ?? null,
     package_name: (data.package_name as string | null | undefined) ?? null,
-    expected_pax:
-      typeof data.expected_pax === "number" ? data.expected_pax : null,
+    expected_pax: (() => {
+      if (typeof data.expected_pax === "number") return data.expected_pax;
+      if (data.expected_pax == null || data.expected_pax === "") return null;
+      const parsed = Number(data.expected_pax);
+      return Number.isFinite(parsed) ? parsed : null;
+    })(),
+    budget: (() => {
+      if (typeof data.budget === "number") return data.budget;
+      if (data.budget == null || data.budget === "") return null;
+      const parsed = Number(data.budget);
+      return Number.isFinite(parsed) ? parsed : null;
+    })(),
     theme: (data.theme as string | null | undefined) ?? null,
     dress_code: (data.dress_code as string | null | undefined) ?? null,
+    notes: (data.notes as string | null | undefined) ?? null,
     created_at: data.created_at as string,
     updated_at: data.updated_at as string,
   };
@@ -65,16 +78,20 @@ export type InsertProjectRow = {
   owner_id?: string | null;
   coordinator_id?: string | null;
   sales_id?: string | null;
+  planner_id?: string | null;
   start_date?: string | null;
   end_date?: string | null;
   wedding_date?: string | null;
   event_date?: string | null;
   venue?: string | null;
+  ballroom?: string | null;
   session?: string | null;
   package_name?: string | null;
   expected_pax?: number | null;
+  budget?: number | null;
   theme?: string | null;
   dress_code?: string | null;
+  notes?: string | null;
 };
 
 export type UpdateProjectRow = Partial<

@@ -173,16 +173,20 @@ export const createProjectSchema = z.object({
   ownerId: z.string().uuid().nullable().optional(),
   coordinatorId: z.string().uuid().nullable().optional(),
   salesId: z.string().uuid().nullable().optional(),
+  plannerId: z.string().uuid().nullable().optional(),
   startDate: dateYmd,
   endDate: dateYmd,
   weddingDate: dateYmd,
   eventDate: dateYmd,
   venue: optionalText(300),
+  ballroom: optionalText(300),
   session: z.enum(WEDDING_SESSIONS).nullable().optional(),
   packageName: optionalText(200),
   expectedPax: z.number().int().nonnegative().nullable().optional(),
+  budget: z.number().nonnegative().nullable().optional(),
   theme: optionalText(200),
   dressCode: optionalText(200),
+  notes: optionalText(4000),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
@@ -200,16 +204,20 @@ export const updateProjectSchema = z.object({
   ownerId: z.string().uuid().nullable().optional(),
   coordinatorId: z.string().uuid().nullable().optional(),
   salesId: z.string().uuid().nullable().optional(),
+  plannerId: z.string().uuid().nullable().optional(),
   startDate: dateYmd,
   endDate: dateYmd,
   weddingDate: dateYmd,
   eventDate: dateYmd,
   venue: optionalText(300),
+  ballroom: optionalText(300),
   session: z.enum(WEDDING_SESSIONS).nullable().optional(),
   packageName: optionalText(200),
   expectedPax: z.number().int().nonnegative().nullable().optional(),
+  budget: z.number().nonnegative().nullable().optional(),
   theme: optionalText(200),
   dressCode: optionalText(200),
+  notes: optionalText(4000),
 });
 
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;

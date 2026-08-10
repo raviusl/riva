@@ -13,6 +13,7 @@ type ProjectWorkspaceOverviewProps = {
   canWriteProject: boolean;
   coordinatorLabel?: string | null;
   salesLabel?: string | null;
+  plannerLabel?: string | null;
 };
 
 function formatDate(value: string | null | undefined): string {
@@ -98,6 +99,7 @@ export function ProjectWorkspaceOverview({
   canWriteProject,
   coordinatorLabel,
   salesLabel,
+  plannerLabel,
 }: ProjectWorkspaceOverviewProps) {
   const weddingDate = project.wedding_date || project.event_date;
   const primaryClient =
@@ -126,8 +128,30 @@ export function ProjectWorkspaceOverview({
           value={project.venue || primaryClient?.venue || uiZh.emDash}
         />
         <OverviewCard
-          label={uiZh.weddingSession}
-          value={project.session || primaryClient?.session || uiZh.emDash}
+          label={uiZh.ballroom}
+          value={project.ballroom || primaryClient?.ballroom || uiZh.emDash}
+        />
+        <OverviewCard
+          label={uiZh.expectedPax}
+          value={
+            project.expected_pax != null
+              ? String(project.expected_pax)
+              : primaryClient?.expected_pax != null
+                ? String(primaryClient.expected_pax)
+                : uiZh.emDash
+          }
+        />
+        <OverviewCard
+          label={uiZh.budget}
+          value={
+            project.budget != null
+              ? project.budget.toLocaleString("zh-CN")
+              : uiZh.emDash
+          }
+        />
+        <OverviewCard
+          label={uiZh.planner}
+          value={plannerLabel || uiZh.emDash}
         />
         <OverviewCard
           label={uiZh.coordinator}
@@ -146,18 +170,16 @@ export function ProjectWorkspaceOverview({
           value={project.project_code || uiZh.emDash}
         />
         <OverviewCard
+          label={uiZh.weddingSession}
+          value={project.session || primaryClient?.session || uiZh.emDash}
+        />
+        <OverviewCard
           label={uiZh.eventDate}
           value={formatDate(project.event_date)}
         />
         <OverviewCard
-          label={uiZh.expectedPax}
-          value={
-            project.expected_pax != null
-              ? String(project.expected_pax)
-              : primaryClient?.expected_pax != null
-                ? String(primaryClient.expected_pax)
-                : uiZh.emDash
-          }
+          label={uiZh.notes}
+          value={project.notes?.trim() || uiZh.emDash}
         />
       </div>
 
@@ -175,14 +197,16 @@ export function ProjectWorkspaceOverview({
         />
       </div>
 
-      {primaryClient ? (
+      {canWriteProject || primaryClient ? (
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <Link
-            href={`/dashboard/clients/${primaryClient.id}`}
-            className="text-white/55 underline-offset-4 hover:text-white/80 hover:underline"
-          >
-            {uiZh.client}: {primaryClient.display_name || primaryClient.name}
-          </Link>
+          {primaryClient ? (
+            <Link
+              href={`/dashboard/clients/${primaryClient.id}`}
+              className="text-white/55 underline-offset-4 hover:text-white/80 hover:underline"
+            >
+              {uiZh.client}: {primaryClient.display_name || primaryClient.name}
+            </Link>
+          ) : null}
           {canWriteProject ? (
             <Link
               href={`/dashboard/projects/${project.id}/edit`}

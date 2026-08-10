@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { uiZh } from "@/config/ui-zh";
 import { requireDashboardContext } from "@/core/auth/context";
 import { getProjectById } from "@/core/project/project";
+import { listClientOwnerOptions } from "@/features/client/lib/client-owners";
 import { EditProjectForm } from "@/features/project/components/edit-project-form";
 
 type PageProps = {
@@ -29,8 +30,13 @@ export default async function EditProjectPage({ params }: PageProps) {
     notFound();
   }
 
+  const owners = await listClientOwnerOptions(
+    context.workspace.id,
+    context.company.id,
+  );
+
   return (
-    <div className="mx-auto w-full max-w-lg space-y-8">
+    <div className="mx-auto w-full max-w-2xl space-y-8">
       <div>
         <Link
           href={`/dashboard/projects/${project.id}`}
@@ -43,7 +49,7 @@ export default async function EditProjectPage({ params }: PageProps) {
       </div>
 
       <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
-        <EditProjectForm project={project} />
+        <EditProjectForm project={project} owners={owners} />
       </div>
     </div>
   );

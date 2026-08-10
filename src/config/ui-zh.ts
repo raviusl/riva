@@ -492,6 +492,7 @@ export const uiZh = {
   projectCode: "项目编号",
   clientCode: "客户编号",
   coordinator: "统筹",
+  planner: "策划",
   salesPersonLabel: "销售",
   packageName: "套餐",
   countdown: "倒计时",

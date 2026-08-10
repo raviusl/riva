@@ -1,8 +1,10 @@
--- Project 097 — Client CRM + Wedding Project Foundation
--- Extends crm_clients + projects. Does not touch finance tables.
+-- Project 097 schema completion / repair
+-- Fixes constraint migration order (drop BEFORE data rewrite) and
+-- completes Wedding Project columns required by the product.
+-- Idempotent. Safe on partially-migrated environments.
 
 -- =========================================================
--- CLIENT CRM
+-- CLIENT CRM — constraint-safe type / status migration
 -- =========================================================
 
 alter table public.crm_clients
@@ -39,11 +41,15 @@ alter table public.crm_clients
   add column if not exists religion text,
   add column if not exists language text;
 
--- Migrate legacy client_type values.
--- DROP old check FIRST — updating to 'wedding'/'private' while the legacy
--- check (bride/groom/individual/corporate) remains will fail.
+-- DROP old checks BEFORE rewriting values (root cause of prior 097 failure)
 alter table public.crm_clients
   drop constraint if exists crm_clients_client_type_check;
+
+alter table public.crm_clients
+  drop constraint if exists crm_clients_status_check;
+
+alter table public.crm_clients
+  drop constraint if exists crm_clients_source_check;
 
 update public.crm_clients
 set client_type = case client_type
@@ -55,17 +61,6 @@ set client_type = case client_type
 end
 where client_type in ('bride', 'groom', 'individual');
 
-alter table public.crm_clients
-  add constraint crm_clients_client_type_check
-  check (
-    client_type is null
-    or client_type in ('wedding', 'corporate', 'private', 'others')
-  );
-
--- Migrate legacy status → inquiry / follow_up / archived
-alter table public.crm_clients
-  drop constraint if exists crm_clients_status_check;
-
 update public.crm_clients
 set
   status = case status
@@ -74,8 +69,18 @@ set
     when 'archived' then 'archived'
     else status
   end,
-  is_active = case when status = 'archived' then false else coalesce(is_active, true) end
+  is_active = case
+    when status = 'archived' then false
+    else coalesce(is_active, true)
+  end
 where status in ('active', 'follow_up', 'archived');
+
+alter table public.crm_clients
+  add constraint crm_clients_client_type_check
+  check (
+    client_type is null
+    or client_type in ('wedding', 'corporate', 'private', 'others')
+  );
 
 alter table public.crm_clients
   add constraint crm_clients_status_check
@@ -92,9 +97,6 @@ alter table public.crm_clients
 
 alter table public.crm_clients
   alter column status set default 'inquiry';
-
-alter table public.crm_clients
-  drop constraint if exists crm_clients_source_check;
 
 alter table public.crm_clients
   add constraint crm_clients_source_check
@@ -127,13 +129,12 @@ create index if not exists crm_clients_wedding_date_idx
   on public.crm_clients (wedding_date)
   where wedding_date is not null;
 
--- Backfill client_code for existing rows
 update public.crm_clients
 set client_code = 'CL-' || upper(substr(replace(id::text, '-', ''), 1, 8))
 where client_code is null;
 
 -- =========================================================
--- PROJECTS (Wedding Project Foundation)
+-- PROJECTS — Wedding Project foundation + required fields
 -- =========================================================
 
 alter table public.projects
@@ -154,14 +155,13 @@ alter table public.projects
   add column if not exists dress_code text,
   add column if not exists notes text;
 
--- Backfill client_id from crm_clients.project_id (primary link direction: Project → Client)
+-- Backfill client_id from crm_clients.project_id
 update public.projects p
 set client_id = c.id
 from public.crm_clients c
 where c.project_id = p.id
   and p.client_id is null;
 
--- Migrate legacy project statuses (drop check before rewrite)
 alter table public.projects
   drop constraint if exists projects_status_check;
 
@@ -209,22 +209,27 @@ create index if not exists projects_wedding_date_idx
   on public.projects (wedding_date)
   where wedding_date is not null;
 
--- Backfill project_code
 update public.projects
 set project_code = 'PRJ-' || upper(substr(replace(id::text, '-', ''), 1, 8))
 where project_code is null;
 
-comment on column public.crm_clients.client_code is
-  'Human-readable client code (CL-XXXXXXXX).';
-comment on column public.crm_clients.is_active is
-  'Active / inactive flag independent of pipeline status.';
-comment on column public.crm_clients.source is
-  'Lead source (Facebook, Instagram, Referral, …).';
 comment on column public.projects.client_id is
-  'Primary Client reference. Projects belong to a Client; do not duplicate client data.';
-comment on column public.projects.project_code is
-  'Human-readable project code (PRJ-XXXXXXXX).';
+  'Primary Client reference. Projects belong to a Client.';
 comment on column public.projects.wedding_date is
   'Wedding / ceremony date for wedding projects.';
-comment on column public.projects.event_date is
-  'Primary event date (may equal wedding_date).';
+comment on column public.projects.venue is
+  'Wedding venue name.';
+comment on column public.projects.ballroom is
+  'Ballroom / hall within the venue.';
+comment on column public.projects.expected_pax is
+  'Estimated guest count (estimated_pax).';
+comment on column public.projects.budget is
+  'Estimated / agreed project budget.';
+comment on column public.projects.planner_id is
+  'Assigned planner (auth user).';
+comment on column public.projects.coordinator_id is
+  'Assigned coordinator (auth user).';
+comment on column public.projects.sales_id is
+  'Assigned sales person (auth user).';
+comment on column public.projects.notes is
+  'Internal project notes.';

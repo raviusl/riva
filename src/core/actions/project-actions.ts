@@ -27,6 +27,7 @@ function revalidateProjectPaths(projectId?: string) {
   revalidatePath("/dashboard/projects");
   if (projectId) {
     revalidatePath(`/dashboard/projects/${projectId}`);
+    revalidatePath(`/dashboard/projects/${projectId}/edit`);
   }
 }
 

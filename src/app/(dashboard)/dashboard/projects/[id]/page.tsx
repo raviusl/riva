@@ -85,6 +85,7 @@ export default async function ProjectWorkspacePage({
           owners,
         )}
         salesLabel={ownerLabelFromOptions(project.sales_id, owners)}
+        plannerLabel={ownerLabelFromOptions(project.planner_id, owners)}
         initialTab={initialTab}
       />
     </Suspense>
