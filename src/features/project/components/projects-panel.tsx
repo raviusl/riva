@@ -62,30 +62,39 @@ export function ProjectsPanel({
         </div>
       ) : (
         <ul className="mt-4 space-y-2">
-          {activeProjects.slice(0, 6).map((project) => (
-            <li
-              key={project.id}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-white">{project.name}</p>
-                  <p className="mt-1 text-xs text-white/40">
-                    {statusLabel(project.status)}
-                    {project.project_type ? ` · ${project.project_type}` : ""}
-                    {" · "}
-                    {formatDate(project.updated_at)}
-                  </p>
-                </div>
+          {activeProjects.slice(0, 6).map((project) => {
+            const workspaceHref = buildWorkspaceOverviewHref(
+              "project",
+              project.id,
+            );
+            return (
+              <li key={project.id}>
                 <Link
-                  href={buildWorkspaceOverviewHref("project", project.id)}
-                  className="shrink-0 text-xs text-white/45 hover:text-white/70"
+                  href={workspaceHref}
+                  className="block rounded-xl border border-white/[0.06] bg-white/[0.02] px-4 py-3 transition hover:border-white/12 hover:bg-white/[0.04]"
                 >
-                  Open
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-white">
+                        {project.name}
+                      </p>
+                      <p className="mt-1 text-xs text-white/40">
+                        {statusLabel(project.status)}
+                        {project.project_type
+                          ? ` · ${project.project_type}`
+                          : ""}
+                        {" · "}
+                        {formatDate(project.updated_at)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-xs text-white/45">
+                      Open
+                    </span>
+                  </div>
                 </Link>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
 

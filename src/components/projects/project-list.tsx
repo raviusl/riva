@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { uiZh } from "@/config/ui-zh";
 import type { Client, Project } from "@/core/types";
+import { buildProjectWorkspaceHref } from "@/features/project/lib/project-workspace-tabs";
 import { cn } from "@/lib/utils";
 
 export type ProjectListRow = {
@@ -66,6 +68,7 @@ export function ProjectList({
   clients,
   canWrite,
 }: ProjectListProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -254,33 +257,50 @@ export function ProjectList({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map(({ project, clientName, ownerName }) => (
-                <TableRow key={project.id}>
-                  <TableCell>
-                    <Link
-                      href={`/dashboard/projects/${project.id}`}
-                      className="font-medium text-white/90 transition hover:text-white"
-                    >
-                      {project.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {clientName ?? uiZh.emDash}
-                  </TableCell>
-                  <TableCell>
-                    {formatProjectStatus(project.status)}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatProjectDate(project.start_date)}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    {formatProjectDate(project.end_date)}
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {ownerName ?? uiZh.emDash}
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filtered.map(({ project, clientName, ownerName }) => {
+                const workspaceHref = buildProjectWorkspaceHref(project.id);
+                return (
+                  <TableRow
+                    key={project.id}
+                    role="link"
+                    tabIndex={0}
+                    aria-label={project.name}
+                    className="cursor-pointer"
+                    onClick={() => router.push(workspaceHref)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        router.push(workspaceHref);
+                      }
+                    }}
+                  >
+                    <TableCell>
+                      <Link
+                        href={workspaceHref}
+                        className="font-medium text-white/90 transition hover:text-white"
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        {project.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {clientName ?? uiZh.emDash}
+                    </TableCell>
+                    <TableCell>
+                      {formatProjectStatus(project.status)}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatProjectDate(project.start_date)}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      {formatProjectDate(project.end_date)}
+                    </TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      {ownerName ?? uiZh.emDash}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>

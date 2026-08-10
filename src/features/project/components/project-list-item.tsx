@@ -12,7 +12,6 @@ import {
   restoreProjectAction,
 } from "@/core/actions/project-actions";
 import type { Project } from "@/core/types";
-import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 import { uiZh } from "@/config/ui-zh";
 
 type ProjectListItemProps = {
@@ -34,15 +33,28 @@ export function ProjectListItem({
 }: ProjectListItemProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const detailHref = buildWorkspaceOverviewHref("project", project.id);
+  const detailHref = `/dashboard/projects/${project.id}`;
 
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-4 sm:px-5">
+    <div
+      role="link"
+      tabIndex={0}
+      aria-label={project.name}
+      className="cursor-pointer rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-4 transition hover:border-white/12 hover:bg-white/[0.04] sm:px-5"
+      onClick={() => router.push(detailHref)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          router.push(detailHref);
+        }
+      }}
+    >
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <Link
             href={detailHref}
             className="truncate text-sm font-medium text-white hover:text-white/80"
+            onClick={(event) => event.stopPropagation()}
           >
             {project.name}
           </Link>
@@ -51,7 +63,10 @@ export function ProjectListItem({
             {project.project_type ? ` · ${project.project_type}` : ""}
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div
+          className="flex flex-wrap gap-2"
+          onClick={(event) => event.stopPropagation()}
+        >
           <Button
             type="button"
             size="sm"
