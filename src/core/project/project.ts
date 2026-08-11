@@ -114,7 +114,7 @@ export async function createProject(
       session: values.session ?? null,
       package_name: trimOrNull(values.packageName),
       expected_pax: values.expectedPax ?? null,
-      budget: values.budget ?? null,
+      client_budget: values.clientBudget ?? null,
       theme: trimOrNull(values.theme),
       dress_code: trimOrNull(values.dressCode),
       notes: trimOrNull(values.notes),
@@ -281,8 +281,10 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
         values.expectedPax !== undefined
           ? values.expectedPax
           : project.expected_pax,
-      budget:
-        values.budget !== undefined ? values.budget : project.budget,
+      client_budget:
+        values.clientBudget !== undefined
+          ? values.clientBudget
+          : project.client_budget,
       theme:
         values.theme !== undefined ? trimOrNull(values.theme) : project.theme,
       dress_code:

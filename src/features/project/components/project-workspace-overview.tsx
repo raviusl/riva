@@ -142,10 +142,10 @@ export function ProjectWorkspaceOverview({
           }
         />
         <OverviewCard
-          label={uiZh.budget}
+          label={uiZh.clientBudget}
           value={
-            project.budget != null
-              ? project.budget.toLocaleString("zh-CN")
+            project.client_budget != null
+              ? project.client_budget.toLocaleString("zh-CN")
               : uiZh.emDash
           }
         />

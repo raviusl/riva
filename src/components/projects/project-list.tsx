@@ -37,7 +37,9 @@ type SortKey =
   | "status"
   | "startDate"
   | "endDate"
-  | "owner";
+  | "owner"
+  | "clientBudget"
+  | "expectedPax";
 
 type SortDir = "asc" | "desc";
 
@@ -82,6 +84,10 @@ export function ProjectList({
             clientName ?? "",
             formatProjectStatus(project.status),
             ownerName ?? "",
+            project.client_budget != null ? String(project.client_budget) : "",
+            uiZh.clientBudget,
+            project.expected_pax != null ? String(project.expected_pax) : "",
+            uiZh.expectedPax,
           ]
             .join(" ")
             .toLowerCase();
@@ -125,6 +131,18 @@ export function ProjectList({
           return compareValues(
             (left.ownerName ?? "").toLowerCase(),
             (right.ownerName ?? "").toLowerCase(),
+            sortDir,
+          );
+        case "clientBudget":
+          return compareValues(
+            left.project.client_budget ?? -1,
+            right.project.client_budget ?? -1,
+            sortDir,
+          );
+        case "expectedPax":
+          return compareValues(
+            left.project.expected_pax ?? -1,
+            right.project.expected_pax ?? -1,
             sortDir,
           );
         default:
@@ -251,6 +269,12 @@ export function ProjectList({
                 <TableHead className="hidden lg:table-cell">
                   <SortButton label={uiZh.dueDate} column="endDate" />
                 </TableHead>
+                <TableHead className="hidden xl:table-cell">
+                  <SortButton label={uiZh.expectedPax} column="expectedPax" />
+                </TableHead>
+                <TableHead className="hidden xl:table-cell">
+                  <SortButton label={uiZh.clientBudget} column="clientBudget" />
+                </TableHead>
                 <TableHead className="hidden sm:table-cell">
                   <SortButton label={uiZh.owner} column="owner" />
                 </TableHead>
@@ -294,6 +318,16 @@ export function ProjectList({
                     </TableCell>
                     <TableCell className="hidden lg:table-cell">
                       {formatProjectDate(project.end_date)}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {project.expected_pax != null
+                        ? String(project.expected_pax)
+                        : uiZh.emDash}
+                    </TableCell>
+                    <TableCell className="hidden xl:table-cell">
+                      {project.client_budget != null
+                        ? project.client_budget.toLocaleString("zh-CN")
+                        : uiZh.emDash}
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       {ownerName ?? uiZh.emDash}

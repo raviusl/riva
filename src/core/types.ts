@@ -280,7 +280,7 @@ export type Project = {
   session: string | null;
   package_name: string | null;
   expected_pax: number | null;
-  budget: number | null;
+  client_budget: number | null;
   theme: string | null;
   dress_code: string | null;
   notes: string | null;

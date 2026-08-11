@@ -61,6 +61,12 @@ export function ProjectListItem({
           <p className="mt-1 truncate text-xs text-white/45">
             {statusLabel(project.status)}
             {project.project_type ? ` · ${project.project_type}` : ""}
+            {project.expected_pax != null
+              ? ` · ${uiZh.expectedPax} ${project.expected_pax}`
+              : ""}
+            {project.client_budget != null
+              ? ` · ${uiZh.clientBudget} ${project.client_budget.toLocaleString("zh-CN")}`
+              : ""}
           </p>
         </div>
         <div

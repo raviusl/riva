@@ -482,6 +482,7 @@ export const uiZh = {
   includeDinner: "晚宴",
   ballroom: "宴会厅",
   expectedPax: "预计人数",
+  clientBudget: "客户预算",
   religion: "宗教",
   language: "语言",
   filterActive: "启用",
@@ -707,7 +708,7 @@ export const uiZh = {
   // Projects
   projects: "项目",
   operationalWorkFor: (business: string) => `${business} 的运营工作`,
-  searchProjects: "搜索项目…",
+  searchProjects: "搜索项目、客户预算…",
   noProjectsYet: "暂无项目",
   createProjectToOrganize: "创建项目以组织客户工作。",
   noMatchingProjects: "没有匹配的项目",

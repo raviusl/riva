@@ -149,7 +149,7 @@ alter table public.projects
   add column if not exists planner_id uuid references auth.users (id) on delete set null,
   add column if not exists package_name text,
   add column if not exists expected_pax integer,
-  add column if not exists budget numeric(14, 2),
+  add column if not exists client_budget numeric(14, 2),
   add column if not exists theme text,
   add column if not exists dress_code text,
   add column if not exists notes text;

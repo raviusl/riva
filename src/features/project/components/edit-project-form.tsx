@@ -49,7 +49,7 @@ const formSchema = z.object({
   ballroom: z.string().max(300).optional(),
   weddingDate: z.string().optional(),
   expectedPax: z.string().optional(),
-  budget: z.string().optional(),
+  clientBudget: z.string().optional(),
   plannerId: z.string().optional(),
   coordinatorId: z.string().optional(),
   salesId: z.string().optional(),
@@ -79,7 +79,8 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
       weddingDate: project.wedding_date ?? "",
       expectedPax:
         project.expected_pax != null ? String(project.expected_pax) : "",
-      budget: project.budget != null ? String(project.budget) : "",
+      clientBudget:
+        project.client_budget != null ? String(project.client_budget) : "",
       plannerId: project.planner_id ?? "",
       coordinatorId: project.coordinator_id ?? "",
       salesId: project.sales_id ?? "",
@@ -103,7 +104,7 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
             ballroom: emptyToNull(values.ballroom),
             weddingDate: emptyToNull(values.weddingDate),
             expectedPax: parseOptionalInt(values.expectedPax),
-            budget: parseOptionalNumber(values.budget),
+            clientBudget: parseOptionalNumber(values.clientBudget),
             plannerId: parseOptionalUuid(values.plannerId),
             coordinatorId: parseOptionalUuid(values.coordinatorId),
             salesId: parseOptionalUuid(values.salesId),
@@ -200,15 +201,15 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="edit-project-budget">{uiZh.budget}</Label>
+        <Label htmlFor="edit-project-client-budget">{uiZh.clientBudget}</Label>
         <Input
-          id="edit-project-budget"
+          id="edit-project-client-budget"
           type="number"
           min={0}
           step="0.01"
           className={authFieldClassName}
           disabled={pending}
-          {...form.register("budget")}
+          {...form.register("clientBudget")}
         />
       </div>
 

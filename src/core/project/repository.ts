@@ -52,10 +52,10 @@ export function mapProjectRow(data: Record<string, unknown>): Project {
       const parsed = Number(data.expected_pax);
       return Number.isFinite(parsed) ? parsed : null;
     })(),
-    budget: (() => {
-      if (typeof data.budget === "number") return data.budget;
-      if (data.budget == null || data.budget === "") return null;
-      const parsed = Number(data.budget);
+    client_budget: (() => {
+      if (typeof data.client_budget === "number") return data.client_budget;
+      if (data.client_budget == null || data.client_budget === "") return null;
+      const parsed = Number(data.client_budget);
       return Number.isFinite(parsed) ? parsed : null;
     })(),
     theme: (data.theme as string | null | undefined) ?? null,
@@ -88,7 +88,7 @@ export type InsertProjectRow = {
   session?: string | null;
   package_name?: string | null;
   expected_pax?: number | null;
-  budget?: number | null;
+  client_budget?: number | null;
   theme?: string | null;
   dress_code?: string | null;
   notes?: string | null;

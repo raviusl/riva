@@ -150,7 +150,7 @@ alter table public.projects
   add column if not exists planner_id uuid references auth.users (id) on delete set null,
   add column if not exists package_name text,
   add column if not exists expected_pax integer,
-  add column if not exists budget numeric(14, 2),
+  add column if not exists client_budget numeric(14, 2),
   add column if not exists theme text,
   add column if not exists dress_code text,
   add column if not exists notes text;
@@ -223,8 +223,8 @@ comment on column public.projects.ballroom is
   'Ballroom / hall within the venue.';
 comment on column public.projects.expected_pax is
   'Estimated guest count (estimated_pax).';
-comment on column public.projects.budget is
-  'Estimated / agreed project budget.';
+comment on column public.projects.client_budget is
+  'Client expected budget for the wedding project. Not Finance revenue/cost.';
 comment on column public.projects.planner_id is
   'Assigned planner (auth user).';
 comment on column public.projects.coordinator_id is
