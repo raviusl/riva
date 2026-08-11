@@ -143,7 +143,7 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
         <Label htmlFor="edit-project-type">{uiZh.type}</Label>
         <select
           id="edit-project-type"
-          className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+          className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
           disabled={pending}
           {...form.register("projectType")}
         >
@@ -218,7 +218,7 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
           <Label htmlFor="edit-project-planner">{uiZh.planner}</Label>
           <select
             id="edit-project-planner"
-            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
             disabled={pending}
             {...form.register("plannerId")}
           >
@@ -240,7 +240,7 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
           <Label htmlFor="edit-project-coordinator">{uiZh.coordinator}</Label>
           <select
             id="edit-project-coordinator"
-            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
             disabled={pending}
             {...form.register("coordinatorId")}
           >
@@ -262,7 +262,7 @@ export function EditProjectForm({ project, owners }: EditProjectFormProps) {
           <Label htmlFor="edit-project-sales">{uiZh.salesPersonLabel}</Label>
           <select
             id="edit-project-sales"
-            className="h-8 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
+            className="h-9 w-full rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm text-white"
             disabled={pending}
             {...form.register("salesId")}
           >

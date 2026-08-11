@@ -30,6 +30,34 @@ export default async function EditProjectPage({ params }: PageProps) {
     notFound();
   }
 
+  if (project.status === "archived") {
+    return (
+      <div className="mx-auto w-full max-w-2xl space-y-8">
+        <div>
+          <Link
+            href={`/dashboard/projects/${project.id}`}
+            className="text-xs text-white/40 hover:text-white/70"
+          >
+            {uiZh.backToList(project.name)}
+          </Link>
+          <h1 className="mt-3 text-xl text-white">{uiZh.editProject}</h1>
+          <p className="mt-2 text-sm text-white/45">{project.name}</p>
+        </div>
+        <div className="space-y-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6">
+          <p className="text-sm text-white/55">
+            {uiZh.projectArchivedCannotEdit}
+          </p>
+          <Link
+            href={`/dashboard/projects/${project.id}`}
+            className="inline-flex h-9 items-center rounded-lg bg-white px-4 text-sm font-medium text-black hover:bg-white/90"
+          >
+            {uiZh.backToList(project.name)}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const owners = await listClientOwnerOptions(
     context.workspace.id,
     context.company.id,

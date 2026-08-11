@@ -19,11 +19,36 @@ import { uiZh } from "@/config/ui-zh";
 import { createProjectAction } from "@/core/actions/project-actions";
 import type { Client } from "@/core/types";
 
+function emptyToNull(value: string | null | undefined): string | null {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function parseOptionalInt(value: string | null | undefined): number | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  const parsed = Number.parseInt(trimmed, 10);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseOptionalNumber(value: string | null | undefined): number | null {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 const projectFormSchema = z
   .object({
     name: z.string().trim().min(1, uiZh.projectNameRequired).max(160),
     clientId: z.string().uuid().optional().or(z.literal("")),
     description: z.string().trim().max(4000).optional().or(z.literal("")),
+    venue: z.string().max(300).optional().or(z.literal("")),
+    ballroom: z.string().max(300).optional().or(z.literal("")),
+    weddingDate: z.string().optional().or(z.literal("")),
+    expectedPax: z.string().optional().or(z.literal("")),
+    clientBudget: z.string().optional().or(z.literal("")),
+    notes: z.string().max(4000).optional().or(z.literal("")),
     startDate: z.string().optional().or(z.literal("")),
     endDate: z.string().optional().or(z.literal("")),
     status: z.enum(PROJECT_FOUNDATION_STATUSES),
@@ -40,6 +65,13 @@ const projectFormSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["endDate"],
+        message: uiZh.dateFormatHint,
+      });
+    }
+    if (values.weddingDate && !/^\d{4}-\d{2}-\d{2}$/.test(values.weddingDate)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["weddingDate"],
         message: uiZh.dateFormatHint,
       });
     }
@@ -87,6 +119,12 @@ export function ProjectForm({
       name: defaultName ?? "",
       clientId: defaultClientId ?? "",
       description: "",
+      venue: "",
+      ballroom: "",
+      weddingDate: defaultWeddingDate ?? "",
+      expectedPax: "",
+      clientBudget: "",
+      notes: "",
       startDate: "",
       endDate: "",
       status: "inquiry",
@@ -98,16 +136,22 @@ export function ProjectForm({
       className="space-y-4"
       onSubmit={form.handleSubmit((values) => {
         startTransition(async () => {
+          const weddingDate = emptyToNull(values.weddingDate);
           const result = await createProjectAction({
             workspaceId,
             companyId,
             name: values.name,
-            description: values.description || null,
+            description: emptyToNull(values.description),
             clientId: values.clientId || null,
-            startDate: values.startDate || null,
-            endDate: values.endDate || null,
-            weddingDate: defaultWeddingDate || null,
-            eventDate: defaultWeddingDate || null,
+            startDate: emptyToNull(values.startDate),
+            endDate: emptyToNull(values.endDate),
+            weddingDate,
+            eventDate: weddingDate,
+            venue: emptyToNull(values.venue),
+            ballroom: emptyToNull(values.ballroom),
+            expectedPax: parseOptionalInt(values.expectedPax),
+            clientBudget: parseOptionalNumber(values.clientBudget),
+            notes: emptyToNull(values.notes),
             projectType: "wedding",
             status: values.status,
           });
@@ -156,10 +200,68 @@ export function ProjectForm({
           </option>
           {clients.map((client) => (
             <option key={client.id} value={client.id} className="bg-[#121214]">
-              {client.name}
+              {client.display_name || client.name}
             </option>
           ))}
         </select>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="project-venue">{uiZh.venue}</Label>
+          <Input
+            id="project-venue"
+            disabled={pending}
+            {...form.register("venue")}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="project-ballroom">{uiZh.ballroom}</Label>
+          <Input
+            id="project-ballroom"
+            disabled={pending}
+            {...form.register("ballroom")}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="project-wedding-date">{uiZh.weddingDate}</Label>
+          <Input
+            id="project-wedding-date"
+            type="date"
+            disabled={pending}
+            {...form.register("weddingDate")}
+          />
+          {form.formState.errors.weddingDate ? (
+            <p className="text-xs text-red-300/90">
+              {form.formState.errors.weddingDate.message}
+            </p>
+          ) : null}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="project-expected-pax">{uiZh.expectedPax}</Label>
+          <Input
+            id="project-expected-pax"
+            type="number"
+            min={0}
+            disabled={pending}
+            {...form.register("expectedPax")}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="project-client-budget">{uiZh.clientBudget}</Label>
+        <Input
+          id="project-client-budget"
+          type="number"
+          min={0}
+          step="0.01"
+          disabled={pending}
+          {...form.register("clientBudget")}
+        />
       </div>
 
       <div className="space-y-2">
@@ -169,6 +271,15 @@ export function ProjectForm({
           placeholder={uiZh.optionalDescription}
           disabled={pending}
           {...form.register("description")}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="project-notes">{uiZh.notes}</Label>
+        <Textarea
+          id="project-notes"
+          disabled={pending}
+          {...form.register("notes")}
         />
       </div>
 

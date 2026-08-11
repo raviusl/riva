@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { Project } from "@/core/types";
+import { formatProjectStatus } from "@/components/projects/project-labels";
 import { ModuleEmptyState } from "@/components/layout/module-empty-state";
 import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 import { uiZh } from "@/config/ui-zh";
@@ -11,12 +12,8 @@ type ProjectsPanelProps = {
   canWrite: boolean;
 };
 
-function statusLabel(status: Project["status"]) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString(undefined, {
+  return new Date(value).toLocaleDateString("zh-CN", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -37,7 +34,7 @@ export function ProjectsPanel({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-sm font-medium text-white">
-            Projects ({activeProjects.length})
+            {uiZh.projects} ({activeProjects.length})
           </h2>
           <p className="mt-1 text-xs text-white/45">{companyName}</p>
         </div>
@@ -46,7 +43,7 @@ export function ProjectsPanel({
             href="/dashboard/projects/new"
             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white hover:bg-white/[0.05]"
           >
-            New
+            {uiZh.createProject}
           </Link>
         ) : null}
       </div>
@@ -78,8 +75,8 @@ export function ProjectsPanel({
                       <p className="truncate text-sm text-white">
                         {project.name}
                       </p>
-                      <p className="mt-1 text-xs text-white/40">
-                        {statusLabel(project.status)}
+                      <p className="mt-1 truncate text-xs text-white/40">
+                        {formatProjectStatus(project.status)}
                         {project.project_type
                           ? ` · ${project.project_type}`
                           : ""}
@@ -88,7 +85,7 @@ export function ProjectsPanel({
                       </p>
                     </div>
                     <span className="shrink-0 text-xs text-white/45">
-                      Open
+                      {uiZh.open}
                     </span>
                   </div>
                 </Link>
@@ -104,7 +101,7 @@ export function ProjectsPanel({
             href="/dashboard/projects"
             className="text-xs text-white/45 hover:text-white/70"
           >
-            Manage projects →
+            {uiZh.projects} →
           </Link>
         </div>
       ) : null}

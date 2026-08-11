@@ -27,16 +27,28 @@ export default async function ProjectsPage() {
     listClientOwnerOptions(context.workspace.id, context.company.id),
   ]);
 
+  const clientsById = new Map(
+    clients.map((client) => [
+      client.id,
+      client.display_name || client.name,
+    ]),
+  );
   const clientsByProject = new Map<string, string>();
   for (const client of clients) {
     if (client.project_id && !clientsByProject.has(client.project_id)) {
-      clientsByProject.set(client.project_id, client.name);
+      clientsByProject.set(
+        client.project_id,
+        client.display_name || client.name,
+      );
     }
   }
 
   const rows = projects.map((project) => ({
     project,
-    clientName: clientsByProject.get(project.id) ?? null,
+    clientName:
+      (project.client_id ? clientsById.get(project.client_id) : null) ??
+      clientsByProject.get(project.id) ??
+      null,
     ownerName: ownerLabelFromOptions(project.owner_id, owners),
   }));
 

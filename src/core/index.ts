@@ -67,6 +67,7 @@ export {
   activateProject,
   archiveProject,
   createProject,
+  deleteProject,
   getProjectById,
   listProjectsByClient,
   listProjectsByCompany,

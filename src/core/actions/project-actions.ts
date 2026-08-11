@@ -9,6 +9,7 @@ import {
   activateProject,
   archiveProject,
   createProject,
+  deleteProject,
   restoreProject,
   updateProject,
 } from "@/core/project/project";
@@ -88,12 +89,29 @@ export async function archiveProjectAction(
     const userId = await requireSessionUserId();
     await requireProjectWrite(userId, input.workspaceId, input.companyId);
     const project = await archiveProject(input);
-    revalidateProjectPaths();
+    revalidateProjectPaths(project.id);
     return { ok: true, data: { projectId: project.id } };
   } catch (error) {
     return {
       ok: false,
       error: toCoreUserMessage(error, "Failed to archive project"),
+    };
+  }
+}
+
+export async function deleteProjectAction(
+  input: ProjectIdInput,
+): Promise<ProjectActionResult<{ projectId: string }>> {
+  try {
+    const userId = await requireSessionUserId();
+    await requireProjectWrite(userId, input.workspaceId, input.companyId);
+    const project = await deleteProject(input);
+    revalidateProjectPaths(project.id);
+    return { ok: true, data: { projectId: project.id } };
+  } catch (error) {
+    return {
+      ok: false,
+      error: toCoreUserMessage(error, "Failed to delete project"),
     };
   }
 }
@@ -105,7 +123,7 @@ export async function restoreProjectAction(
     const userId = await requireSessionUserId();
     await requireProjectWrite(userId, input.workspaceId, input.companyId);
     const project = await restoreProject(input);
-    revalidateProjectPaths();
+    revalidateProjectPaths(project.id);
     return { ok: true, data: { projectId: project.id } };
   } catch (error) {
     return {
@@ -122,7 +140,7 @@ export async function activateProjectAction(
     const userId = await requireSessionUserId();
     await requireProjectWrite(userId, input.workspaceId, input.companyId);
     const project = await activateProject(input);
-    revalidateProjectPaths();
+    revalidateProjectPaths(project.id);
     return { ok: true, data: { projectId: project.id } };
   } catch (error) {
     return {

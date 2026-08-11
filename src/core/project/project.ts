@@ -246,7 +246,10 @@ export async function updateProject(input: UpdateProjectInput): Promise<Project>
         values.description !== undefined
           ? trimOrNull(values.description)
           : project.description,
-      project_type: values.projectType ?? null,
+      project_type:
+        values.projectType !== undefined
+          ? values.projectType
+          : project.project_type,
       status: values.status ?? project.status,
       owner_id: values.ownerId !== undefined ? values.ownerId : project.owner_id,
       coordinator_id:
@@ -333,6 +336,29 @@ export async function archiveProject(input: ProjectIdInput): Promise<Project> {
       "PROJECT_ARCHIVE_FAILED",
       "Failed to archive project.",
     );
+  }
+}
+
+/** Soft-delete via archive so history remains recoverable. */
+export async function deleteProject(input: ProjectIdInput): Promise<Project> {
+  const values = projectIdSchema.parse(input);
+  const project = await getProjectById(values.projectId, values.workspaceId);
+
+  if (project.company_id !== values.companyId) {
+    throw new CoreError(
+      "PROJECT_SCOPE_MISMATCH",
+      "Project does not belong to this company.",
+    );
+  }
+
+  try {
+    if (project.status === "archived") {
+      return project;
+    }
+    return await updateProjectById(project.id, { status: "archived" });
+  } catch (error) {
+    console.error("deleteProject failed", error);
+    throw new CoreError("PROJECT_DELETE_FAILED", "Failed to delete project.");
   }
 }
 

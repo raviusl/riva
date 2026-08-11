@@ -65,7 +65,7 @@ function OverviewCard({
       </p>
       <p
         className={cn(
-          "mt-1.5 text-sm text-white/80",
+          "mt-1.5 break-words text-sm text-white/80",
           emphasize && "text-base font-medium text-white",
         )}
       >
@@ -183,8 +183,6 @@ export function ProjectWorkspaceOverview({
         />
       </div>
 
-      <p className="text-sm text-white/45">{uiZh.projectWorkspaceReady}</p>
-
       <div className="grid gap-4 lg:grid-cols-3">
         <PlaceholderPanel
           title={uiZh.latestActivity}
@@ -207,7 +205,7 @@ export function ProjectWorkspaceOverview({
               {uiZh.client}: {primaryClient.display_name || primaryClient.name}
             </Link>
           ) : null}
-          {canWriteProject ? (
+          {canWriteProject && project.status !== "archived" ? (
             <Link
               href={`/dashboard/projects/${project.id}/edit`}
               className="text-white/55 underline-offset-4 hover:text-white/80 hover:underline"

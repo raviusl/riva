@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useTransition } from "react";
 import { toast } from "sonner";
 
+import { formatProjectStatus } from "@/components/projects/project-labels";
 import {
   WorkspaceHeader,
   type WorkspaceHeaderAction,
@@ -12,6 +13,7 @@ import {
 import {
   activateProjectAction,
   archiveProjectAction,
+  deleteProjectAction,
   restoreProjectAction,
 } from "@/core/actions/project-actions";
 import type { Project } from "@/core/types";
@@ -25,10 +27,6 @@ type ProjectWorkspaceHeaderProps = {
   canWriteProject: boolean;
 };
 
-function statusLabel(status: string) {
-  return status.charAt(0).toUpperCase() + status.slice(1);
-}
-
 function projectStatusTone(
   status: Project["status"],
 ): WorkspaceHeaderStatus["tone"] {
@@ -39,7 +37,6 @@ function projectStatusTone(
     case "planning":
       return "info";
     case "execution":
-      return "success";
     case "completed":
       return "success";
     case "cancelled":
@@ -51,7 +48,7 @@ function projectStatusTone(
 }
 
 function lifecycleLabel(project: Project) {
-  const parts = [statusLabel(project.status)];
+  const parts = [formatProjectStatus(project.status)];
   if (project.project_type) {
     parts.push(project.project_type);
   }
@@ -104,7 +101,7 @@ export function ProjectWorkspaceHeader({
       });
     }
 
-    if (project.status === "execution") {
+    if (project.status !== "archived") {
       next.push({
         key: "archive",
         label: uiZh.archive,
@@ -121,6 +118,29 @@ export function ProjectWorkspaceHeader({
               return;
             }
             toast.success(uiZh.projectArchivedToast);
+            router.refresh();
+          });
+        },
+      });
+
+      next.push({
+        key: "delete",
+        label: uiZh.delete,
+        disabled: pending,
+        variant: "destructive",
+        onClick: () => {
+          startTransition(async () => {
+            const result = await deleteProjectAction({
+              workspaceId,
+              companyId,
+              projectId: project.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            toast.success(uiZh.projectDeletedToast);
+            router.push("/dashboard/projects");
             router.refresh();
           });
         },
@@ -167,7 +187,7 @@ export function ProjectWorkspaceHeader({
       eyebrow={uiZh.projectWorkspaceTitle}
       title={project.name}
       status={{
-        label: statusLabel(project.status),
+        label: formatProjectStatus(project.status),
         tone: projectStatusTone(project.status),
       }}
       lifecycle={lifecycleLabel(project)}

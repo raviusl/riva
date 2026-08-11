@@ -1204,6 +1204,8 @@ export const uiZh = {
   activate: "激活",
   projectActivated: "项目已激活",
   projectArchivedToast: "项目已归档",
+  projectArchivedCannotEdit: "项目已归档，请先恢复后再编辑。",
+  projectDeletedToast: "项目已删除",
   projectRestoredToast: "项目已恢复",
   markedForFollowUp: "已标记跟进",
   clientArchivedToast: "客户已归档",
