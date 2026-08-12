@@ -44,7 +44,7 @@ export default function Hero() {
             color: "#F4D06F",
             fontSize: "15px",
             fontWeight: 400,
-            marginBottom: "28px",
+            marginBottom: "36px",
           }}
         >
           {wedding.date}
@@ -58,7 +58,7 @@ export default function Hero() {
             fontWeight: 400,
             lineHeight: 1.15,
             letterSpacing: "0.02em",
-            marginBottom: "28px",
+            marginBottom: "36px",
           }}
         >
           <span
@@ -85,7 +85,7 @@ export default function Hero() {
             textTransform: "uppercase",
             lineHeight: 1.6,
             color: "rgba(255,255,255,0.88)",
-            marginBottom: "60px",
+            marginBottom: "72px",
           }}
         >
           Welcome to our day

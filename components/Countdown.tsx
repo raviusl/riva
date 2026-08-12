@@ -14,11 +14,7 @@ function calculateTimeLeft(): TimeLeft {
   const difference = targetDate - Date.now();
 
   if (difference <= 0) {
-    return {
-      days: 0,
-      hours: 0,
-      minutes: 0,
-    };
+    return { days: 0, hours: 0, minutes: 0 };
   }
 
   return {
@@ -67,9 +63,13 @@ export default function Countdown() {
   return (
     <div className="wedding-countdown" aria-label="Countdown to the wedding">
       <Unit value={timeLeft.days} label="Days" />
-      <span className="wedding-countdown__divider" aria-hidden="true" />
+      <span className="wedding-countdown__dot" aria-hidden="true">
+        ·
+      </span>
       <Unit value={timeLeft.hours} label="Hours" />
-      <span className="wedding-countdown__divider" aria-hidden="true" />
+      <span className="wedding-countdown__dot" aria-hidden="true">
+        ·
+      </span>
       <Unit value={timeLeft.minutes} label="Minutes" />
     </div>
   );

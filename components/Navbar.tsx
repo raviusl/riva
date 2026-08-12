@@ -21,7 +21,7 @@ export default function Navbar() {
         onClick={scrollHome}
         style={{
           fontFamily: "var(--font-couple)",
-          fontSize: "32px",
+          fontSize: "35px",
           fontWeight: 400,
           letterSpacing: "0.01em",
           lineHeight: 1.2,
@@ -37,7 +37,7 @@ export default function Navbar() {
         className="wedding-header__tagline"
         style={{
           fontFamily: "var(--font-heading)",
-          fontSize: "15px",
+          fontSize: "16.5px",
           fontWeight: 400,
           letterSpacing: "0.22em",
           textTransform: "uppercase",

@@ -128,7 +128,7 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   z-index: 999;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 22px 50px 56px;
   border: none;
   border-bottom: none;
@@ -143,6 +143,11 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   -webkit-backdrop-filter: blur(12px);
   box-shadow: none;
   transition: background 0.65s ease, backdrop-filter 0.65s ease;
+}
+
+/* Intentional editorial asymmetry — tagline sits ~2 lines lower */
+.wedding-header__tagline {
+  padding-top: 2.1em;
 }
 
 /* ---------- Typography system ---------- */
@@ -181,59 +186,56 @@ textarea {
   font-weight: 400 !important;
 }
 
-/* ---------- Editorial countdown (desktop) ---------- */
+/* ---------- Editorial countdown: 72 DAYS · 20 HOURS · 33 MINUTES ---------- */
 .wedding-countdown {
   display: flex;
-  align-items: stretch;
+  align-items: baseline;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0;
+  column-gap: clamp(18px, 3.5vw, 34px);
   width: 100%;
-  max-width: 520px;
+  max-width: 640px;
   margin: 0 auto;
   padding: 0 12px;
 }
 
 .wedding-countdown__unit {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
   justify-content: center;
   gap: 10px;
   min-width: 0;
-  flex: 1 1 0;
-  padding: 0 18px;
+  flex: 0 0 auto;
+  padding: 0;
 }
 
 .wedding-countdown__value {
   font-family: var(--font-heading);
-  font-size: clamp(34px, 4.2vw, 52px);
+  font-size: clamp(28px, 3.4vw, 42px);
   line-height: 1;
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   color: #fff;
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.22);
 }
 
 .wedding-countdown__label {
   font-family: var(--font-heading);
-  font-size: 10px;
-  letter-spacing: 0.32em;
+  font-size: 11px;
+  letter-spacing: 0.28em;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.72);
   text-transform: uppercase;
 }
 
-.wedding-countdown__divider {
-  width: 1px;
-  align-self: stretch;
-  margin: 6px 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0),
-    rgba(255, 255, 255, 0.28),
-    rgba(255, 255, 255, 0)
-  );
+.wedding-countdown__dot {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.4);
+  flex: 0 0 auto;
+  transform: translateY(-1px);
 }
 
 a {
@@ -269,32 +271,32 @@ img {
   }
 
   .wedding-header {
-    padding: max(14px, env(safe-area-inset-top)) 18px 40px;
+    padding: max(16px, env(safe-area-inset-top)) 20px 44px;
     align-items: flex-start;
     gap: 12px;
   }
 
   .wedding-header__brand {
-    font-size: clamp(22px, 6.2vw, 26px) !important;
+    font-size: clamp(24px, 6.8vw, 29px) !important;
     line-height: 1.15 !important;
     max-width: 48%;
   }
 
   .wedding-header__tagline {
-    font-size: clamp(9px, 2.6vw, 11px) !important;
-    letter-spacing: 0.14em !important;
+    font-size: clamp(10px, 2.9vw, 12px) !important;
+    letter-spacing: 0.16em !important;
     text-align: right;
     max-width: 48%;
-    padding-top: 6px;
+    padding-top: 2em;
   }
 
   .wedding-hero {
     min-height: 100svh !important;
     min-height: 100dvh !important;
     padding:
-      calc(88px + env(safe-area-inset-top, 0px))
-      20px
-      calc(88px + env(safe-area-inset-bottom, 0px));
+      calc(96px + env(safe-area-inset-top, 0px))
+      22px
+      calc(96px + env(safe-area-inset-bottom, 0px));
     box-sizing: border-box;
     background-attachment: scroll !important;
     background-position: center 22% !important;
@@ -303,14 +305,14 @@ img {
   .wedding-hero__content {
     width: 100%;
     max-width: 420px !important;
-    padding: 0 8px !important;
+    padding: 0 10px !important;
     margin: 0 auto;
   }
 
   .wedding-hero__date {
     font-size: clamp(11px, 3.1vw, 13px) !important;
-    letter-spacing: 0.22em !important;
-    margin-bottom: clamp(16px, 3.5vh, 22px) !important;
+    letter-spacing: 0.24em !important;
+    margin-bottom: clamp(22px, 4.2vh, 30px) !important;
   }
 
   .wedding-hero__title {
@@ -318,11 +320,11 @@ img {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.02em;
-    font-size: clamp(44px, 12.5vw, 58px) !important;
-    line-height: 1.05 !important;
+    gap: 0.04em;
+    font-size: clamp(48px, 13vw, 62px) !important;
+    line-height: 1.08 !important;
     letter-spacing: 0.01em !important;
-    margin-bottom: clamp(14px, 2.8vh, 20px) !important;
+    margin-bottom: clamp(22px, 4vh, 30px) !important;
   }
 
   .wedding-hero__title-line {
@@ -332,35 +334,36 @@ img {
 
   .wedding-hero__statement {
     font-size: clamp(10px, 2.8vw, 12px) !important;
-    letter-spacing: 0.26em !important;
-    margin-bottom: clamp(28px, 5.5vh, 40px) !important;
+    letter-spacing: 0.28em !important;
+    margin-bottom: clamp(40px, 7vh, 56px) !important;
     padding: 0 8px;
   }
 
   .wedding-countdown {
     display: flex !important;
     flex-wrap: nowrap !important;
-    max-width: 340px;
+    align-items: baseline !important;
+    max-width: 100%;
+    column-gap: clamp(10px, 3.5vw, 18px) !important;
     padding: 0 !important;
   }
 
   .wedding-countdown__unit {
-    padding: 0 10px;
-    gap: 8px;
+    gap: 6px;
   }
 
   .wedding-countdown__value {
-    font-size: clamp(26px, 7.5vw, 34px);
-    letter-spacing: 0.06em;
+    font-size: clamp(22px, 6vw, 28px);
+    letter-spacing: 0.05em;
   }
 
   .wedding-countdown__label {
     font-size: 8px;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.2em;
   }
 
-  .wedding-countdown__divider {
-    margin: 4px 0;
+  .wedding-countdown__dot {
+    font-size: 14px;
   }
 
   .wedding-music-btn {
@@ -385,18 +388,18 @@ img {
 
 @media (max-width: 389px) {
   .wedding-hero__title {
-    font-size: clamp(40px, 11.8vw, 50px) !important;
+    font-size: clamp(42px, 12vw, 52px) !important;
   }
 
   .wedding-countdown {
-    max-width: 310px;
+    column-gap: 8px !important;
   }
 
   .wedding-countdown__value {
-    font-size: clamp(24px, 7vw, 30px);
+    font-size: clamp(20px, 5.8vw, 24px);
   }
 
-  .wedding-countdown__unit {
-    padding: 0 8px;
+  .wedding-countdown__label {
+    letter-spacing: 0.16em;
   }
 }
