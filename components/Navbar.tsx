@@ -1,5 +1,7 @@
 "use client";
 
+import { greatVibes } from "@/app/fonts";
+
 export default function Navbar() {
   const scrollHome = () => {
     const home = document.getElementById("home");
@@ -15,7 +17,7 @@ export default function Navbar() {
   return (
     <nav className="wedding-header">
       <h2
-        className="wedding-header__brand"
+        className={`wedding-header__brand ${greatVibes.className}`}
         onClick={scrollHome}
         style={{
           fontFamily: "var(--font-couple)",

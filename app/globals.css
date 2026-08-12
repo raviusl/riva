@@ -4,6 +4,7 @@
   --background: #f3f1ed;
   --foreground: #25221f;
 
+  /* FINAL approved typography system */
   --font-couple: var(--font-great-vibes), "Great Vibes", cursive;
   --font-heading: Calibri, var(--font-carlito), sans-serif;
   --font-body: Arial, Helvetica, sans-serif;
@@ -69,7 +70,7 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   z-index: 2;
 }
 
-/* Soft top feather into previous scene */
+/* Soft cinematic feather — FINAL approved section dissolve */
 .wedding-scene::before {
   top: 0;
   height: clamp(88px, 18vh, 170px);
@@ -82,7 +83,6 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   );
 }
 
-/* Soft bottom feather into next scene */
 .wedding-scene::after {
   bottom: 0;
   height: clamp(88px, 18vh, 170px);
@@ -95,7 +95,6 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   );
 }
 
-/* Hero: keep top open for header overlay, feather only lightly */
 .wedding-scene:first-child::before {
   height: clamp(96px, 18vh, 170px);
   background: linear-gradient(
@@ -105,7 +104,6 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   );
 }
 
-/* Final scene: dissolve gently into canvas */
 .wedding-scene:last-child::after {
   height: clamp(110px, 20vh, 200px);
   background: linear-gradient(
@@ -147,6 +145,111 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   transition: background 0.65s ease, backdrop-filter 0.65s ease;
 }
 
+/* ---------- Typography system ---------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1.15;
+}
+
+/* Do NOT force body font onto span — that overrode Great Vibes on couple names */
+p,
+li,
+label,
+small {
+  font-family: var(--font-body);
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  font-family: var(--font-body);
+}
+
+.wedding-header__brand,
+.wedding-hero__title,
+.wedding-hero__title-line {
+  font-family: var(--font-couple) !important;
+  font-weight: 400 !important;
+}
+
+/* ---------- Editorial countdown (desktop) ---------- */
+.wedding-countdown {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+.wedding-countdown__unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 0;
+  padding: 0 18px;
+}
+
+.wedding-countdown__value {
+  font-family: var(--font-heading);
+  font-size: clamp(34px, 4.2vw, 52px);
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: #fff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.22);
+}
+
+.wedding-countdown__label {
+  font-family: var(--font-heading);
+  font-size: 10px;
+  letter-spacing: 0.32em;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.72);
+  text-transform: uppercase;
+}
+
+.wedding-countdown__divider {
+  width: 1px;
+  align-self: stretch;
+  margin: 6px 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0.28),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* ---------- Mobile ---------- */
 @media (max-width: 768px) {
   .wedding-scene + .wedding-scene {
     margin-top: clamp(-48px, -7vh, -32px);
@@ -159,8 +262,6 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
 
   /*
    * iOS Safari does not paint background-attachment:fixed reliably.
-   * Failed paints reveal the near-black wedding-canvas (#0c0a08) under the
-   * existing cinematic gradient, which looks like "black photos" on mobile.
    * Keep fixed on desktop; force scroll on mobile only.
    */
   .wedding-scene {
@@ -187,7 +288,6 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
     padding-top: 6px;
   }
 
-  /* ---------- Hero: mobile invitation composition ---------- */
   .wedding-hero {
     min-height: 100svh !important;
     min-height: 100dvh !important;
@@ -230,46 +330,37 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
     white-space: nowrap;
   }
 
-  .wedding-hero__venue {
-    font-size: clamp(13px, 3.6vw, 15px) !important;
-    letter-spacing: 0.04em !important;
-    line-height: 1.45 !important;
+  .wedding-hero__statement {
+    font-size: clamp(10px, 2.8vw, 12px) !important;
+    letter-spacing: 0.26em !important;
     margin-bottom: clamp(28px, 5.5vh, 40px) !important;
     padding: 0 8px;
   }
 
   .wedding-countdown {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
-    justify-items: center;
-    column-gap: clamp(18px, 6vw, 28px);
-    row-gap: clamp(16px, 3.2vh, 22px);
-    width: min(100%, 300px);
-    margin: 0 auto;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    max-width: 340px;
     padding: 0 !important;
   }
 
-  .wedding-countdown__dot {
-    display: none !important;
-  }
-
   .wedding-countdown__unit {
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center;
-    gap: 6px !important;
-    min-width: 0;
+    padding: 0 10px;
+    gap: 8px;
   }
 
   .wedding-countdown__value {
-    font-size: clamp(30px, 9vw, 38px) !important;
-    letter-spacing: 0.01em !important;
+    font-size: clamp(26px, 7.5vw, 34px);
+    letter-spacing: 0.06em;
   }
 
   .wedding-countdown__label {
-    font-size: 8px !important;
-    letter-spacing: 0.2em !important;
+    font-size: 8px;
+    letter-spacing: 0.24em;
+  }
+
+  .wedding-countdown__divider {
+    margin: 4px 0;
   }
 
   .wedding-music-btn {
@@ -298,52 +389,14 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   }
 
   .wedding-countdown {
-    width: min(100%, 280px);
-    column-gap: 14px;
+    max-width: 310px;
   }
 
   .wedding-countdown__value {
-    font-size: clamp(28px, 8.5vw, 34px) !important;
+    font-size: clamp(24px, 7vw, 30px);
   }
-}
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-heading);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  line-height: 1.15;
-}
-
-p,
-span,
-li,
-label,
-small {
-  font-family: var(--font-body);
-}
-
-button,
-a,
-input,
-select,
-textarea {
-  font-family: var(--font-body);
-}
-
-a {
-  text-decoration: none;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-::selection {
-  background: rgba(255, 255, 255, 0.25);
+  .wedding-countdown__unit {
+    padding: 0 8px;
+  }
 }
