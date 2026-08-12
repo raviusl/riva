@@ -63,13 +63,7 @@ export default function Countdown() {
   return (
     <div className="wedding-countdown" aria-label="Countdown to the wedding">
       <Unit value={timeLeft.days} label="Days" />
-      <span className="wedding-countdown__dot" aria-hidden="true">
-        ·
-      </span>
       <Unit value={timeLeft.hours} label="Hours" />
-      <span className="wedding-countdown__dot" aria-hidden="true">
-        ·
-      </span>
       <Unit value={timeLeft.minutes} label="Minutes" />
     </div>
   );
