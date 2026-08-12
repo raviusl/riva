@@ -15,6 +15,7 @@ export default function Navbar() {
   return (
     <nav className="wedding-header">
       <h2
+        className="wedding-header__brand"
         onClick={scrollHome}
         style={{
           fontFamily: "var(--font-couple)",
@@ -31,6 +32,7 @@ export default function Navbar() {
       </h2>
 
       <p
+        className="wedding-header__tagline"
         style={{
           fontFamily: "var(--font-heading)",
           fontSize: "15px",

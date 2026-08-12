@@ -90,6 +90,7 @@ export default function MusicPlayer() {
       <button
         onClick={toggleMusic}
         aria-label={isPlaying ? "Pause music" : "Play music"}
+        className="wedding-music-btn"
         style={{
           position: "fixed",
           left: "28px",

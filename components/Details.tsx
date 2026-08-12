@@ -71,7 +71,7 @@ export default function Details() {
           }}
         >
           <img
-            src="/assets/images/details/photo.jpg"
+            src={wedding.detailsImage}
             alt=""
             style={{
               width: "100%",

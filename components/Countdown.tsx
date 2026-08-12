@@ -46,6 +46,7 @@ function Unit({
 }) {
   return (
     <div
+      className="wedding-countdown__unit"
       style={{
         display: "flex",
         alignItems: "baseline",
@@ -53,6 +54,7 @@ function Unit({
       }}
     >
       <span
+        className="wedding-countdown__value"
         style={{
           fontFamily: "var(--font-body)",
           fontSize: "clamp(42px, 5vw, 68px)",
@@ -67,6 +69,7 @@ function Unit({
       </span>
 
       <span
+        className="wedding-countdown__label"
         style={{
           fontFamily: "var(--font-body)",
           fontSize: "10px",
@@ -104,6 +107,7 @@ export default function Countdown() {
 
   return (
     <div
+      className="wedding-countdown"
       style={{
         display: "flex",
         alignItems: "center",
@@ -118,6 +122,7 @@ export default function Countdown() {
       <Unit value={timeLeft.days} label="Days" />
 
       <span
+        className="wedding-countdown__dot"
         style={{
           color: "rgba(255,255,255,0.55)",
           fontFamily: "var(--font-body)",
@@ -130,6 +135,7 @@ export default function Countdown() {
       <Unit value={timeLeft.hours} label="Hours" />
 
       <span
+        className="wedding-countdown__dot"
         style={{
           color: "rgba(255,255,255,0.55)",
           fontFamily: "var(--font-body)",
@@ -142,6 +148,7 @@ export default function Countdown() {
       <Unit value={timeLeft.minutes} label="Minutes" />
 
       <span
+        className="wedding-countdown__dot"
         style={{
           color: "rgba(255,255,255,0.55)",
           fontFamily: "var(--font-body)",

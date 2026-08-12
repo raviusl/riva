@@ -7,7 +7,7 @@ export default function Hero() {
   return (
     <section
       id="home"
-      className="wedding-scene"
+      className="wedding-scene wedding-hero"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -27,6 +27,7 @@ export default function Hero() {
       }}
     >
       <div
+        className="wedding-hero__content"
         style={{
           color: "#fff",
           padding: "40px",
@@ -34,6 +35,7 @@ export default function Hero() {
         }}
       >
         <p
+          className="wedding-hero__date"
           style={{
             fontFamily: "var(--font-heading)",
             letterSpacing: "0.28em",
@@ -48,6 +50,7 @@ export default function Hero() {
         </p>
 
         <h1
+          className="wedding-hero__title"
           style={{
             fontFamily: "var(--font-couple)",
             fontSize: "clamp(64px, 11vw, 108px)",
@@ -57,10 +60,16 @@ export default function Hero() {
             marginBottom: "28px",
           }}
         >
-          {wedding.groom} & {wedding.bride}
+          <span className="wedding-hero__title-line">
+            {wedding.groom} &
+          </span>
+          <span className="wedding-hero__title-line">
+            {wedding.bride}
+          </span>
         </h1>
 
         <p
+          className="wedding-hero__venue"
           style={{
             fontFamily: "var(--font-body)",
             fontSize: "20px",
