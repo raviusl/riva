@@ -2,119 +2,156 @@
 
 import { useEffect, useState } from "react";
 
-export default function Countdown() {
+type TimeLeft = {
+  days: number;
+  hours: number;
+  minutes: number;
+  seconds: number;
+};
 
-  const targetDate = new Date("2026-09-01T00:00:00");
+const targetDate = new Date("2026-10-24T18:00:00+08:00").getTime();
 
-  const calculate = () => {
+function calculateTimeLeft(): TimeLeft {
+  const difference = targetDate - Date.now();
 
-    const now = new Date();
-
-    const diff = targetDate.getTime() - now.getTime();
-
-    if (diff <= 0) {
-
-      return {
-        days:0,
-        hours:0,
-        minutes:0,
-        seconds:0
-      }
-
-    }
-
+  if (difference <= 0) {
     return {
-
-      days:Math.floor(diff/(1000*60*60*24)),
-
-      hours:Math.floor((diff/(1000*60*60))%24),
-
-      minutes:Math.floor((diff/(1000*60))%60),
-
-      seconds:Math.floor((diff/1000)%60),
-
-    }
-
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      seconds: 0,
+    };
   }
 
-  const [time,setTime]=useState(calculate());
-
-  useEffect(()=>{
-
-      const interval=setInterval(()=>{
-
-          setTime(calculate());
-
-      },1000);
-
-      return ()=>clearInterval(interval);
-
-  },[]);
-
-  return(
-
-      <div
-      style={{
-          display:"flex",
-          justifyContent:"center",
-          gap:"25px",
-          marginTop:"70px",
-          flexWrap:"wrap"
-      }}
-      >
-
-          <Box value={time.days} label="Days"/>
-
-          <Box value={time.hours} label="Hours"/>
-
-          <Box value={time.minutes} label="Minutes"/>
-
-          <Box value={time.seconds} label="Seconds"/>
-
-      </div>
-
-  )
-
+  return {
+    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+    hours: Math.floor(
+      (difference / (1000 * 60 * 60)) % 24
+    ),
+    minutes: Math.floor(
+      (difference / (1000 * 60)) % 60
+    ),
+    seconds: Math.floor(
+      (difference / 1000) % 60
+    ),
+  };
 }
 
-function Box({value,label}:{value:number,label:string}){
-
-    return(
-
-        <div
+function Unit({
+  value,
+  label,
+}: {
+  value: number;
+  label: string;
+}) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "baseline",
+        gap: "9px",
+      }}
+    >
+      <span
         style={{
-            background:"rgba(255,255,255,.12)",
-            backdropFilter:"blur(18px)",
-            borderRadius:"20px",
-            padding:"22px 30px",
-            minWidth:"110px",
-            color:"#fff"
+          fontFamily: "var(--font-body)",
+          fontSize: "clamp(42px, 5vw, 68px)",
+          lineHeight: 1,
+          fontWeight: 400,
+          letterSpacing: "0.02em",
+          color: "#fff",
+          textShadow: "0 2px 18px rgba(0,0,0,0.28)",
         }}
-        >
+      >
+        {String(value).padStart(2, "0")}
+      </span>
 
-            <div
-            style={{
-                fontSize:"42px",
-                fontWeight:700
-            }}
-            >
-                {value}
-            </div>
+      <span
+        style={{
+          fontFamily: "var(--font-body)",
+          fontSize: "10px",
+          letterSpacing: "0.22em",
+          fontWeight: 400,
+          color: "rgba(255,255,255,0.82)",
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
 
-            <div
-            style={{
-                marginTop:"8px",
-                color:"#D4AF37",
-                letterSpacing:"3px",
-                fontSize:"13px",
-                textTransform:"uppercase"
-            }}
-            >
-                {label}
-            </div>
+export default function Countdown() {
+  const [timeLeft, setTimeLeft] = useState<TimeLeft>({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
 
-        </div>
+  useEffect(() => {
+    setTimeLeft(calculateTimeLeft());
 
-    )
+    const timer = window.setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
 
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexWrap: "wrap",
+        columnGap: "26px",
+        rowGap: "14px",
+        width: "100%",
+        padding: "0 24px",
+      }}
+    >
+      <Unit value={timeLeft.days} label="Days" />
+
+      <span
+        style={{
+          color: "rgba(255,255,255,0.55)",
+          fontFamily: "var(--font-body)",
+          fontSize: "25px",
+        }}
+      >
+        ·
+      </span>
+
+      <Unit value={timeLeft.hours} label="Hours" />
+
+      <span
+        style={{
+          color: "rgba(255,255,255,0.55)",
+          fontFamily: "var(--font-body)",
+          fontSize: "25px",
+        }}
+      >
+        ·
+      </span>
+
+      <Unit value={timeLeft.minutes} label="Minutes" />
+
+      <span
+        style={{
+          color: "rgba(255,255,255,0.55)",
+          fontFamily: "var(--font-body)",
+          fontSize: "25px",
+        }}
+      >
+        ·
+      </span>
+
+      <Unit value={timeLeft.seconds} label="Seconds" />
+    </div>
+  );
 }

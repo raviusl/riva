@@ -1,76 +1,49 @@
 "use client";
 
-import wedding from "../data/wedding";
-
 export default function Navbar() {
-  const menu = [
-    { name: "Home", id: "home" },
-    { name: "Story", id: "story" },
-    { name: "Timeline", id: "timeline" },
-    { name: "Venue", id: "venue" },
-    { name: "RSVP", id: "rsvp" },
-  ];
+  const scrollHome = () => {
+    const home = document.getElementById("home");
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    if (home) {
+      home.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
-    <nav
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 999,
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
-        background: "rgba(255,255,255,0.65)",
-        borderBottom: "1px solid rgba(255,255,255,.25)",
-        padding: "22px 50px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-      }}
-    >
+    <nav className="wedding-header">
       <h2
+        onClick={scrollHome}
         style={{
-          fontSize: "30px",
-          fontFamily: "serif",
+          fontFamily: "var(--font-couple)",
+          fontSize: "32px",
+          fontWeight: 400,
+          letterSpacing: "0.01em",
+          lineHeight: 1.2,
           color: "#222",
+          margin: 0,
           cursor: "pointer",
         }}
-        onClick={() => scrollTo("home")}
       >
-        {wedding.bride} ❤️ {wedding.groom}
+        Jun Yu & Samuel
       </h2>
 
-      <div
+      <p
         style={{
-          display: "flex",
-          gap: "35px",
+          fontFamily: "var(--font-heading)",
+          fontSize: "15px",
+          fontWeight: 400,
+          letterSpacing: "0.22em",
+          textTransform: "uppercase",
+          color: "#444",
+          margin: 0,
+          lineHeight: 1.2,
         }}
       >
-        {menu.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => scrollTo(item.id)}
-            style={{
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              color: "#444",
-              fontSize: "17px",
-              transition: ".3s",
-            }}
-          >
-            {item.name}
-          </button>
-        ))}
-      </div>
+        A Beautiful Beginning
+      </p>
     </nav>
   );
 }

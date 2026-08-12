@@ -6,9 +6,11 @@ export default function Details() {
   return (
     <section
       id="details"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
         padding: "120px 40px",
+        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
@@ -16,6 +18,7 @@ export default function Details() {
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
 
         display: "flex",
@@ -32,11 +35,14 @@ export default function Details() {
       >
         <p
           style={{
+            fontFamily: "var(--font-heading)",
             textAlign: "center",
-            letterSpacing: "6px",
+            letterSpacing: "0.28em",
             color: "#D4AF37",
             textTransform: "uppercase",
             marginBottom: "20px",
+            fontSize: "15px",
+            fontWeight: 400,
           }}
         >
           Wedding Details
@@ -44,9 +50,12 @@ export default function Details() {
 
         <h2
           style={{
+            fontFamily: "var(--font-heading)",
             textAlign: "center",
-            fontSize: "64px",
-            fontFamily: "Cormorant Garamond, serif",
+            fontSize: "clamp(42px, 6vw, 64px)",
+            fontWeight: 400,
+            letterSpacing: "0.02em",
+            lineHeight: 1.15,
             marginBottom: "70px",
           }}
         >
@@ -109,11 +118,13 @@ function Info({
     >
       <p
         style={{
+          fontFamily: "var(--font-heading)",
           color: "#D4AF37",
-          letterSpacing: "3px",
+          letterSpacing: "0.18em",
           marginBottom: "10px",
           textTransform: "uppercase",
-          fontSize: "14px",
+          fontSize: "13px",
+          fontWeight: 400,
         }}
       >
         {title}
@@ -121,8 +132,11 @@ function Info({
 
       <h3
         style={{
-          fontSize: "30px",
+          fontFamily: "var(--font-body)",
+          fontSize: "26px",
           fontWeight: 400,
+          letterSpacing: "0.02em",
+          lineHeight: 1.35,
           margin: 0,
         }}
       >

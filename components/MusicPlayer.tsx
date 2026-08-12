@@ -3,84 +3,126 @@
 import { useEffect, useRef, useState } from "react";
 
 export default function MusicPlayer() {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const startMusic = async () => {
+    const audio = audioRef.current;
+
+    if (!audio) return;
+
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      setIsPlaying(false);
+    }
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
 
     if (!audio) return;
 
-    audio.volume = 0.4;
+    audio.loop = true;
+    audio.volume = 0.42;
 
-    const playMusic = async () => {
+    const tryAutoplay = async () => {
       try {
         await audio.play();
-        setPlaying(true);
-      } catch {}
+        setIsPlaying(true);
+      } catch {
+        setIsPlaying(false);
+      }
     };
 
-    playMusic();
+    tryAutoplay();
 
-    const unlock = () => {
-      playMusic();
+    const handleInteraction = () => {
+      startMusic();
 
-      window.removeEventListener("click", unlock);
-      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
     };
 
-    window.addEventListener("click", unlock);
-    window.addEventListener("touchstart", unlock);
+    window.addEventListener("click", handleInteraction);
+    window.addEventListener("touchstart", handleInteraction);
+    window.addEventListener("pointerdown", handleInteraction);
+    window.addEventListener("keydown", handleInteraction);
 
     return () => {
-      window.removeEventListener("click", unlock);
-      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("keydown", handleInteraction);
     };
   }, []);
 
-  const toggleMusic = () => {
+  const toggleMusic = async () => {
     const audio = audioRef.current;
 
     if (!audio) return;
 
-    if (audio.paused) {
-      audio.play();
-      setPlaying(true);
-    } else {
-      audio.pause();
-      setPlaying(false);
+    try {
+      if (audio.paused) {
+        await audio.play();
+        setIsPlaying(true);
+      } else {
+        audio.pause();
+        setIsPlaying(false);
+      }
+    } catch {
+      setIsPlaying(false);
     }
   };
 
   return (
     <>
-      <audio ref={audioRef} loop preload="auto">
-        <source
-          src="/assets/audio/Wedding.mp3"
-          type="audio/mpeg"
-        />
-      </audio>
+      <audio
+        ref={audioRef}
+        src="/assets/audio/wedding.mp3"
+        preload="auto"
+        loop
+      />
 
       <button
         onClick={toggleMusic}
+        aria-label={isPlaying ? "Pause music" : "Play music"}
         style={{
           position: "fixed",
-          bottom: "28px",
           left: "28px",
-          width: "60px",
-          height: "60px",
-          borderRadius: "999px",
-          border: "none",
-          background: "rgba(255,255,255,.18)",
-          backdropFilter: "blur(16px)",
-          WebkitBackdropFilter: "blur(16px)",
+          bottom: "28px",
+          zIndex: 9999,
+
+          width: "54px",
+          height: "54px",
+
+          borderRadius: "50%",
+          border: "1px solid rgba(255,255,255,0.38)",
+
+          background: "rgba(20,20,20,0.22)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+
           color: "#fff",
-          fontSize: "24px",
           cursor: "pointer",
-          zIndex: 99999,
+
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+
+          fontFamily: "var(--font-body)",
+          fontSize: "20px",
+          fontWeight: 400,
+
+          boxShadow: "0 8px 30px rgba(0,0,0,0.16)",
+
+          transition: "all 0.3s ease",
         }}
       >
-        {playing ? "♫" : "▶"}
+        {isPlaying ? "Ⅱ" : "♪"}
       </button>
     </>
   );

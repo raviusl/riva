@@ -6,9 +6,9 @@ export default function Timeline() {
   return (
     <section
       id="timeline"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
-        position: "relative",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -33,12 +33,14 @@ export default function Timeline() {
       >
         <p
           style={{
+            fontFamily: "var(--font-heading)",
             textAlign: "center",
-            letterSpacing: "8px",
+            letterSpacing: "0.28em",
             textTransform: "uppercase",
             color: "#D4AF37",
             marginBottom: "24px",
             fontSize: "15px",
+            fontWeight: 400,
           }}
         >
           Timeline
@@ -46,10 +48,12 @@ export default function Timeline() {
 
         <h2
           style={{
+            fontFamily: "var(--font-heading)",
             textAlign: "center",
-            fontSize: "64px",
-            fontFamily: "Cormorant Garamond, serif",
-            fontWeight: 500,
+            fontSize: "clamp(42px, 6vw, 64px)",
+            fontWeight: 400,
+            letterSpacing: "0.02em",
+            lineHeight: 1.15,
             marginBottom: "80px",
           }}
         >
@@ -68,10 +72,12 @@ export default function Timeline() {
           >
             <div
               style={{
+                fontFamily: "var(--font-heading)",
                 minWidth: "120px",
                 color: "#D4AF37",
-                fontWeight: 600,
-                fontSize: "20px",
+                fontWeight: 400,
+                fontSize: "18px",
+                letterSpacing: "0.04em",
               }}
             >
               {item.date}
@@ -89,10 +95,12 @@ export default function Timeline() {
             >
               <h3
                 style={{
+                  fontFamily: "var(--font-heading)",
                   marginBottom: "14px",
-                  fontSize: "32px",
-                  fontFamily: "Cormorant Garamond, serif",
-                  fontWeight: 500,
+                  fontSize: "28px",
+                  fontWeight: 400,
+                  letterSpacing: "0.02em",
+                  lineHeight: 1.2,
                 }}
               >
                 {item.title}
@@ -100,9 +108,13 @@ export default function Timeline() {
 
               <p
                 style={{
+                  fontFamily: "var(--font-body)",
                   color: "rgba(255,255,255,.9)",
                   lineHeight: 1.8,
-                  fontSize: "18px",
+                  fontSize: "17px",
+                  fontWeight: 400,
+                  letterSpacing: "0.01em",
+                  margin: 0,
                 }}
               >
                 {item.description}

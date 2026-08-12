@@ -6,9 +6,9 @@ export default function Story() {
   return (
     <section
       id="story"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
-        position: "relative",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -34,11 +34,13 @@ export default function Story() {
       >
         <p
           style={{
-            letterSpacing: "8px",
+            fontFamily: "var(--font-heading)",
+            letterSpacing: "0.28em",
             textTransform: "uppercase",
             color: "#D4AF37",
             marginBottom: "24px",
             fontSize: "15px",
+            fontWeight: 400,
           }}
         >
           Our Story
@@ -46,11 +48,12 @@ export default function Story() {
 
         <h2
           style={{
-            fontSize: "64px",
-            fontFamily: "Cormorant Garamond, serif",
-            fontWeight: 500,
+            fontFamily: "var(--font-heading)",
+            fontSize: "clamp(42px, 6vw, 64px)",
+            fontWeight: 400,
+            letterSpacing: "0.02em",
             marginBottom: "40px",
-            lineHeight: 1.1,
+            lineHeight: 1.15,
           }}
         >
           {wedding.story.title}
@@ -58,8 +61,11 @@ export default function Story() {
 
         <p
           style={{
-            fontSize: "22px",
+            fontFamily: "var(--font-body)",
+            fontSize: "18px",
+            fontWeight: 400,
             lineHeight: 1.9,
+            letterSpacing: "0.02em",
             color: "rgba(255,255,255,.92)",
             maxWidth: "760px",
             margin: "0 auto",

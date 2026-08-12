@@ -6,6 +6,7 @@ export default function Venue() {
   return (
     <section
       id="venue"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
         display: "flex",
@@ -13,6 +14,7 @@ export default function Venue() {
         justifyContent: "center",
         textAlign: "center",
         padding: "120px 20px",
+        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
@@ -20,6 +22,7 @@ export default function Venue() {
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
       }}
     >
@@ -31,19 +34,26 @@ export default function Venue() {
       >
         <p
           style={{
-            letterSpacing: "6px",
+            fontFamily: "var(--font-heading)",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
             color: "#D4AF37",
+            fontSize: "15px",
+            fontWeight: 400,
           }}
         >
-          VENUE
+          Venue
         </p>
 
         <h2
           style={{
-            fontSize: "64px",
+            fontFamily: "var(--font-heading)",
+            fontSize: "clamp(42px, 6vw, 64px)",
+            fontWeight: 400,
+            letterSpacing: "0.02em",
+            lineHeight: 1.15,
             marginTop: "20px",
             marginBottom: "30px",
-            fontFamily: "Cormorant Garamond",
           }}
         >
           Grand Hyatt Kuala Lumpur
@@ -51,8 +61,12 @@ export default function Venue() {
 
         <p
           style={{
-            fontSize: "22px",
-            lineHeight: 1.8,
+            fontFamily: "var(--font-body)",
+            fontSize: "18px",
+            fontWeight: 400,
+            lineHeight: 1.85,
+            letterSpacing: "0.02em",
+            color: "rgba(255,255,255,0.95)",
           }}
         >
           12 Jalan Pinang,

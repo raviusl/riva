@@ -7,9 +7,9 @@ export default function Hero() {
   return (
     <section
       id="home"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
-        position: "relative",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -35,11 +35,13 @@ export default function Hero() {
       >
         <p
           style={{
-            letterSpacing: "10px",
+            fontFamily: "var(--font-heading)",
+            letterSpacing: "0.28em",
             textTransform: "uppercase",
             color: "#F4D06F",
-            fontSize: "18px",
-            marginBottom: "30px",
+            fontSize: "15px",
+            fontWeight: 400,
+            marginBottom: "28px",
           }}
         >
           {wedding.date}
@@ -47,11 +49,12 @@ export default function Hero() {
 
         <h1
           style={{
-            fontSize: "90px",
-            fontFamily: "Cormorant Garamond, serif",
-            fontWeight: 500,
-            lineHeight: 1.1,
-            marginBottom: "30px",
+            fontFamily: "var(--font-couple)",
+            fontSize: "clamp(64px, 11vw, 108px)",
+            fontWeight: 400,
+            lineHeight: 1.15,
+            letterSpacing: "0.02em",
+            marginBottom: "28px",
           }}
         >
           {wedding.groom} & {wedding.bride}
@@ -59,8 +62,12 @@ export default function Hero() {
 
         <p
           style={{
-            fontSize: "30px",
-            color: "#ffffff",
+            fontFamily: "var(--font-body)",
+            fontSize: "20px",
+            fontWeight: 400,
+            letterSpacing: "0.06em",
+            lineHeight: 1.6,
+            color: "rgba(255,255,255,0.95)",
             marginBottom: "60px",
           }}
         >

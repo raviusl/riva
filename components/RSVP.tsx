@@ -6,12 +6,14 @@ export default function RSVP() {
   return (
     <section
       id="rsvp"
+      className="wedding-scene"
       style={{
         minHeight: "100vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: "120px 20px",
+        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
@@ -19,6 +21,7 @@ export default function RSVP() {
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
       }}
     >
@@ -32,8 +35,12 @@ export default function RSVP() {
       >
         <p
           style={{
+            fontFamily: "var(--font-heading)",
             color: "#D4AF37",
-            letterSpacing: "6px",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            fontSize: "15px",
+            fontWeight: 400,
           }}
         >
           RSVP
@@ -41,12 +48,15 @@ export default function RSVP() {
 
         <h2
           style={{
-            fontSize: "60px",
+            fontFamily: "var(--font-heading)",
+            fontSize: "clamp(40px, 6vw, 60px)",
+            fontWeight: 400,
+            letterSpacing: "0.02em",
+            lineHeight: 1.2,
             margin: "20px 0 50px",
-            fontFamily: "Cormorant Garamond",
           }}
         >
-          We'd Love To Celebrate With You
+          We&apos;d Love To Celebrate With You
         </h2>
 
         <div
@@ -75,12 +85,16 @@ export default function RSVP() {
 
           <button
             style={{
+              fontFamily: "var(--font-body)",
               padding: "18px",
               borderRadius: "999px",
               background: "#D4AF37",
               border: "none",
               color: "#fff",
-              fontSize: "18px",
+              fontSize: "17px",
+              fontWeight: 400,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
               cursor: "pointer",
             }}
           >
@@ -97,6 +111,9 @@ const inputStyle = {
   padding: "18px",
   borderRadius: "12px",
   border: "none",
-  fontSize: "18px",
+  fontFamily: "var(--font-body)",
+  fontSize: "17px",
+  fontWeight: 400,
+  letterSpacing: "0.01em",
   boxSizing: "border-box" as const,
 };

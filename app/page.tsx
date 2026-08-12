@@ -14,7 +14,7 @@ export default function Home() {
 
       <Navbar />
 
-      <main>
+      <main className="wedding-canvas">
         <Hero />
         <Story />
         <Timeline />

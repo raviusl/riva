@@ -1,9 +1,7 @@
 const fonts = {
-    heading: `"Cormorant Garamond", serif`,
-  
-    body: `"Inter", sans-serif`,
-  
-    script: `"Great Vibes", cursive`,
-  };
-  
-  export default fonts;
+  couple: `var(--font-great-vibes), "Great Vibes", cursive`,
+  heading: `Calibri, var(--font-carlito), sans-serif`,
+  body: `Arial, Helvetica, sans-serif`,
+};
+
+export default fonts;
