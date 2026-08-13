@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { carlito, greatVibes } from "./fonts";
+import { carlito, cormorantGaramond, greatVibes } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${greatVibes.variable} ${carlito.variable}`}
+      className={`${greatVibes.variable} ${cormorantGaramond.variable} ${carlito.variable}`}
     >
       <body>{children}</body>
     </html>

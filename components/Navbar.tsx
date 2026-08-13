@@ -30,7 +30,7 @@ export default function Navbar() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             className="wedding-header__logo wedding-header__logo--couple"
-            src="/assets/couple-logo.png"
+            src="/assets/images/logos/couple/ChatGPT%20Image%20Aug%2013%2C%202026%20at%2007_08_40%20PM.png"
             alt="Couple monogram"
             decoding="async"
             onError={hideBroken}
@@ -40,7 +40,7 @@ export default function Navbar() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className="wedding-header__logo wedding-header__logo--ruyan"
-          src="/assets/ruyan-weddings-logo.png"
+          src="/assets/images/logos/ruyan/ruyan-logo.png"
           alt="RuYan Weddings"
           decoding="async"
           onError={hideBroken}

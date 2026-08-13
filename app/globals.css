@@ -6,8 +6,18 @@
 
   /* FINAL approved typography system */
   --font-couple: var(--font-great-vibes), "Great Vibes", cursive;
+  --font-display: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-heading: Calibri, var(--font-carlito), sans-serif;
   --font-body: Arial, Helvetica, sans-serif;
+
+  /* Hero couple names — soft cinematic depth (gap → far dissolve, no outline) */
+  --text-depth-hero:
+    5px 8px 20px rgba(0, 0, 0, 0.045),
+    10px 16px 40px rgba(0, 0, 0, 0.055),
+    16px 28px 64px rgba(0, 0, 0, 0.04),
+    22px 40px 90px rgba(0, 0, 0, 0.025);
+  --text-depth-title: 0 1px 2px rgba(0, 0, 0, 0.2), 0 3px 12px rgba(0, 0, 0, 0.1);
+  --text-depth-count: 0 1px 2px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -44,29 +54,42 @@ main.wedding-canvas {
   background: #0c0a08;
 }
 
+/*
+ * HEIGHT vs BLEND (must stay independent):
+ *
+ * Photo BODY stays a full viewport: 100vh.
+ * Blend PAD is ADDITIVE on each scene (same depth as the dissolve).
+ * Negative margin cancels ONLY the pad — never the 100vh body.
+ *
+ * Net scroll ≈ 6×100vh + one pad (NOT the d203911 short page from -42vh
+ * eating into the 100vh body).
+ *
+ * Z-ORDER: later scenes paint ABOVE earlier ones. So the dissolve must
+ * fade the INCOMING TOP (transparent → opaque) so the previous photo
+ * shows through. Masking bottoms (or top+bottom) created a black canvas
+ * band / hard seam.
+ *
+ * F = clamp(88px, 18vh, 170px) — d37f609 feather scale (long soft seam).
+ */
 .wedding-scene {
   position: relative;
-  isolation: isolate;
-  /* Allow ::before/::after feathers to bleed across section seams */
+  /* Do NOT use isolation:isolate here — it breaks mask compositing
+   * against the previous scene and produces a hard black seam. */
   overflow: visible !important;
-  /*
-   * Soft photographic edge dissolve: section (incl. bg photo) fades at
-   * top/bottom so overlapping scenes blend — not a solid bar.
-   * Deeper feather + larger overlap keeps outgoing photos longer on screen.
-   */
+  /* Full immersive body + additive blend pad (overrides inline 100vh) */
+  min-height: calc(100vh + clamp(88px, 18vh, 170px)) !important;
+  /* Incoming top dissolve — previous photo shows through underneath */
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 clamp(100px, 18vh, 220px),
-    #000 calc(100% - clamp(100px, 18vh, 220px)),
-    transparent 100%
+    #000 clamp(88px, 18vh, 170px),
+    #000 100%
   );
   mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    #000 clamp(100px, 18vh, 220px),
-    #000 calc(100% - clamp(100px, 18vh, 220px)),
-    transparent 100%
+    #000 clamp(88px, 18vh, 170px),
+    #000 100%
   );
 }
 
@@ -77,98 +100,54 @@ main.wedding-canvas > .wedding-scene:nth-child(4) { z-index: 4; }
 main.wedding-canvas > .wedding-scene:nth-child(5) { z-index: 5; }
 main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
 
+/* Cancel ONLY the additive blend pad — preserves full 100vh body length */
 .wedding-scene + .wedding-scene {
-  /*
-   * Overlap must exceed combined top+bottom mask fades, otherwise the
-   * body canvas (#0c0a08) shows as a black band between photos.
-   * Deeper overlap keeps the outgoing photo on screen longer.
-   */
-  margin-top: clamp(-300px, -42vh, -210px);
+  margin-top: calc(-1 * clamp(88px, 18vh, 170px));
 }
 
+/* Soft feathers only at page ends — mid-seam dissolve is mask-only
+ * (dark mid-seam feathers were painting a hard black band over the blend). */
 .wedding-scene::before,
 .wedding-scene::after {
+  content: none;
+}
+
+/* Hero sits underneath — fully opaque so incoming scenes can dissolve over it */
+.wedding-scene:first-child {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.wedding-scene:first-child::before {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
+  top: 0;
+  height: clamp(96px, 18vh, 170px);
   pointer-events: none;
   z-index: 2;
-}
-
-/* Soft atmospheric feather — shared desktop + mobile language */
-.wedding-scene::before {
-  top: clamp(-96px, -14vh, -56px);
-  height: clamp(220px, 42vh, 380px);
   background: linear-gradient(
     to bottom,
-    rgba(12, 10, 8, 0.16) 0%,
-    rgba(12, 10, 8, 0.08) 28%,
-    rgba(12, 10, 8, 0.03) 58%,
-    rgba(12, 10, 8, 0) 100%
-  );
-}
-
-.wedding-scene::after {
-  bottom: clamp(-96px, -14vh, -56px);
-  height: clamp(220px, 42vh, 380px);
-  background: linear-gradient(
-    to top,
-    rgba(12, 10, 8, 0.16) 0%,
-    rgba(12, 10, 8, 0.08) 28%,
-    rgba(12, 10, 8, 0.03) 58%,
-    rgba(12, 10, 8, 0) 100%
-  );
-}
-
-.wedding-scene:first-child {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 calc(100% - clamp(110px, 18vh, 200px)),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    #000 0%,
-    #000 calc(100% - clamp(110px, 18vh, 200px)),
-    transparent 100%
-  );
-}
-
-.wedding-scene:first-child::before {
-  top: 0;
-  height: clamp(120px, 22vh, 210px);
-  background: linear-gradient(
-    to bottom,
-    rgba(12, 10, 8, 0.08) 0%,
-    rgba(12, 10, 8, 0) 100%
-  );
-}
-
-.wedding-scene:last-child {
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 clamp(100px, 18vh, 220px),
-    #000 100%
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent 0%,
-    #000 clamp(100px, 18vh, 220px),
-    #000 100%
+    rgba(10, 8, 6, 0.12) 0%,
+    rgba(10, 8, 6, 0) 100%
   );
 }
 
 .wedding-scene:last-child::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
   bottom: 0;
-  height: clamp(180px, 32vh, 300px);
+  height: clamp(110px, 20vh, 200px);
+  pointer-events: none;
+  z-index: 2;
   background: linear-gradient(
     to top,
-    rgba(12, 10, 8, 0.24) 0%,
-    rgba(12, 10, 8, 0.08) 48%,
-    rgba(12, 10, 8, 0) 100%
+    rgba(10, 8, 6, 0.35) 0%,
+    rgba(10, 8, 6, 0.12) 45%,
+    rgba(10, 8, 6, 0) 100%
   );
 }
 
@@ -187,15 +166,14 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 10px;
-  padding: 20px 48px 52px;
+  gap: 0;
+  padding: 40px 50px 16px;
   border: none;
   border-bottom: none;
   background: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.32) 0%,
-    rgba(255, 255, 255, 0.14) 40%,
-    rgba(255, 255, 255, 0.03) 70%,
+    rgba(255, 255, 255, 0.12) 48%,
     rgba(255, 255, 255, 0) 100%
   );
   backdrop-filter: blur(12px);
@@ -207,7 +185,7 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
 .wedding-header__logos {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   gap: 24px;
 }
@@ -227,8 +205,7 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
 .wedding-header__logo {
   display: block;
   width: auto;
-  max-width: min(220px, 34vw);
-  height: 52px;
+  height: auto;
   object-fit: contain;
   object-position: center;
   background: transparent;
@@ -239,26 +216,28 @@ main.wedding-canvas > .wedding-scene:nth-child(6) { z-index: 6; }
 
 .wedding-header__logo--couple {
   object-position: left center;
-  height: 56px;
-  max-width: min(200px, 32vw);
+  height: 164px;
+  width: auto;
+  max-width: none;
 }
 
 .wedding-header__logo--ruyan {
   object-position: right center;
-  height: 44px;
-  max-width: min(210px, 34vw);
+  height: 144px;
+  width: auto;
+  max-width: none;
   margin-left: auto;
 }
 
 .wedding-header__tagline {
   font-family: var(--font-heading);
-  font-size: 15.5px;
-  font-weight: 400;
-  letter-spacing: 0.22em;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: #c9c2ba;
-  margin: 0;
-  line-height: 1.2;
+  color: rgba(201, 194, 186, 0.72);
+  margin: -26px 0 0;
+  line-height: 1.15;
   text-align: center;
   white-space: nowrap;
 }
@@ -270,10 +249,20 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-weight: 400;
   letter-spacing: 0.02em;
   line-height: 1.15;
+}
+
+/* Editorial display headings over photography */
+.wedding-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+}
+
+.wedding-text-depth {
+  text-shadow: var(--text-depth-title);
 }
 
 /* Do NOT force body font onto span — that overrode Great Vibes on couple names */
@@ -292,6 +281,7 @@ textarea {
   font-family: var(--font-body);
 }
 
+.wedding-header__brand,
 .wedding-hero__title,
 .wedding-hero__title-line {
   font-family: var(--font-couple) !important;
@@ -301,7 +291,7 @@ textarea {
 /* ---------- Hero (layered <img> — iOS-safe) ---------- */
 .wedding-hero {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh + clamp(88px, 18vh, 170px));
   display: flex;
   justify-content: center;
   align-items: center;
@@ -347,7 +337,13 @@ textarea {
 .wedding-hero__shade {
   z-index: 1 !important;
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.45);
+  /* Keep body readable; lighten only the bottom blend pad so next photo can show through */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.45) 0%,
+    rgba(0, 0, 0, 0.45) calc(100% - clamp(88px, 18vh, 170px)),
+    rgba(0, 0, 0, 0.12) 100%
+  );
 }
 
 .wedding-hero__content {
@@ -366,7 +362,7 @@ textarea {
   color: #f4d06f;
   font-size: 15px;
   font-weight: 400;
-  margin: 0 0 clamp(40px, 5vh, 56px);
+  margin: 0 0 clamp(32px, 4vh, 46px);
 }
 
 .wedding-hero__title {
@@ -375,7 +371,12 @@ textarea {
   font-weight: 400;
   line-height: 1.15;
   letter-spacing: 0.02em;
-  margin: 0 0 clamp(36px, 4.5vh, 52px);
+  margin: 0 0 clamp(28px, 3.6vh, 42px);
+  text-shadow: var(--text-depth-hero);
+}
+
+.wedding-hero__title-line {
+  text-shadow: var(--text-depth-hero);
 }
 
 .wedding-hero__statement {
@@ -386,7 +387,8 @@ textarea {
   text-transform: uppercase;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.88);
-  margin: 0 0 clamp(64px, 8vh, 88px);
+  margin: 0 0 clamp(52px, 6.5vh, 72px);
+  text-shadow: none;
 }
 
 /* ---------- Editorial countdown: DAYS / HOURS / MINUTES ---------- */
@@ -413,13 +415,13 @@ textarea {
 }
 
 .wedding-countdown__value {
-  font-family: var(--font-heading);
+  font-family: var(--font-display);
   font-size: clamp(40px, 4.6vw, 56px);
   line-height: 1;
   font-weight: 400;
   letter-spacing: 0.06em;
   color: #fff;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.22);
+  text-shadow: var(--text-depth-count);
 }
 
 .wedding-countdown__label {
@@ -448,78 +450,53 @@ img {
 @media (max-width: 768px) {
   /*
    * iOS: background-attachment:fixed is unreliable — scroll only on mobile.
-   * ONE fade system: base .wedding-scene feathers/overlap apply unchanged.
-   * Media layers keep their own overflow:hidden.
+   * Same HEIGHT+BLEND architecture as desktop (additive pad, canceling overlap).
+   * Do NOT reintroduce d203911 -36vh body collapse.
    */
   .wedding-scene {
     background-attachment: scroll !important;
-    /* Same feather language; slightly tighter on short viewports to avoid clip */
+    min-height: calc(100svh + clamp(72px, 16vh, 140px)) !important;
     -webkit-mask-image: linear-gradient(
       to bottom,
       transparent 0%,
-      #000 clamp(72px, 14vh, 150px),
-      #000 calc(100% - clamp(72px, 14vh, 150px)),
-      transparent 100%
+      #000 clamp(72px, 16vh, 140px),
+      #000 100%
     );
     mask-image: linear-gradient(
       to bottom,
       transparent 0%,
-      #000 clamp(72px, 14vh, 150px),
-      #000 calc(100% - clamp(72px, 14vh, 150px)),
-      transparent 100%
+      #000 clamp(72px, 16vh, 140px),
+      #000 100%
     );
   }
 
   .wedding-scene + .wedding-scene {
-    margin-top: clamp(-240px, -36vh, -168px);
+    margin-top: calc(-1 * clamp(72px, 16vh, 140px));
   }
 
   .wedding-scene::before,
   .wedding-scene::after {
-    height: clamp(180px, 36vh, 280px);
-  }
-
-  .wedding-scene::before {
-    top: clamp(-72px, -11vh, -40px);
-  }
-
-  .wedding-scene::after {
-    bottom: clamp(-72px, -11vh, -40px);
+    content: none;
   }
 
   .wedding-scene:first-child {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 calc(100% - clamp(80px, 14vh, 150px)),
-      transparent 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      #000 0%,
-      #000 calc(100% - clamp(80px, 14vh, 150px)),
-      transparent 100%
-    );
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
-  .wedding-scene:last-child {
-    -webkit-mask-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      #000 clamp(72px, 14vh, 150px),
-      #000 100%
-    );
-    mask-image: linear-gradient(
-      to bottom,
-      transparent 0%,
-      #000 clamp(72px, 14vh, 150px),
-      #000 100%
-    );
+  .wedding-scene:first-child::before {
+    content: "";
+    height: clamp(72px, 16vh, 140px);
+  }
+
+  .wedding-scene:last-child::after {
+    content: "";
+    height: clamp(88px, 18vh, 160px);
   }
 
   .wedding-hero {
-    min-height: 100svh;
-    min-height: 100dvh;
+    min-height: calc(100svh + clamp(72px, 16vh, 140px)) !important;
+    min-height: calc(100dvh + clamp(72px, 16vh, 140px)) !important;
     padding:
       calc(108px + env(safe-area-inset-top, 0px))
       22px
@@ -529,8 +506,8 @@ img {
 
   /* Same dual-logo header — smaller logos / tighter padding */
   .wedding-header {
-    gap: 8px;
-    padding: max(12px, env(safe-area-inset-top)) 14px 48px;
+    gap: 0;
+    padding: max(16px, env(safe-area-inset-top)) 18px 14px;
   }
 
   .wedding-header__logos {
@@ -538,21 +515,23 @@ img {
   }
 
   .wedding-header__logo--couple {
-    height: 36px;
-    max-width: min(140px, 42vw);
+    height: 96px;
+    max-width: none;
   }
 
   .wedding-header__logo--ruyan {
-    height: 30px;
-    max-width: min(150px, 42vw);
+    height: 88px;
+    max-width: none;
   }
 
   .wedding-header__tagline {
-    font-size: clamp(9px, 2.4vw, 12px);
-    letter-spacing: 0.14em;
+    font-size: clamp(9.5px, 2.5vw, 12px);
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    margin-top: -14px;
     text-align: center;
     white-space: nowrap;
-    color: #c9c2ba;
+    color: rgba(201, 194, 186, 0.72);
   }
 
   .wedding-hero__photo {
@@ -568,7 +547,7 @@ img {
   .wedding-hero__date {
     font-size: clamp(11px, 3.1vw, 13px);
     letter-spacing: 0.24em;
-    margin-bottom: clamp(28px, 5vh, 40px);
+    margin-bottom: clamp(22px, 4vh, 32px);
   }
 
   .wedding-hero__title {
@@ -580,7 +559,7 @@ img {
     font-size: clamp(48px, 13vw, 62px);
     line-height: 1.1;
     letter-spacing: 0.01em;
-    margin-bottom: clamp(28px, 5vh, 40px);
+    margin-bottom: clamp(22px, 4vh, 32px);
   }
 
   .wedding-hero__title-line {
@@ -591,7 +570,7 @@ img {
   .wedding-hero__statement {
     font-size: clamp(10px, 2.8vw, 12px);
     letter-spacing: 0.28em;
-    margin-bottom: clamp(48px, 8vh, 68px);
+    margin-bottom: clamp(40px, 6.5vh, 56px);
     padding: 0 8px;
   }
 
@@ -622,6 +601,73 @@ img {
   }
 }
 
+/* Soft atmospheric content cards — edges dissolve into photography */
+.wedding-soft-card {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.09) 14%,
+    rgba(255, 255, 255, 0.09) 86%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%
+    );
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+
+/* RSVP intro sentence */
+.wedding-rsvp__title {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.45;
+  margin: 0 auto 50px;
+  max-width: 34em;
+  text-shadow: none;
+}
+
+/* JOIN US — luxury serif; size/padding/gold from inline styles preserved */
+.wedding-rsvp__submit {
+  font-family: var(--font-display) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+}
+
 /* Desktop: keep couple names on one elegant line */
 @media (min-width: 769px) {
   .wedding-hero__title-line {
@@ -630,6 +676,74 @@ img {
 
   .wedding-hero__title-line + .wedding-hero__title-line::before {
     content: " ";
+  }
+
+  /* RSVP short headline: one line when width allows */
+  .wedding-rsvp__panel {
+    max-width: min(920px, 92vw);
+  }
+
+  .wedding-rsvp__title {
+    max-width: none;
+  }
+}
+
+/* Prefer one line for RSVP intro when the viewport is wide enough */
+@media (min-width: 1100px) {
+  .wedding-rsvp__title {
+    white-space: nowrap;
+  }
+}
+
+/* Details TIME: one line on wide desktops (enough column width) */
+@media (min-width: 1024px) {
+  .wedding-details__time {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .wedding-details__time {
+    white-space: normal;
+  }
+
+  .wedding-rsvp__title {
+    white-space: normal;
+  }
+
+  .wedding-soft-card {
+    -webkit-mask-image:
+      linear-gradient(
+        to right,
+        transparent 0%,
+        #000 6%,
+        #000 94%,
+        transparent 100%
+      ),
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        #000 8%,
+        #000 92%,
+        transparent 100%
+      );
+    mask-image:
+      linear-gradient(
+        to right,
+        transparent 0%,
+        #000 6%,
+        #000 94%,
+        transparent 100%
+      ),
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        #000 8%,
+        #000 92%,
+        transparent 100%
+      );
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 }
 

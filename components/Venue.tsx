@@ -16,13 +16,19 @@ export default function Venue() {
         padding: "120px 20px",
 
         backgroundImage: `
-          linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,.18) 0%,
+            rgba(0,0,0,.45) clamp(88px, 18vh, 170px),
+            rgba(0,0,0,.45) 100%
+          ),
           url(${wedding.venueImage})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        /* scroll — fixed attachment breaks edge mask dissolve between scenes */
+        backgroundAttachment: "scroll",
       }}
     >
       <div
@@ -45,8 +51,9 @@ export default function Venue() {
         </p>
 
         <h2
+          className="wedding-text-depth"
           style={{
-            fontFamily: "var(--font-heading)",
+            fontFamily: "var(--font-display)",
             fontSize: "clamp(42px, 6vw, 64px)",
             fontWeight: 400,
             letterSpacing: "0.02em",

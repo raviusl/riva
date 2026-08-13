@@ -12,13 +12,19 @@ export default function Details() {
         padding: "120px 40px",
 
         backgroundImage: `
-          linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,.18) 0%,
+            rgba(0,0,0,.45) clamp(88px, 18vh, 170px),
+            rgba(0,0,0,.45) 100%
+          ),
           url(${wedding.detailsImage})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        /* scroll — fixed attachment breaks edge mask dissolve between scenes */
+        backgroundAttachment: "scroll",
 
         display: "flex",
         justifyContent: "center",
@@ -48,8 +54,9 @@ export default function Details() {
         </p>
 
         <h2
+          className="wedding-text-depth"
           style={{
-            fontFamily: "var(--font-heading)",
+            fontFamily: "var(--font-display)",
             textAlign: "center",
             fontSize: "clamp(42px, 6vw, 64px)",
             fontWeight: 400,
@@ -91,7 +98,8 @@ export default function Details() {
             <Info title="Date" value={wedding.date} />
             <Info
               title="Time"
-              value={`Ceremony ${wedding.details.ceremonyTime} · Dinner ${wedding.details.receptionTime}`}
+              value={`Dinner ${wedding.details.receptionTime}`}
+              valueClassName="wedding-details__time"
             />
             <Info title="Venue" value={wedding.venue} />
             <Info title="Dress Code" value={wedding.details.attire} />
@@ -105,15 +113,16 @@ export default function Details() {
 function Info({
   title,
   value,
+  valueClassName,
 }: {
   title: string;
   value: string;
+  valueClassName?: string;
 }) {
   return (
     <div
+      className="wedding-soft-card"
       style={{
-        background: "rgba(255,255,255,.12)",
-        backdropFilter: "blur(18px)",
         borderRadius: "22px",
         padding: "28px 34px",
       }}
@@ -133,6 +142,7 @@ function Info({
       </p>
 
       <h3
+        className={valueClassName}
         style={{
           fontFamily: "var(--font-body)",
           fontSize: "26px",

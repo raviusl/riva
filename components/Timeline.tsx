@@ -13,13 +13,19 @@ export default function Timeline() {
         alignItems: "center",
         justifyContent: "center",
         backgroundImage: `
-          linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,.22) 0%,
+            rgba(0,0,0,.55) clamp(88px, 18vh, 170px),
+            rgba(0,0,0,.55) 100%
+          ),
           url(${wedding.timelineImage})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        /* scroll — fixed attachment breaks edge mask dissolve between scenes */
+        backgroundAttachment: "scroll",
         padding: "120px 20px",
       }}
     >
@@ -46,8 +52,9 @@ export default function Timeline() {
         </p>
 
         <h2
+          className="wedding-text-depth"
           style={{
-            fontFamily: "var(--font-heading)",
+            fontFamily: "var(--font-display)",
             textAlign: "center",
             fontSize: "clamp(42px, 6vw, 64px)",
             fontWeight: 400,
@@ -83,18 +90,17 @@ export default function Timeline() {
             </div>
 
             <div
+              className="wedding-soft-card"
               style={{
                 flex: 1,
-                backdropFilter: "blur(14px)",
-                background: "rgba(255,255,255,.08)",
-                border: "1px solid rgba(255,255,255,.15)",
                 borderRadius: "24px",
                 padding: "30px",
               }}
             >
               <h3
+                className="wedding-text-depth"
                 style={{
-                  fontFamily: "var(--font-heading)",
+                  fontFamily: "var(--font-display)",
                   marginBottom: "14px",
                   fontSize: "28px",
                   fontWeight: 400,

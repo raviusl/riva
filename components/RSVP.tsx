@@ -100,16 +100,23 @@ export default function RSVP() {
         padding: "120px 20px",
 
         backgroundImage: `
-          linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,.22) 0%,
+            rgba(0,0,0,.55) clamp(88px, 18vh, 170px),
+            rgba(0,0,0,.55) 100%
+          ),
           url(${wedding.rsvpImage})
         `,
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
+        /* scroll — fixed attachment breaks edge mask dissolve between scenes */
+        backgroundAttachment: "scroll",
       }}
     >
       <div
+        className="wedding-rsvp__panel"
         style={{
           maxWidth: "700px",
           width: "100%",
@@ -117,30 +124,8 @@ export default function RSVP() {
           textAlign: "center",
         }}
       >
-        <p
-          style={{
-            fontFamily: "var(--font-heading)",
-            color: "#D4AF37",
-            letterSpacing: "0.28em",
-            textTransform: "uppercase",
-            fontSize: "15px",
-            fontWeight: 400,
-          }}
-        >
-          RSVP
-        </p>
-
-        <h2
-          style={{
-            fontFamily: "var(--font-heading)",
-            fontSize: "clamp(40px, 6vw, 60px)",
-            fontWeight: 400,
-            letterSpacing: "0.02em",
-            lineHeight: 1.2,
-            margin: "20px 0 50px",
-          }}
-        >
-          We&apos;d Love To Celebrate With You
+        <h2 className="wedding-rsvp__title">
+          Kindly fill in your details to reserve your place.
         </h2>
 
         <form
@@ -201,22 +186,20 @@ export default function RSVP() {
           <button
             type="submit"
             disabled={isSubmitting}
+            className="wedding-rsvp__submit"
             style={{
-              fontFamily: "var(--font-body)",
               padding: "18px",
               borderRadius: "999px",
               background: "#D4AF37",
               border: "none",
               color: "#fff",
               fontSize: "17px",
-              fontWeight: 400,
-              letterSpacing: "0.08em",
               textTransform: "uppercase",
               cursor: isSubmitting ? "wait" : "pointer",
               opacity: isSubmitting ? 0.75 : 1,
             }}
           >
-            {isSubmitting ? "Submitting..." : "Submit RSVP"}
+            {isSubmitting ? "Submitting..." : "Join Us"}
           </button>
 
           {message ? (
