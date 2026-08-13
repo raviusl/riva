@@ -19,6 +19,8 @@ const wedding = {
   venue: "Grand Hyatt Kuala Lumpur",
   address: "12 Jalan Pinang",
   city: "Kuala Lumpur, Malaysia",
+  mapsUrl:
+    "https://www.google.com/maps/search/?api=1&query=Grand+Hyatt+Kuala+Lumpur",
 
   // Hero Display
   date: "1 September 2026",
@@ -62,7 +64,7 @@ const wedding = {
   // Wedding Details
   details: {
     ceremonyTime: "5:00 PM",
-    receptionTime: "7:00 PM",
+    receptionTime: "6:30 PM",
     attire: "Formal · Champagne Gold",
   },
 

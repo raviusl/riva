@@ -13,7 +13,6 @@ export default function Story() {
         justifyContent: "center",
         alignItems: "center",
         textAlign: "center",
-        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),

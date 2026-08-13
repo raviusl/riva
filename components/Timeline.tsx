@@ -12,7 +12,6 @@ export default function Timeline() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        overflow: "hidden",
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.55)),
           url(${wedding.timelineImage})

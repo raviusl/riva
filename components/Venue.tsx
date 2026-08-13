@@ -14,7 +14,6 @@ export default function Venue() {
         justifyContent: "center",
         textAlign: "center",
         padding: "120px 20px",
-        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
@@ -56,7 +55,7 @@ export default function Venue() {
             marginBottom: "30px",
           }}
         >
-          Grand Hyatt Kuala Lumpur
+          {wedding.venue}
         </h2>
 
         <p
@@ -69,11 +68,31 @@ export default function Venue() {
             color: "rgba(255,255,255,0.95)",
           }}
         >
-          12 Jalan Pinang,
+          {wedding.address},
           Kuala Lumpur City Centre,
           50450 Kuala Lumpur,
           Malaysia
         </p>
+
+        <a
+          href={wedding.mapsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-block",
+            marginTop: "28px",
+            fontFamily: "var(--font-heading)",
+            fontSize: "14px",
+            fontWeight: 400,
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+            color: "#D4AF37",
+            textDecoration: "underline",
+            textUnderlineOffset: "0.35em",
+          }}
+        >
+          Open in Google Maps
+        </a>
       </div>
     </section>
   );

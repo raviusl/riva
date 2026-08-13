@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import wedding from "@/data/wedding";
 
 type TimeLeft = {
   days: number;
@@ -8,7 +9,15 @@ type TimeLeft = {
   minutes: number;
 };
 
-const targetDate = new Date("2026-10-24T18:00:00+08:00").getTime();
+/**
+ * Target: wedding.countdownDate at midnight Malaysia time
+ * (Asia/Kuala_Lumpur, UTC+8) → 2026-09-01T00:00:00+08:00
+ */
+function resolveTargetMs(): number {
+  return new Date(`${wedding.countdownDate}T00:00:00+08:00`).getTime();
+}
+
+const targetDate = resolveTargetMs();
 
 function calculateTimeLeft(): TimeLeft {
   const difference = targetDate - Date.now();
@@ -53,7 +62,7 @@ export default function Countdown() {
 
     const timer = window.setInterval(() => {
       setTimeLeft(calculateTimeLeft());
-    }, 1000);
+    }, 60_000);
 
     return () => {
       window.clearInterval(timer);

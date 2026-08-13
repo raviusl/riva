@@ -10,7 +10,6 @@ export default function Details() {
       style={{
         minHeight: "100vh",
         padding: "120px 40px",
-        overflow: "hidden",
 
         backgroundImage: `
           linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.45)),
@@ -89,10 +88,13 @@ export default function Details() {
               gap: "24px",
             }}
           >
-            <Info title="Date" value="24 October 2026" />
-            <Info title="Time" value="5:00 PM" />
-            <Info title="Venue" value="Grand Hyatt Kuala Lumpur" />
-            <Info title="Dress Code" value="Formal · Champagne Gold" />
+            <Info title="Date" value={wedding.date} />
+            <Info
+              title="Time"
+              value={`Ceremony ${wedding.details.ceremonyTime} · Dinner ${wedding.details.receptionTime}`}
+            />
+            <Info title="Venue" value={wedding.venue} />
+            <Info title="Dress Code" value={wedding.details.attire} />
           </div>
         </div>
       </div>
