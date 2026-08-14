@@ -129,7 +129,9 @@ function DashboardView() {
           meta: "7月28日 下午2:14",
         },
       ]}
-      briefMessage={uiZh.noMeetingsAfternoon}
+      canWriteClient
+      canWriteProject
+      canWriteVendor
     />
   );
 }

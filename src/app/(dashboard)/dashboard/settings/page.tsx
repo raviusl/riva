@@ -4,7 +4,7 @@ import { WorkspaceLayout } from "@/components/layout/workspace-layout";
 import { uiZh } from "@/config/ui-zh";
 import { SettingsNav } from "@/features/settings/components/settings-nav";
 import { loadSettingsPageContext } from "@/features/settings/lib/load-settings-page-context";
-import { SETTINGS_SECTIONS } from "@/features/settings/lib/settings-sections";
+import { listLiveSettingsSections } from "@/features/settings/lib/settings-sections";
 
 export default async function SettingsHubPage() {
   const { isSuperAdmin, profile, context } = await loadSettingsPageContext();
@@ -39,7 +39,7 @@ export default async function SettingsHubPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {SETTINGS_SECTIONS.map((section) => (
+            {listLiveSettingsSections().map((section) => (
               <Link
                 key={section.id}
                 href={section.href}
@@ -49,11 +49,6 @@ export default async function SettingsHubPage() {
                   <p className="text-sm font-medium text-white">
                     {section.label}
                   </p>
-                  {section.placeholder ? (
-                    <span className="text-[10px] text-white/30">
-                      {uiZh.soon}
-                    </span>
-                  ) : null}
                 </div>
                 <p className="mt-1 text-xs text-white/45">
                   {section.description}

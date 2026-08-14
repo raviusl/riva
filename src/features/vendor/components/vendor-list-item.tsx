@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { uiZh } from "@/config/ui-zh";
 import {
   archiveVendorAction,
@@ -24,6 +25,8 @@ type VendorListItemProps = {
   projectName?: string | null;
   ownerName?: string | null;
 };
+
+type ConfirmKind = "archive" | "deactivate" | null;
 
 function statusLabel(status: Vendor["status"]) {
   switch (status) {
@@ -48,6 +51,7 @@ export function VendorListItem({
 }: VendorListItemProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null);
   const workspaceHref = buildWorkspaceOverviewHref("vendor", vendor.id);
 
   return (
@@ -107,21 +111,7 @@ export function VendorListItem({
                   size="sm"
                   variant="outline"
                   disabled={pending}
-                  onClick={() => {
-                    startTransition(async () => {
-                      const result = await deactivateVendorAction({
-                        workspaceId,
-                        companyId,
-                        vendorId: vendor.id,
-                      });
-                      if (!result.ok) {
-                        toast.error(result.error);
-                        return;
-                      }
-                      toast.success(uiZh.vendorDeactivated);
-                      router.refresh();
-                    });
-                  }}
+                  onClick={() => setConfirmKind("deactivate")}
                 >
                   {uiZh.deactivate}
                 </Button>
@@ -132,21 +122,7 @@ export function VendorListItem({
                   size="sm"
                   variant="outline"
                   disabled={pending}
-                  onClick={() => {
-                    startTransition(async () => {
-                      const result = await archiveVendorAction({
-                        workspaceId,
-                        companyId,
-                        vendorId: vendor.id,
-                      });
-                      if (!result.ok) {
-                        toast.error(result.error);
-                        return;
-                      }
-                      toast.success(uiZh.vendorArchived);
-                      router.refresh();
-                    });
-                  }}
+                  onClick={() => setConfirmKind("archive")}
                 >
                   {uiZh.archive}
                 </Button>
@@ -179,6 +155,58 @@ export function VendorListItem({
           ) : null}
         </div>
       </div>
+      <ConfirmDialog
+        open={confirmKind === "archive"}
+        onOpenChange={(open) => {
+          if (!open) setConfirmKind(null);
+        }}
+        title={uiZh.confirmArchiveVendorTitle}
+        description={uiZh.confirmArchiveVendorDescription}
+        confirmLabel={uiZh.archive}
+        pending={pending}
+        onConfirm={() => {
+          startTransition(async () => {
+            const result = await archiveVendorAction({
+              workspaceId,
+              companyId,
+              vendorId: vendor.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            setConfirmKind(null);
+            toast.success(uiZh.vendorArchived);
+            router.refresh();
+          });
+        }}
+      />
+      <ConfirmDialog
+        open={confirmKind === "deactivate"}
+        onOpenChange={(open) => {
+          if (!open) setConfirmKind(null);
+        }}
+        title={uiZh.confirmDeactivateVendorTitle}
+        description={uiZh.confirmDeactivateVendorDescription}
+        confirmLabel={uiZh.deactivate}
+        pending={pending}
+        onConfirm={() => {
+          startTransition(async () => {
+            const result = await deactivateVendorAction({
+              workspaceId,
+              companyId,
+              vendorId: vendor.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            setConfirmKind(null);
+            toast.success(uiZh.vendorDeactivated);
+            router.refresh();
+          });
+        }}
+      />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import type { Project } from "@/core/types";
 import type { Task } from "@/core/task/types";
 import {
   extractTimeFromIso,
+  instantDateKey,
   toDateKey,
 } from "@/features/calendar-engine/date-utils";
 import { uuidFromSeed } from "@/features/calendar-engine/id";
@@ -20,6 +21,8 @@ import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 export type DeriveCalendarInput = {
   companyId: string;
   workspaceId: string;
+  /** Active workspace IANA timezone — day keys for timed events. */
+  timeZone?: string | null;
   meetings?: readonly Meeting[];
   tasks?: readonly Task[];
   projects?: readonly Project[];
@@ -35,8 +38,11 @@ function projectNameMap(projects: readonly Project[]) {
 function fromMeeting(
   meeting: Meeting,
   names: Map<string, string>,
+  timeZone: string | null | undefined,
 ): CalendarEvent | null {
-  const date = toDateKey(meeting.starts_at || meeting.meeting_date);
+  const date = meeting.starts_at
+    ? instantDateKey(meeting.starts_at, timeZone)
+    : toDateKey(meeting.meeting_date);
   if (!date) return null;
   const time =
     meeting.meeting_time?.slice(0, 5) ||
@@ -130,6 +136,7 @@ export function deriveCalendarEvents(
     projects = [],
     milestones = [],
     filter = "all",
+    timeZone = null,
   } = input;
 
   const names = projectNameMap(projects);
@@ -137,7 +144,7 @@ export function deriveCalendarEvents(
 
   for (const meeting of meetings) {
     if (meeting.company_id !== input.companyId) continue;
-    const event = fromMeeting(meeting, names);
+    const event = fromMeeting(meeting, names, timeZone);
     if (event) events.push(event);
   }
 

@@ -4,7 +4,6 @@ import { requireSessionContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
 import { CoreError, toCoreUserMessage } from "@/core/errors";
 import { listMeetingsByCompany } from "@/core/meeting/meeting";
-import { listWorkspaceMembers } from "@/core/membership/membership";
 import { listProjectsByCompany } from "@/core/project/project";
 import { listTasks } from "@/core/task/service";
 import { listVendorsByCompany } from "@/core/vendor/vendor";
@@ -15,8 +14,6 @@ import { toVendorSearchDocuments } from "@/features/vendor/lib/vendor-search-doc
 import type { SearchDocumentWithHref } from "@/features/search/universal-search-documents";
 import {
   toCommandSearchDocuments,
-  toFutureModuleSearchDocuments,
-  toMemberSearchDocuments,
   toProjectSearchDocuments,
   toSettingsSearchDocuments,
   toWorkspaceNavSearchDocuments,
@@ -33,7 +30,8 @@ type LoadIndexInput = {
 
 /**
  * Load Command Palette / Universal Search candidates for the active company.
- * Permissions + company isolation applied here. Files merge on the client.
+ * Permissions + company isolation applied here.
+ * Internal MVP Phase 1: no future-module stubs, members, or client file merge.
  */
 export async function loadUniversalSearchIndexAction(
   input: LoadIndexInput,
@@ -50,34 +48,27 @@ export async function loadUniversalSearchIndexAction(
       );
     }
 
-    const [clients, vendors, projects, tasks, meetings, members] =
-      await Promise.all([
-        context.permissions.has("client.read")
-          ? listClientsByCompany(input.workspaceId, input.companyId)
-          : Promise.resolve([]),
-        context.permissions.has("vendor.read")
-          ? listVendorsByCompany(input.workspaceId, input.companyId)
-          : Promise.resolve([]),
-        context.permissions.has("project.read")
-          ? listProjectsByCompany(input.workspaceId, input.companyId)
-          : Promise.resolve([]),
-        context.permissions.has("task.read")
-          ? listTasks({
-              workspaceId: input.workspaceId,
-              companyId: input.companyId,
-              includeArchived: false,
-            })
-          : Promise.resolve([]),
-        context.permissions.has("meeting.read")
-          ? listMeetingsByCompany(input.workspaceId, input.companyId)
-          : Promise.resolve([]),
-        listWorkspaceMembers(input.workspaceId).catch(() => []),
-      ]);
-
-    const companyMembers = members.filter(
-      (member) =>
-        member.company_id === null || member.company_id === input.companyId,
-    );
+    const [clients, vendors, projects, tasks, meetings] = await Promise.all([
+      context.permissions.has("client.read")
+        ? listClientsByCompany(input.workspaceId, input.companyId)
+        : Promise.resolve([]),
+      context.permissions.has("vendor.read")
+        ? listVendorsByCompany(input.workspaceId, input.companyId)
+        : Promise.resolve([]),
+      context.permissions.has("project.read")
+        ? listProjectsByCompany(input.workspaceId, input.companyId)
+        : Promise.resolve([]),
+      context.permissions.has("task.read")
+        ? listTasks({
+            workspaceId: input.workspaceId,
+            companyId: input.companyId,
+            includeArchived: false,
+          })
+        : Promise.resolve([]),
+      context.permissions.has("meeting.read")
+        ? listMeetingsByCompany(input.workspaceId, input.companyId)
+        : Promise.resolve([]),
+    ]);
 
     const documents: SearchDocumentWithHref[] = [
       ...toCommandSearchDocuments(
@@ -91,9 +82,7 @@ export async function loadUniversalSearchIndexAction(
       ...toProjectSearchDocuments(projects),
       ...toTaskSearchDocuments(tasks),
       ...toMeetingSearchDocuments(meetings),
-      ...toMemberSearchDocuments(companyMembers, input.companyId),
       ...toSettingsSearchDocuments(input.workspaceId, input.companyId),
-      ...toFutureModuleSearchDocuments(input.workspaceId, input.companyId),
     ];
 
     return { ok: true, data: { documents } };

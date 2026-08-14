@@ -1,9 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   WorkspaceHeader,
   type WorkspaceHeaderAction,
@@ -25,6 +26,8 @@ type VendorWorkspaceHeaderProps = {
   vendor: Vendor;
   canWriteVendor: boolean;
 };
+
+type ConfirmKind = "archive" | "deactivate" | null;
 
 function statusLabel(status: Vendor["status"]) {
   switch (status) {
@@ -66,6 +69,7 @@ export function VendorWorkspaceHeader({
 }: VendorWorkspaceHeaderProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [confirmKind, setConfirmKind] = useState<ConfirmKind>(null);
 
   const actions = useMemo((): WorkspaceHeaderAction[] => {
     if (!canWriteVendor) return [];
@@ -86,21 +90,7 @@ export function VendorWorkspaceHeader({
         key: "deactivate",
         label: uiZh.deactivate,
         disabled: pending,
-        onClick: () => {
-          startTransition(async () => {
-            const result = await deactivateVendorAction({
-              workspaceId,
-              companyId,
-              vendorId: vendor.id,
-            });
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
-            }
-            toast.success(uiZh.vendorDeactivated);
-            router.refresh();
-          });
-        },
+        onClick: () => setConfirmKind("deactivate"),
       });
     }
 
@@ -109,21 +99,7 @@ export function VendorWorkspaceHeader({
         key: "archive",
         label: uiZh.archive,
         disabled: pending,
-        onClick: () => {
-          startTransition(async () => {
-            const result = await archiveVendorAction({
-              workspaceId,
-              companyId,
-              vendorId: vendor.id,
-            });
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
-            }
-            toast.success(uiZh.vendorArchived);
-            router.refresh();
-          });
-        },
+        onClick: () => setConfirmKind("archive"),
       });
     } else {
       next.push({
@@ -161,16 +137,70 @@ export function VendorWorkspaceHeader({
   ]);
 
   return (
-    <WorkspaceHeader
-      eyebrow={uiZh.vendorWorkspace}
-      title={vendor.name}
-      status={{
-        label: statusLabel(vendor.status),
-        tone: vendorStatusTone(vendor.status),
-      }}
-      lifecycle={lifecycleLabel(vendor)}
-      breadcrumbs={buildWorkspaceBreadcrumbs("vendor")}
-      actions={actions}
-    />
+    <>
+      <WorkspaceHeader
+        eyebrow={uiZh.vendorWorkspace}
+        title={vendor.name}
+        status={{
+          label: statusLabel(vendor.status),
+          tone: vendorStatusTone(vendor.status),
+        }}
+        lifecycle={lifecycleLabel(vendor)}
+        breadcrumbs={buildWorkspaceBreadcrumbs("vendor")}
+        actions={actions}
+      />
+      <ConfirmDialog
+        open={confirmKind === "archive"}
+        onOpenChange={(open) => {
+          if (!open) setConfirmKind(null);
+        }}
+        title={uiZh.confirmArchiveVendorTitle}
+        description={uiZh.confirmArchiveVendorDescription}
+        confirmLabel={uiZh.archive}
+        pending={pending}
+        onConfirm={() => {
+          startTransition(async () => {
+            const result = await archiveVendorAction({
+              workspaceId,
+              companyId,
+              vendorId: vendor.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            setConfirmKind(null);
+            toast.success(uiZh.vendorArchived);
+            router.refresh();
+          });
+        }}
+      />
+      <ConfirmDialog
+        open={confirmKind === "deactivate"}
+        onOpenChange={(open) => {
+          if (!open) setConfirmKind(null);
+        }}
+        title={uiZh.confirmDeactivateVendorTitle}
+        description={uiZh.confirmDeactivateVendorDescription}
+        confirmLabel={uiZh.deactivate}
+        pending={pending}
+        onConfirm={() => {
+          startTransition(async () => {
+            const result = await deactivateVendorAction({
+              workspaceId,
+              companyId,
+              vendorId: vendor.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            setConfirmKind(null);
+            toast.success(uiZh.vendorDeactivated);
+            router.refresh();
+          });
+        }}
+      />
+    </>
   );
 }

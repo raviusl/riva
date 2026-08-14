@@ -8,6 +8,7 @@ export {
   SETTINGS_SECTIONS,
   getSettingsSection,
   isSettingsSectionId,
+  listLiveSettingsSections,
   settingsSectionsByGroup,
   type SettingsSectionDefinition,
   type SettingsSectionId,

@@ -12,7 +12,6 @@ import {
 } from "react";
 import { SearchIcon } from "lucide-react";
 
-import { listProjectFiles } from "@/components/files/file-store";
 import { useUniversalSearch } from "@/components/search/universal-search-provider";
 import {
   Dialog,
@@ -38,10 +37,7 @@ import {
   nextFocusIndex,
   previousFocusIndex,
 } from "@/features/search/search-shortcuts";
-import {
-  toFileSearchDocuments,
-  type SearchDocumentWithHref,
-} from "@/features/search/universal-search-documents";
+import type { SearchDocumentWithHref } from "@/features/search/universal-search-documents";
 import { cn } from "@/lib/utils";
 
 const SEARCH_GROUP_LABELS: Record<GlobalSearchGroupId, string> = {
@@ -198,10 +194,7 @@ export function UniversalSearchDialog({
         return;
       }
 
-      const files = toFileSearchDocuments(
-        listProjectFiles(workspaceId, companyId),
-      );
-      setDocuments([...result.data.documents, ...files]);
+      setDocuments(result.data.documents);
       setLoaded(true);
     });
   }, [workspaceId, companyId]);
@@ -213,14 +206,6 @@ export function UniversalSearchDialog({
     setRecentItems(listRecentItems(workspaceId, companyId));
     if (!loaded) {
       loadIndex();
-    } else {
-      setDocuments((prev) => {
-        const withoutFiles = prev.filter((doc) => !doc.id.startsWith("file:"));
-        return [
-          ...withoutFiles,
-          ...toFileSearchDocuments(listProjectFiles(workspaceId, companyId)),
-        ];
-      });
     }
     const frame = window.requestAnimationFrame(() => {
       inputRef.current?.focus();

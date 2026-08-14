@@ -107,20 +107,29 @@ export function toSettingsSearchDocuments(
   companyId: string,
 ): SearchDocumentWithHref[] {
   const stamp = nowIso();
-  return SETTINGS_SECTIONS.map((section) => ({
-    id: `settings:${section.id}`,
-    entityType: "settings" as const,
-    entityId: section.id,
-    companyId,
-    workspaceId,
-    title: section.label,
-    subtitle: section.description,
-    keywords: [section.label, section.description, section.group, "settings", "设置"],
-    tags: ["settings", section.group],
-    createdAt: stamp,
-    updatedAt: stamp,
-    href: section.href,
-  }));
+  // Internal MVP Phase 1: omit placeholder Settings sections (Members / Integrations / Billing).
+  return SETTINGS_SECTIONS.filter((section) => !section.placeholder).map(
+    (section) => ({
+      id: `settings:${section.id}`,
+      entityType: "settings" as const,
+      entityId: section.id,
+      companyId,
+      workspaceId,
+      title: section.label,
+      subtitle: section.description,
+      keywords: [
+        section.label,
+        section.description,
+        section.group,
+        "settings",
+        "设置",
+      ],
+      tags: ["settings", section.group],
+      createdAt: stamp,
+      updatedAt: stamp,
+      href: section.href,
+    }),
+  );
 }
 
 /** Primary navigation destinations (Project 075). */

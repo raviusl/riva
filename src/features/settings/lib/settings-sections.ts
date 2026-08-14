@@ -133,5 +133,12 @@ export function isSettingsSectionId(
 export function settingsSectionsByGroup(
   group: SettingsSectionDefinition["group"],
 ) {
-  return SETTINGS_SECTIONS.filter((section) => section.group === group);
+  return SETTINGS_SECTIONS.filter(
+    (section) => section.group === group && !section.placeholder,
+  );
+}
+
+/** Non-placeholder sections only — Internal MVP Phase 1 nav/search honesty. */
+export function listLiveSettingsSections() {
+  return SETTINGS_SECTIONS.filter((section) => !section.placeholder);
 }

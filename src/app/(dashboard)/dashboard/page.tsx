@@ -1,38 +1,28 @@
 import { requireDashboardContext } from "@/core/auth/context";
 import { listClientsByCompany } from "@/core/client/client";
 import { listMeetingsByCompany } from "@/core/meeting/meeting";
-import {
-  createInMemoryPlatformEventBus,
-  derivePlatformEvents,
-  aiDailyBriefConsumer,
-} from "@/core/platform-events";
+import { derivePlatformEvents } from "@/core/platform-events";
 import { listProjectsByCompany } from "@/core/project/project";
 import { listTaskActivities, listTasks } from "@/core/task/service";
 import { listVendorsByCompany } from "@/core/vendor/vendor";
 import { CommandCenterHome } from "@/components/command-center/command-center-home";
 import type { TodaysFocusGroups } from "@/components/command-center/todays-focus";
 import { uiZh } from "@/config/ui-zh";
-import {
-  resolveAiDailyBriefMessage,
-} from "@/features/activity-feed/ai-brief";
 import { consumeActivityFeedFromEvents } from "@/features/activity-feed/from-platform-events";
 import { toWorkspaceActivityItems } from "@/features/activity-feed/derive-feed";
 import { buildCompanyMilestoneProjections } from "@/features/timeline-engine/build-projections";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isSameWorkspaceCalendarDay,
+  workspaceTodayKey,
+} from "@/lib/datetime/workspace-today";
 import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 
-function todayDateString(date = new Date()) {
-  return date.toISOString().slice(0, 10);
-}
-
-function isSameCalendarDay(iso: string, date = new Date()) {
-  return iso.slice(0, 10) === todayDateString(date);
-}
-
-function formatTimeLabel(iso: string) {
+function formatTimeLabel(iso: string, timeZone: string) {
   return new Date(iso).toLocaleTimeString("zh-CN", {
     hour: "numeric",
     minute: "2-digit",
+    timeZone,
   });
 }
 
@@ -60,8 +50,12 @@ export default async function DashboardPage() {
   const canReadClients = context.permissions.has("client.read");
   const canReadVendors = context.permissions.has("vendor.read");
   const canReadTimeline = context.permissions.has("timeline.read");
+  const canWriteClient = context.permissions.has("client.write");
+  const canWriteProject = context.permissions.has("project.write");
+  const canWriteVendor = context.permissions.has("vendor.write");
   const now = new Date();
-  const today = todayDateString(now);
+  const timeZone = context.workspace.timezone;
+  const today = workspaceTodayKey(timeZone, now);
 
   const [tasks, taskActivities, meetings, projects, clients, vendors, displayName] =
     await Promise.all([
@@ -116,12 +110,6 @@ export default async function DashboardPage() {
     includePlaceholders: false,
   });
 
-  const bus = createInMemoryPlatformEventBus();
-  bus.publish(events);
-  const briefSignals = aiDailyBriefConsumer.consume(
-    bus.list({ channel: "ai_brief" }),
-  );
-
   const feedItems = consumeActivityFeedFromEvents(events, { limit: 6 });
   const activity = toWorkspaceActivityItems(feedItems);
 
@@ -146,14 +134,14 @@ export default async function DashboardPage() {
     .filter(
       (meeting) =>
         meeting.status !== "cancelled" &&
-        isSameCalendarDay(meeting.starts_at, now),
+        isSameWorkspaceCalendarDay(meeting.starts_at, timeZone, now),
     )
     .sort((a, b) => a.starts_at.localeCompare(b.starts_at))
     .slice(0, 5)
     .map((meeting) => ({
       id: `meeting:${meeting.id}`,
       title: meeting.title,
-      meta: formatTimeLabel(meeting.starts_at),
+      meta: formatTimeLabel(meeting.starts_at, timeZone),
       href: buildWorkspaceOverviewHref("meeting", meeting.id),
     }));
 
@@ -174,24 +162,14 @@ export default async function DashboardPage() {
     deadlines: todaysDeadlines,
   };
 
-  const afternoonStart = new Date(now);
-  afternoonStart.setHours(12, 0, 0, 0);
-
-  const meetingsThisAfternoon = meetings.filter((meeting) => {
-    if (meeting.status === "cancelled") return false;
-    if (!isSameCalendarDay(meeting.starts_at, now)) return false;
-    return new Date(meeting.starts_at) >= afternoonStart;
-  }).length;
-
   return (
     <CommandCenterHome
       displayName={displayName}
       focus={focus}
       activity={activity}
-      briefMessage={resolveAiDailyBriefMessage(
-        briefSignals,
-        meetingsThisAfternoon,
-      )}
+      canWriteClient={canWriteClient}
+      canWriteProject={canWriteProject}
+      canWriteVendor={canWriteVendor}
     />
   );
 }

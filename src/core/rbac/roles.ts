@@ -49,7 +49,7 @@ const MANAGER_PERMISSIONS: readonly PlatformPermission[] = [
   "automation.read",
   "automation.write",
   "automation.manage",
-  "workspace.manage",
+  "workspace.write",
 ];
 
 const COORDINATOR_PERMISSIONS: readonly PlatformPermission[] = [

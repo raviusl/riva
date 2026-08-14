@@ -83,7 +83,7 @@ export async function loadNotificationCenterAction(
       clients,
       vendors,
       projects,
-      includePlaceholders: true,
+      includePlaceholders: false,
     });
 
     const bus = createInMemoryPlatformEventBus();

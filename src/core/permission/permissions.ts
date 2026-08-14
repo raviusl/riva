@@ -34,8 +34,10 @@ export const PLATFORM_PERMISSIONS = [
   "automation.read",
   "automation.write",
   "automation.manage",
-  "company.manage",
-  "workspace.manage",
+  "company.read",
+  "company.write",
+  "workspace.read",
+  "workspace.write",
 ] as const;
 
 export type PlatformPermission = (typeof PLATFORM_PERMISSIONS)[number];

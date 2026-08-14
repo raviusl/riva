@@ -62,6 +62,8 @@ import { cn } from "@/lib/utils";
 type CalendarEnginePanelProps = {
   workspaceId: string;
   companyId: string;
+  /** Active workspace IANA timezone (MVP-B2 day-key SoT). Defaults to UTC. */
+  timeZone?: string;
 };
 
 function kindIcon(kind: CalendarEvent["kind"]) {
@@ -135,6 +137,7 @@ function EventChip({ event }: { event: CalendarEvent }) {
 export function CalendarEnginePanel({
   workspaceId,
   companyId,
+  timeZone = "UTC",
 }: CalendarEnginePanelProps) {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -147,15 +150,15 @@ export function CalendarEnginePanel({
   const [pending, startTransition] = useTransition();
 
   const [prefs, setPrefs] = useState(defaultCalendarPrefs);
-  const [anchor, setAnchor] = useState(todayKey);
+  const [anchor, setAnchor] = useState(() => todayKey(timeZone));
   const [timelineLocalByProject, setTimelineLocalByProject] = useState<
     Map<string, ProjectTimelineLocalState>
   >(() => new Map());
 
   useEffect(() => {
     setPrefs(readCalendarPrefs());
-    setAnchor(todayKey());
-  }, []);
+    setAnchor(todayKey(timeZone));
+  }, [timeZone]);
 
   useEffect(() => {
     let cancelled = false;
@@ -220,6 +223,7 @@ export function CalendarEnginePanel({
     return deriveCalendarEvents({
       companyId,
       workspaceId,
+      timeZone,
       meetings: canReadMeetings ? meetings : [],
       tasks: canReadTasks ? tasks : [],
       projects: canReadTimeline ? projects : [],
@@ -229,6 +233,7 @@ export function CalendarEnginePanel({
   }, [
     companyId,
     workspaceId,
+    timeZone,
     meetings,
     tasks,
     projects,
@@ -259,7 +264,8 @@ export function CalendarEnginePanel({
     else setAnchor((a) => addDays(a, 1));
   };
 
-  const goToday = () => setAnchor(todayKey());
+  const goToday = () => setAnchor(todayKey(timeZone));
+  const today = todayKey(timeZone);
 
   const title = useMemo(() => {
     if (prefs.view === "month") return formatMonthTitle(anchor);
@@ -403,6 +409,7 @@ export function CalendarEnginePanel({
       {prefs.view === "month" ? (
         <MonthView
           anchor={anchor}
+          today={today}
           events={events}
           onSelectDay={(date) => {
             setAnchor(date);
@@ -414,6 +421,7 @@ export function CalendarEnginePanel({
       {prefs.view === "week" ? (
         <WeekView
           anchor={anchor}
+          today={today}
           events={events}
           onSelectDay={(date) => {
             setAnchor(date);
@@ -429,16 +437,17 @@ export function CalendarEnginePanel({
 
 function MonthView({
   anchor,
+  today,
   events,
   onSelectDay,
 }: {
   anchor: string;
+  today: string;
   events: readonly CalendarEvent[];
   onSelectDay: (date: string) => void;
 }) {
   const grid = buildMonthGrid(anchor);
   const monthPrefix = anchor.slice(0, 7);
-  const today = todayKey();
 
   return (
     <div
@@ -508,15 +517,16 @@ function MonthView({
 
 function WeekView({
   anchor,
+  today,
   events,
   onSelectDay,
 }: {
   anchor: string;
+  today: string;
   events: readonly CalendarEvent[];
   onSelectDay: (date: string) => void;
 }) {
   const keys = buildWeekKeys(anchor);
-  const today = todayKey();
 
   return (
     <div

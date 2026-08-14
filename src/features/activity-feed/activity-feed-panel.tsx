@@ -136,7 +136,7 @@ export function ActivityFeedPanel({
           companyId,
           filter: nextFilter,
           limit: initialLimit ?? (compact ? 12 : 80),
-          includePlaceholders: !compact,
+          includePlaceholders: false,
         });
         if (!result.ok) {
           setError(result.error);

@@ -1,6 +1,12 @@
 /**
  * Calendar date helpers — view ranges only, not scheduling.
+ * “Today” uses shared workspace timezone SoT (MVP-B2).
  */
+
+import {
+  workspaceDateKeyFromInstant,
+  workspaceTodayKey,
+} from "@/lib/datetime/workspace-today";
 
 export function toDateKey(value: Date | string): string {
   if (typeof value === "string") return value.slice(0, 10);
@@ -15,8 +21,20 @@ export function parseDateKey(key: string): Date {
   return new Date(y!, (m ?? 1) - 1, d ?? 1, 12, 0, 0, 0);
 }
 
-export function todayKey(now = new Date()): string {
-  return toDateKey(now);
+/** Today’s YYYY-MM-DD in workspace timezone (empty/invalid → UTC). */
+export function todayKey(
+  timeZone?: string | null,
+  now: Date = new Date(),
+): string {
+  return workspaceTodayKey(timeZone, now);
+}
+
+/** Instant → day key in workspace timezone (for event bucketing alignment). */
+export function instantDateKey(
+  isoOrDate: string | Date,
+  timeZone?: string | null,
+): string {
+  return workspaceDateKeyFromInstant(isoOrDate, timeZone);
 }
 
 export function addDays(key: string, days: number): string {

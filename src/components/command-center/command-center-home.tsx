@@ -1,5 +1,6 @@
-import { AiInsightCard } from "@/components/command-center/ai-insight-card";
-import { CommandCenterGreeting } from "@/components/command-center/command-center-greeting";
+import {
+  CommandCenterGreeting,
+} from "@/components/command-center/command-center-greeting";
 import { CommandCenterQuickActions } from "@/components/command-center/command-center-quick-actions";
 import {
   TodaysFocus,
@@ -16,26 +17,29 @@ type DailyWorkspaceHomeProps = {
   displayName: string;
   focus: TodaysFocusGroups;
   activity: ActivityItem[];
-  briefMessage: string;
+  canWriteClient: boolean;
+  canWriteProject: boolean;
+  canWriteVendor: boolean;
 };
 
 /**
  * Daily Workspace home — answers only “What should I do next?”
  *
- * Sections (Product Bible):
+ * Sections:
  * 1. Greeting
- * 2. Today's Focus
- * 3. Quick Actions (3)
- * 4. AI Daily Brief
- * 5. Recent Activity
+ * 2. Today's Focus (real task/meeting SoT)
+ * 3. Quick Actions (MVP CRM creates, permission-gated)
+ * 4. Recent Activity (derived live events)
  *
- * Not a CRM dashboard. No KPIs. No summaries. No Workspace/Company/Role chrome.
+ * No AI brief. No KPIs. No out-of-MVP create links.
  */
 export function CommandCenterHome({
   displayName,
   focus,
   activity,
-  briefMessage,
+  canWriteClient,
+  canWriteProject,
+  canWriteVendor,
 }: DailyWorkspaceHomeProps) {
   return (
     <div
@@ -46,8 +50,11 @@ export function CommandCenterHome({
     >
       <CommandCenterGreeting displayName={displayName} />
       <TodaysFocus groups={focus} />
-      <CommandCenterQuickActions />
-      <AiInsightCard message={briefMessage} />
+      <CommandCenterQuickActions
+        canWriteClient={canWriteClient}
+        canWriteProject={canWriteProject}
+        canWriteVendor={canWriteVendor}
+      />
       <WorkspaceActivity items={activity} />
     </div>
   );

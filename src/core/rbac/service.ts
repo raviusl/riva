@@ -113,14 +113,14 @@ export function isAdmin(roles: readonly string[]): boolean {
 export function canManageWorkspace(permissions: readonly string[]): boolean {
   return hasPermission(
     filterPlatformPermissions(permissions),
-    "workspace.manage",
+    "workspace.write",
   );
 }
 
 export function canManageCompany(permissions: readonly string[]): boolean {
   return hasPermission(
     filterPlatformPermissions(permissions),
-    "company.manage",
+    "company.write",
   );
 }
 

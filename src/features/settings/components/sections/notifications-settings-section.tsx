@@ -1,20 +1,11 @@
-import Link from "next/link";
-
 import { uiZh } from "@/config/ui-zh";
 import { SettingsSectionCard } from "@/features/settings/components/settings-section-card";
-import { NOTIFICATION_WORKSPACE_HUB_ID } from "@/features/notification/lib/notification-workspace-tabs";
-import { buildWorkspaceOverviewHref } from "@/lib/workspace/cross-navigation";
 
 /**
- * Notification preferences architecture — links to Notification Workspace preview.
- * No delivery provider configuration here.
+ * Notification preferences shell — channels are documented only.
+ * Internal MVP Phase 1: no link to Notification Workspace preview.
  */
 export function NotificationsSettingsSection() {
-  const inboxHref = buildWorkspaceOverviewHref(
-    "notification",
-    NOTIFICATION_WORKSPACE_HUB_ID,
-  );
-
   return (
     <div className="space-y-4">
       <SettingsSectionCard
@@ -35,12 +26,7 @@ export function NotificationsSettingsSection() {
       </SettingsSectionCard>
 
       <SettingsSectionCard title={uiZh.inbox} description={uiZh.inboxDesc}>
-        <Link
-          href={inboxHref}
-          className="inline-flex rounded-lg border border-white/10 px-3 py-2 text-sm text-white hover:bg-white/[0.05]"
-        >
-          {uiZh.openNotificationWorkspace}
-        </Link>
+        <p className="text-sm text-white/50">{uiZh.notificationCenterDesc}</p>
       </SettingsSectionCard>
     </div>
   );

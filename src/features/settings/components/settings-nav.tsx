@@ -3,7 +3,7 @@ import Link from "next/link";
 import { uiZh } from "@/config/ui-zh";
 import type { SettingsSectionId } from "@/features/settings/lib/settings-sections";
 import {
-  SETTINGS_SECTIONS,
+  listLiveSettingsSections,
   settingsSectionsByGroup,
 } from "@/features/settings/lib/settings-sections";
 import { cn } from "@/lib/utils";
@@ -20,6 +20,7 @@ const GROUP_LABELS = {
 
 export function SettingsNav({ activeSection = null }: SettingsNavProps) {
   const groups = ["account", "organization", "platform"] as const;
+  const liveCount = listLiveSettingsSections().length;
 
   return (
     <nav aria-label={uiZh.settingsSectionsAria} className="space-y-6">
@@ -47,11 +48,6 @@ export function SettingsNav({ activeSection = null }: SettingsNavProps) {
                       )}
                     >
                       <span>{section.label}</span>
-                      {section.placeholder ? (
-                        <span className="text-[10px] text-white/30">
-                          {uiZh.soon}
-                        </span>
-                      ) : null}
                     </Link>
                   </li>
                 );
@@ -63,7 +59,7 @@ export function SettingsNav({ activeSection = null }: SettingsNavProps) {
 
       <div className="border-t border-white/[0.06] pt-4">
         <p className="px-1 text-[10px] text-white/30">
-          {uiZh.sectionsCount(SETTINGS_SECTIONS.length)}
+          {uiZh.sectionsCount(liveCount)}
         </p>
       </div>
     </nav>

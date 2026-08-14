@@ -133,7 +133,7 @@ export async function loadActivityFeedAction(
       tasks: canTask ? tasks : [],
       taskActivities: canTask ? taskActivities : [],
       milestones,
-      includePlaceholders: input.includePlaceholders ?? true,
+      includePlaceholders: input.includePlaceholders ?? false,
     });
 
     const bus = createInMemoryPlatformEventBus();

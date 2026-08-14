@@ -64,6 +64,7 @@ export const uiZh = {
   quickActions: "快捷操作",
   newClient: "+ 新建客户",
   newProject: "+ 新建项目",
+  newVendor: "+ 新建供应商",
   newTask: "+ 新建任务",
   aiDailyBrief: "AI 每日简报",
   brief: "简报",
@@ -87,6 +88,15 @@ export const uiZh = {
   delete: "删除",
   archive: "归档",
   restore: "恢复",
+  confirmArchiveProjectTitle: "归档项目？",
+  confirmArchiveProjectDescription:
+    "项目将标记为已归档，之后可从归档状态恢复。不会永久删除。",
+  confirmArchiveVendorTitle: "归档供应商？",
+  confirmArchiveVendorDescription:
+    "供应商将标记为已归档，之后可恢复。",
+  confirmDeactivateVendorTitle: "停用供应商？",
+  confirmDeactivateVendorDescription:
+    "供应商将标记为未启用，之后可重新启用或归档。",
   back: "返回",
   loading: "加载中…",
   soon: "即将推出",

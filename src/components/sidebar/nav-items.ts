@@ -10,7 +10,9 @@ export type WorkspaceNavItem = {
 };
 
 /**
- * First-level Workspace sidebar navigation (Project 061 / 073 / 089).
+ * First-level Workspace sidebar navigation (Internal MVP Phase 1).
+ * Out-of-MVP surfaces (Finance, Reports, Documents, Files, Automations)
+ * stay reachable by URL but are not presented as live nav product.
  * Labels are Simplified Chinese only.
  */
 export const WORKSPACE_NAV_ITEMS: readonly WorkspaceNavItem[] = [
@@ -31,34 +33,9 @@ export const WORKSPACE_NAV_ITEMS: readonly WorkspaceNavItem[] = [
     href: "/dashboard/projects",
     matchPrefixes: [
       "/dashboard/projects",
-      "/dashboard/tasks",
-      "/dashboard/meetings",
-      "/dashboard/timeline",
       "/dashboard/calendar",
       "/dashboard/activity",
-      "/dashboard/documents",
-      "/dashboard/files",
-      "/dashboard/automations",
     ],
-  },
-  {
-    id: "finance",
-    label: uiZh.navFinance,
-    href: "/dashboard/finance",
-    matchPrefixes: ["/dashboard/finance"],
-    children: [
-      {
-        id: "finance-quotations",
-        label: uiZh.quotations,
-        href: "/dashboard/finance/quotations",
-        matchPrefixes: ["/dashboard/finance/quotations"],
-      },
-    ],
-  },
-  {
-    id: "reports",
-    label: uiZh.navReports,
-    href: "/dashboard/reports",
   },
   {
     id: "settings",

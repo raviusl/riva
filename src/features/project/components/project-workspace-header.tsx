@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { formatProjectStatus } from "@/components/projects/project-labels";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   WorkspaceHeader,
   type WorkspaceHeaderAction,
@@ -13,7 +14,6 @@ import {
 import {
   activateProjectAction,
   archiveProjectAction,
-  deleteProjectAction,
   restoreProjectAction,
 } from "@/core/actions/project-actions";
 import type { Project } from "@/core/types";
@@ -63,6 +63,7 @@ export function ProjectWorkspaceHeader({
 }: ProjectWorkspaceHeaderProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [archiveOpen, setArchiveOpen] = useState(false);
 
   const actions = useMemo((): WorkspaceHeaderAction[] => {
     if (!canWriteProject) return [];
@@ -106,44 +107,7 @@ export function ProjectWorkspaceHeader({
         key: "archive",
         label: uiZh.archive,
         disabled: pending,
-        onClick: () => {
-          startTransition(async () => {
-            const result = await archiveProjectAction({
-              workspaceId,
-              companyId,
-              projectId: project.id,
-            });
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
-            }
-            toast.success(uiZh.projectArchivedToast);
-            router.refresh();
-          });
-        },
-      });
-
-      next.push({
-        key: "delete",
-        label: uiZh.delete,
-        disabled: pending,
-        variant: "destructive",
-        onClick: () => {
-          startTransition(async () => {
-            const result = await deleteProjectAction({
-              workspaceId,
-              companyId,
-              projectId: project.id,
-            });
-            if (!result.ok) {
-              toast.error(result.error);
-              return;
-            }
-            toast.success(uiZh.projectDeletedToast);
-            router.push("/dashboard/projects");
-            router.refresh();
-          });
-        },
+        onClick: () => setArchiveOpen(true),
       });
     }
 
@@ -183,16 +147,42 @@ export function ProjectWorkspaceHeader({
   ]);
 
   return (
-    <WorkspaceHeader
-      eyebrow={uiZh.projectWorkspaceTitle}
-      title={project.name}
-      status={{
-        label: formatProjectStatus(project.status),
-        tone: projectStatusTone(project.status),
-      }}
-      lifecycle={lifecycleLabel(project)}
-      breadcrumbs={buildWorkspaceBreadcrumbs("project")}
-      actions={actions}
-    />
+    <>
+      <WorkspaceHeader
+        eyebrow={uiZh.projectWorkspaceTitle}
+        title={project.name}
+        status={{
+          label: formatProjectStatus(project.status),
+          tone: projectStatusTone(project.status),
+        }}
+        lifecycle={lifecycleLabel(project)}
+        breadcrumbs={buildWorkspaceBreadcrumbs("project")}
+        actions={actions}
+      />
+      <ConfirmDialog
+        open={archiveOpen}
+        onOpenChange={setArchiveOpen}
+        title={uiZh.confirmArchiveProjectTitle}
+        description={uiZh.confirmArchiveProjectDescription}
+        confirmLabel={uiZh.archive}
+        pending={pending}
+        onConfirm={() => {
+          startTransition(async () => {
+            const result = await archiveProjectAction({
+              workspaceId,
+              companyId,
+              projectId: project.id,
+            });
+            if (!result.ok) {
+              toast.error(result.error);
+              return;
+            }
+            setArchiveOpen(false);
+            toast.success(uiZh.projectArchivedToast);
+            router.refresh();
+          });
+        }}
+      />
+    </>
   );
 }

@@ -30,6 +30,7 @@ export default async function CalendarPage() {
       <CalendarEnginePanel
         workspaceId={context.workspace.id}
         companyId={context.company.id}
+        timeZone={context.workspace.timezone}
       />
     </div>
   );
