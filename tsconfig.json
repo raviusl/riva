@@ -19,6 +19,7 @@
       }
     ],
     "paths": {
+      "@/app/fonts": ["./app.__samuel_junyu_temp/fonts"],
       "@/*": ["./src/*", "./*"]
     }
   },
@@ -32,3 +33,4 @@
   ],
   "exclude": ["node_modules"]
 }
+
