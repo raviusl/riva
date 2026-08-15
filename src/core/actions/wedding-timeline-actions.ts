@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireSessionUserId } from "@/core/auth/session";
-import { toCoreUserMessage } from "@/core/errors";
+import { CoreError, toCoreUserMessage } from "@/core/errors";
 import { requireMembershipPermission } from "@/core/membership/memberships";
 import {
   archiveWeddingTimelineItem,
@@ -18,6 +18,12 @@ import {
   shiftWeddingTimelineItem,
   updateWeddingTimelineItem,
 } from "@/core/wedding-timeline/service";
+import {
+  WEDDING_TIMELINE_ARCHIVE_PERMISSION,
+  WEDDING_TIMELINE_EXECUTE_PERMISSION,
+  WEDDING_TIMELINE_RESTORE_PERMISSION,
+  WEDDING_TIMELINE_STRUCTURE_PERMISSION,
+} from "@/core/wedding-timeline/permissions";
 import type {
   BulkWeddingTimelineInput,
   CreateWeddingTimelineItemInput,
@@ -37,7 +43,7 @@ function revalidateTimeline(projectId: string) {
   revalidatePath(`/dashboard/projects/${projectId}`, "page");
 }
 
-async function requireTimelineWrite(
+async function requireTimelineStructure(
   userId: string,
   workspaceId: string,
   companyId: string,
@@ -46,8 +52,70 @@ async function requireTimelineWrite(
     userId,
     workspaceId,
     companyId,
-    "timeline.write",
+    WEDDING_TIMELINE_STRUCTURE_PERMISSION,
   );
+}
+
+async function requireTimelineExecute(
+  userId: string,
+  workspaceId: string,
+  companyId: string,
+) {
+  await requireMembershipPermission(
+    userId,
+    workspaceId,
+    companyId,
+    WEDDING_TIMELINE_EXECUTE_PERMISSION,
+  );
+}
+
+async function requireTimelineArchive(
+  userId: string,
+  workspaceId: string,
+  companyId: string,
+) {
+  await requireMembershipPermission(
+    userId,
+    workspaceId,
+    companyId,
+    WEDDING_TIMELINE_ARCHIVE_PERMISSION,
+  );
+}
+
+async function requireTimelineRestore(
+  userId: string,
+  workspaceId: string,
+  companyId: string,
+) {
+  await requireMembershipPermission(
+    userId,
+    workspaceId,
+    companyId,
+    WEDDING_TIMELINE_RESTORE_PERMISSION,
+  );
+}
+
+/**
+ * Updates may be structure (fields/times) or execute (status/checklist/actuals).
+ * Require structure OR execute; finer state policy lands in M2+.
+ */
+async function requireTimelineStructureOrExecute(
+  userId: string,
+  workspaceId: string,
+  companyId: string,
+) {
+  try {
+    await requireTimelineStructure(userId, workspaceId, companyId);
+    return;
+  } catch (error) {
+    if (
+      !(error instanceof CoreError) ||
+      error.code !== "PERMISSION_DENIED"
+    ) {
+      throw error;
+    }
+  }
+  await requireTimelineExecute(userId, workspaceId, companyId);
 }
 
 export async function loadWeddingTimelineAction(input: {
@@ -79,7 +147,7 @@ export async function createWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ item: WeddingTimelineItem }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
     const item = await createWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { item } };
@@ -96,8 +164,12 @@ export async function updateWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ item: WeddingTimelineItem }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
-    const item = await updateWeddingTimelineItem(input);
+    await requireTimelineStructureOrExecute(
+      userId,
+      input.workspaceId,
+      input.companyId,
+    );
+    const item = await updateWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { item } };
   } catch (error) {
@@ -113,7 +185,7 @@ export async function duplicateWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ item: WeddingTimelineItem }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
     const item = await duplicateWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { item } };
@@ -130,8 +202,8 @@ export async function archiveWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ item: WeddingTimelineItem }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
-    const item = await archiveWeddingTimelineItem(input);
+    await requireTimelineArchive(userId, input.workspaceId, input.companyId);
+    const item = await archiveWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { item } };
   } catch (error) {
@@ -147,8 +219,8 @@ export async function restoreWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ item: WeddingTimelineItem }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
-    const item = await restoreWeddingTimelineItem(input);
+    await requireTimelineRestore(userId, input.workspaceId, input.companyId);
+    const item = await restoreWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { item } };
   } catch (error) {
@@ -164,7 +236,8 @@ export async function deleteWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
+    // Hard delete deferred in 101 product sense; still gated as structure.
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
     await deleteWeddingTimelineItem(input);
     revalidateTimeline(input.projectId);
     return { ok: true, data: undefined };
@@ -181,7 +254,7 @@ export async function reorderWeddingTimelineAction(
 ): Promise<WeddingTimelineActionResult<{ items: WeddingTimelineItem[] }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
     const items = await reorderWeddingTimelineItems(input);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { items } };
@@ -198,7 +271,7 @@ export async function moveWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ items: WeddingTimelineItem[] }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
     const items = await moveWeddingTimelineItem(input);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { items } };
@@ -215,8 +288,8 @@ export async function shiftWeddingTimelineItemAction(
 ): Promise<WeddingTimelineActionResult<{ items: WeddingTimelineItem[] }>> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
-    const items = await shiftWeddingTimelineItem(input);
+    await requireTimelineStructure(userId, input.workspaceId, input.companyId);
+    const items = await shiftWeddingTimelineItem(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: { items } };
   } catch (error) {
@@ -232,8 +305,37 @@ export async function bulkWeddingTimelineAction(
 ): Promise<WeddingTimelineActionResult> {
   try {
     const userId = await requireSessionUserId();
-    await requireTimelineWrite(userId, input.workspaceId, input.companyId);
-    await bulkUpdateWeddingTimelineItems(input);
+    switch (input.action) {
+      case "archive":
+        await requireTimelineArchive(
+          userId,
+          input.workspaceId,
+          input.companyId,
+        );
+        break;
+      case "restore":
+        await requireTimelineRestore(
+          userId,
+          input.workspaceId,
+          input.companyId,
+        );
+        break;
+      case "status":
+        await requireTimelineExecute(
+          userId,
+          input.workspaceId,
+          input.companyId,
+        );
+        break;
+      default:
+        await requireTimelineStructure(
+          userId,
+          input.workspaceId,
+          input.companyId,
+        );
+        break;
+    }
+    await bulkUpdateWeddingTimelineItems(input, userId);
     revalidateTimeline(input.projectId);
     return { ok: true, data: undefined };
   } catch (error) {

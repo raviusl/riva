@@ -103,7 +103,7 @@ export async function loadProjectTimelineAction(
       data: {
         timeline,
         canWrite:
-          context.permissions.has("timeline.write") &&
+          context.permissions.has("timeline.structure.write") &&
           context.permissions.has("project.write"),
       },
     };

@@ -1,6 +1,6 @@
 /**
- * Platform permission catalog (Project 042).
- * RBAC assignment and company isolation are deferred.
+ * Platform permission catalog (Project 042 + Project 101 timeline keys).
+ * RBAC assignment and company isolation are deferred beyond membership grants.
  */
 
 export const PLATFORM_PERMISSIONS = [
@@ -21,7 +21,12 @@ export const PLATFORM_PERMISSIONS = [
   "task.assign",
   "task.delete",
   "timeline.read",
-  "timeline.write",
+  "timeline.structure.write",
+  "timeline.execute",
+  "timeline.comment",
+  "timeline.archive",
+  "timeline.restore",
+  "timeline.state.change",
   "document.read",
   "document.write",
   "document.delete",

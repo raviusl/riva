@@ -75,7 +75,10 @@ export default async function ProjectWorkspacePage({
         canWriteVendor={context.permissions.has("vendor.write")}
         canReadVendor={context.permissions.has("vendor.read")}
         canReadTimeline={context.permissions.has("timeline.read")}
-        canWriteTimeline={context.permissions.has("timeline.write")}
+        canWriteTimeline={
+          context.permissions.has("timeline.structure.write") ||
+          context.permissions.has("timeline.execute")
+        }
         canReadTasks={context.permissions.has("task.read")}
         canWriteTasks={context.permissions.has("task.write")}
         canReadPackages={context.permissions.has("project.read")}
